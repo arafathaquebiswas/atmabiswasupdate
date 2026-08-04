@@ -5,51 +5,38 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-include 'backend/Database/db.php';
+include_once 'backend/Database/db.php';
 
-$db = new Db();
-$conn = $db->connect();
+if (empty($_GET['pdf_id'])) {
+    header("Location: backend/DashBoard/dashboard.php");
+    exit();
+}
 
 try {
+    $db = new Db();
+    $conn = $db->connect();
 
-  $sql = "SELECT * FROM pdsfiles WHERE pdf_id=:pdf_id";
+    if ($conn) {
+        $sql = "SELECT pdf_path FROM pdsfiles WHERE pdf_id = :pdf_id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":pdf_id", $_GET['pdf_id']);
+        $stmt->execute();
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-  $stmt = $conn->prepare($sql);
+        if (!empty($res[0]['pdf_path']) && file_exists($res[0]['pdf_path'])) {
+            @chmod($res[0]['pdf_path'], 0644);
+            @unlink($res[0]['pdf_path']);
+        }
 
-  $stmt->bindParam(":pdf_id", $_GET['pdf_id']);
-
-  $stmt->execute();
-
-  $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-  $uploadDir =  $res[0]['pdf_path'];
-
-  if (file_exists($uploadDir)) {
-
-    chmod($uploadDir, 0644);
-    unlink($uploadDir);
-  } else {
-    $delsQL = "DELETE FROM pdsfiles WHERE pdf_id=:pdf_id";
-
-    $detStmt = $conn->prepare($delsQL);
-
-    $detStmt->bindParam(":pdf_id", $_GET['pdf_id']);
-
-    if($detStmt->execute()){
-       header("Location: backend/DashBoard/dashboard.php");
+        $delsQL = "DELETE FROM pdsfiles WHERE pdf_id = :pdf_id";
+        $detStmt = $conn->prepare($delsQL);
+        $detStmt->bindParam(":pdf_id", $_GET['pdf_id']);
+        $detStmt->execute();
     }
-    exit();
-  }
-
-  $delsQL = "DELETE FROM pdsfiles WHERE pdf_id=:pdf_id";
-
-  $detStmt = $conn->prepare($delsQL);
-
-  $detStmt->bindParam(":pdf_id", $_GET['pdf_id']);
-
-  $detStmt->execute();
-
-  header("Location: backend/DashBoard/dashboard.php");
-} catch (PDOException $e) {
-  echo $e;
+} catch (Throwable $e) {
+    error_log("deletepdf error: " . $e->getMessage());
 }
+
+header("Location: backend/DashBoard/dashboard.php");
+exit();
+

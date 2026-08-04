@@ -19,18 +19,35 @@ try {
     $db   = new Db();
     $conn = $db->connect();
 
-    $stmt = $conn->prepare(
-        "SELECT branch_name, address, division, district
-         FROM branches
-         WHERE status = 1 AND division = :division
-         ORDER BY branch_name ASC"
-    );
-    $stmt->bindParam(':division', $division, PDO::PARAM_STR);
-    $stmt->execute();
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($conn) {
+        try {
+            $stmt = $conn->prepare(
+                "SELECT branch_name, address, division, district
+                 FROM branches
+                 WHERE status = 1 AND division = :division
+                 ORDER BY branch_name ASC"
+            );
+            $stmt->bindParam(':division', $division, PDO::PARAM_STR);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Throwable $e) {
+            $stmt = $conn->prepare(
+                "SELECT branchName AS branch_name, branchLoc AS address, division, dist AS district
+                 FROM branch
+                 WHERE division = :division
+                 ORDER BY branchName ASC"
+            );
+            $stmt->bindParam(':division', $division, PDO::PARAM_STR);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
 
-    echo json_encode($rows, JSON_UNESCAPED_UNICODE);
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Failed to load branches']);
+        echo json_encode($rows ?: [], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+} catch (Throwable $e) {
+    error_log("get_branches error: " . $e->getMessage());
 }
+
+echo json_encode([]);
+

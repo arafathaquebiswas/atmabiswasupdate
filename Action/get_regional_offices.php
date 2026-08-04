@@ -8,17 +8,22 @@ try {
     $db   = new Db();
     $conn = $db->connect();
 
-    $stmt = $conn->prepare(
-        "SELECT id, region_name, address, designation, phone
-         FROM regional_offices
-         WHERE status = 1
-         ORDER BY display_order ASC, id ASC"
-    );
-    $stmt->execute();
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($conn) {
+        $stmt = $conn->prepare(
+            "SELECT id, region_name, address, designation, phone
+             FROM regional_offices
+             WHERE status = 1
+             ORDER BY display_order ASC, id ASC"
+        );
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode($rows, JSON_UNESCAPED_UNICODE);
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Failed to load regional offices']);
+        echo json_encode($rows ?: [], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+} catch (Throwable $e) {
+    error_log("get_regional_offices error: " . $e->getMessage());
 }
+
+echo json_encode([]);
+

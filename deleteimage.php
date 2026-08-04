@@ -5,53 +5,38 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-include 'backend/Database/db.php';
+include_once 'backend/Database/db.php';
 
-$db = new Db();
-$conn = $db->connect();
+if (empty($_GET['img_id'])) {
+    header("Location: backend/DashBoard/dashboard.php");
+    exit();
+}
 
 try {
+    $db = new Db();
+    $conn = $db->connect();
 
-  $sql = "SELECT * FROM img_upload WHERE img_id=:img_id";
+    if ($conn) {
+        $sql = "SELECT img_path FROM img_upload WHERE img_id = :img_id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":img_id", $_GET['img_id']);
+        $stmt->execute();
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-  $stmt = $conn->prepare($sql);
+        if (!empty($res[0]['img_path']) && file_exists($res[0]['img_path'])) {
+            @chmod($res[0]['img_path'], 0644);
+            @unlink($res[0]['img_path']);
+        }
 
-  $stmt->bindParam(":img_id", $_GET['img_id']);
-
-  $stmt->execute();
-
-  $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-  $uploadDir =  $res[0]['img_path'];
-
-  if (file_exists($uploadDir)) {
-
-    chmod($uploadDir, 0644);
-    unlink($uploadDir);
-  } else {
-      $delsQL = "DELETE FROM img_upload WHERE img_id=:img_id";
-
-  $detStmt = $conn->prepare($delsQL);
-
-  $detStmt->bindParam(":img_id", $_GET['img_id']);
-
-  if($detStmt->execute()){
-    header("Location: backend/DashBoard/dashboard.php");
-
-
-  }
-    exit();
-  }
-
-  $delsQL = "DELETE FROM img_upload WHERE img_id=:img_id";
-
-  $detStmt = $conn->prepare($delsQL);
-
-  $detStmt->bindParam(":img_id", $_GET['img_id']);
-
-  $detStmt->execute();
-
-  header("Location: backend/DashBoard/dashboard.php");
-} catch (PDOException $e) {
-  echo $e;
+        $delsQL = "DELETE FROM img_upload WHERE img_id = :img_id";
+        $detStmt = $conn->prepare($delsQL);
+        $detStmt->bindParam(":img_id", $_GET['img_id']);
+        $detStmt->execute();
+    }
+} catch (Throwable $e) {
+    error_log("deleteimage error: " . $e->getMessage());
 }
+
+header("Location: backend/DashBoard/dashboard.php");
+exit();
+

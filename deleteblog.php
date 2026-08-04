@@ -5,53 +5,38 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-include 'backend/Database/db.php';
+include_once 'backend/Database/db.php';
 
-$db = new Db();
-$conn = $db->connect();
+if (empty($_GET['blog_id'])) {
+    header("Location: backend/DashBoard/dashboard.php");
+    exit();
+}
 
 try {
+    $db = new Db();
+    $conn = $db->connect();
 
-  $sql = "SELECT * FROM blogs WHERE blog_id=:blog_id";
+    if ($conn) {
+        $sql = "SELECT cover_img FROM blogs WHERE blog_id = :blog_id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":blog_id", $_GET['blog_id']);
+        $stmt->execute();
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-  $stmt = $conn->prepare($sql);
+        if (!empty($res[0]['cover_img']) && file_exists($res[0]['cover_img'])) {
+            @chmod($res[0]['cover_img'], 0644);
+            @unlink($res[0]['cover_img']);
+        }
 
-  $stmt->bindParam(":blog_id", $_GET['blog_id']);
-
-  $stmt->execute();  
-
-  
-
-  $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-  $uploadDir =  $res[0]['cover_img'];
-
-  if (file_exists($uploadDir)) {
-
-    chmod($uploadDir, 0644);
-    unlink($uploadDir);
-  } else {
-     $delsQL = "DELETE FROM blogs WHERE blog_id=:blog_id";
-
-      $detStmt = $conn->prepare($delsQL);
-
-       $detStmt->bindParam(":blog_id", $_GET['blog_id']);
-
-       if($detStmt->execute()){
-          header("Location: backend/DashBoard/dashboard.php");
-       }
-    exit();
-  }
-
-  $delsQL = "DELETE FROM blogs WHERE blog_id=:blog_id";
-
-  $detStmt = $conn->prepare($delsQL);
-
-  $detStmt->bindParam(":blog_id", $_GET['blog_id']);
-
-  $detStmt->execute();
-
-  header("Location: backend/DashBoard/dashboard.php");
-} catch (PDOException $e) {
-  echo $e;
+        $delsQL = "DELETE FROM blogs WHERE blog_id = :blog_id";
+        $detStmt = $conn->prepare($delsQL);
+        $detStmt->bindParam(":blog_id", $_GET['blog_id']);
+        $detStmt->execute();
+    }
+} catch (Throwable $e) {
+    error_log("deleteblog error: " . $e->getMessage());
 }
+
+header("Location: backend/DashBoard/dashboard.php");
+exit();
+
