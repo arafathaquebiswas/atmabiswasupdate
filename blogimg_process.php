@@ -49,6 +49,7 @@ function processFile($imageFile, $allowedTypes, $imageSize, $uploadDir)
         echo "<p>Failed to Move Uploaded Image!</p>";
         exit();
     }
+    @chmod($target, 0644);
 
     return $target;
 }

@@ -32,6 +32,15 @@ $sel = $has_order_col
     : "img_title, img_description, img_path, 0 AS display_order";
 $ord = $has_order_col ? "display_order ASC, img_path ASC" : "img_path ASC";
 
+if (!function_exists('check_latest_img_exists')) {
+    function check_latest_img_exists($path) {
+        if (empty($path)) return false;
+        if (preg_match('~^https?://~i', $path)) return true;
+        $clean = ltrim($path, '/');
+        return file_exists(__DIR__ . '/' . $clean) || file_exists($clean);
+    }
+}
+
 try {
     $stmt = $conn->prepare(
         "SELECT {$sel} FROM img_upload
@@ -40,7 +49,7 @@ try {
     );
     $stmt->execute();
     $latest = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $latest = array_values(array_filter($latest, fn($img) => file_exists($img['img_path'])));
+    $latest = array_values(array_filter($latest, fn($img) => check_latest_img_exists($img['img_path'])));
 
     // Auto-migrate: if no latest_news rows exist but img_slider rows do, convert them.
     // (The public homepage slider is hardcoded HTML; img_slider type is unused in the public site.)
@@ -50,7 +59,7 @@ try {
             $conn->exec("UPDATE img_upload SET img_type = 'latest_news' WHERE img_type = 'img_slider'");
             $stmt->execute();
             $latest = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $latest = array_values(array_filter($latest, fn($img) => file_exists($img['img_path'])));
+            $latest = array_values(array_filter($latest, fn($img) => check_latest_img_exists($img['img_path'])));
         }
     }
 } catch (Exception $e) {
@@ -69,7 +78,7 @@ if (empty($latest)) return;
         <div class="ln-card">
             <div class="ln-card-img-wrap">
                 <img class="ln-card-img"
-                     src="<?= htmlspecialchars($img['img_path']) ?>"
+                     src="<?= htmlspecialchars((preg_match('~^https?://~i', $img['img_path']) ? '' : '/') . ltrim($img['img_path'], '/')) ?>"
                      alt="<?= htmlspecialchars($img['img_title']) ?>"
                      loading="lazy">
                 <div class="ln-card-accent"></div>
