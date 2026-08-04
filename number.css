@@ -1,0 +1,31 @@
+
+.container {
+    display: flex;
+    gap: 20px;
+}
+
+.number-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    flex: 1;
+}
+
+.number-card h2 {
+    font-size: 2.5rem;
+    color: #0073e6;
+    margin: 0;
+    transition: transform 0.3s ease;
+}
+
+.number-card p {
+    font-size: 1rem;
+    color: #666;
+    margin: 10px 0 0;
+}
+
+.number-card:hover h2 {
+    transform: scale(1.1);
+}

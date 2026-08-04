@@ -1,0 +1,149 @@
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+
+    }
+
+    body {
+        background-color: #f4f4f4;
+    }
+
+    /* Navbar styles removed — global white Navbar.php is used instead */
+
+    @media (min-width: 768px) {
+        .job-title {
+            font-size: 1.75rem;
+        }
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+
+    .search-section {
+        margin: 20px 0;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 0 10px;
+    }
+
+    #searchInput {
+        flex: 1 1 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        min-width: 0;
+    }
+
+    #locationFilter {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        min-width: 150px;
+        flex: 1 1 45%;
+    }
+
+    .clear-filters {
+        padding: 10px 20px;
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        flex: 1 1 45%;
+    }
+
+    .jobs-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        margin-top: 1rem;
+        gap: 20px;
+        padding: 0 10px;
+    }
+
+    .job-card {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin: 5px;
+        word-break: break-word;
+    }
+
+    .job-card:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+
+    .job-title {
+        font-size: 1.5rem;
+        text-decoration: none;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
+        line-height: 1.3;
+    }
+
+    .company {
+        color: #3498db;
+        margin-bottom: 8px;
+    }
+
+    .location {
+        color: #7f8c8d;
+        margin-bottom: 8px;
+    }
+
+    .salary {
+        color: #27ae60;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+
+    .tags {
+        margin-bottom: 15px;
+    }
+
+    .tag {
+        cursor: pointer;
+        display: inline-block;
+        background-color: #ecf0f1;
+        padding: 5px 10px;
+        border-radius: 15px;
+        margin-right: 5px;
+        font-size: 0.8em;
+        transition: ease-in-out 0.3s all;
+    }
+
+    .tag:hover {
+        background-color: #3498db;
+        color: #f4f4f4;
+
+    }
+
+    .apply-btn-a {
+        text-decoration: none;
+        background-color: #3498db;
+        color: white;
+        padding: 8px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .apply-btn-a {
+
+        background-color: #3498db;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .apply-btn-a:hover {
+        background-color: #2980b9;
+    }

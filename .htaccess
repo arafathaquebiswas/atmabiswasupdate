@@ -1,0 +1,164 @@
+# ----------------------------------------
+# ✅ OUTPUT BUFFERING (fixes session_start() after output)
+# Fixes: Navbar.php calls session_start() partway through a page (after
+# the calling page's own <!DOCTYPE>/<head> HTML has already been echoed),
+# which fails silently — session_start() needs to send a Set-Cookie
+# header, which is impossible once body output has actually been sent.
+#
+# Tried and rejected: `php_value output_buffering "On"` — on this
+# LiteSpeed/LSAPI setup the ini value applies (ini_get reflects it) but
+# does NOT actually start an implicit buffer (ob_get_level() stayed 0).
+# A fixed byte count like "4096" does start a buffer, but auto-flushes
+# once a page's <head> exceeds that size — which real pages here do —
+# silently reintroducing the bug later in the page instead of fixing it.
+#
+# What actually works: auto_prepend_file running an explicit ob_start()
+# call before any page code executes. Verified end-to-end against the
+# real index.php (Set-Cookie now present, session_id populated) before
+# applying here.
+# ----------------------------------------
+php_value auto_prepend_file "/home/u106340611/domains/atmabiswas.org/public_html/ob-init.php"
+
+# ----------------------------------------
+# ✅ GZIP COMPRESSION
+# ----------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE application/xml
+  AddOutputFilterByType DEFLATE application/xhtml+xml
+  AddOutputFilterByType DEFLATE application/rss+xml
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/x-javascript
+  AddOutputFilterByType DEFLATE image/svg+xml
+  AddOutputFilterByType DEFLATE application/font-woff
+  AddOutputFilterByType DEFLATE application/font-woff2
+  AddOutputFilterByType DEFLATE font/ttf
+  AddOutputFilterByType DEFLATE font/otf
+</IfModule>
+
+# ----------------------------------------
+# ✅ FORCE NON-WWW + HTTPS (Canonical URL)
+# ----------------------------------------
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^www\.atmabiswas\.org [NC]
+RewriteRule ^(.*)$ https://atmabiswas.org/$1 [L,R=301]
+
+# ----------------------------------------
+# ✅ MAINTENANCE MODE
+# To take the whole site down for planned maintenance, create an empty
+# file named ".maintenance" in this directory (public_html/). Every
+# request (except the branded 503 page and its static assets) will get
+# a real 503 status + the maintenance page below. Delete the file to go
+# back live — no other change needed.
+# ----------------------------------------
+RewriteCond %{DOCUMENT_ROOT}/.maintenance -f
+RewriteCond %{REQUEST_URI} !^/503\.php$
+RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|ico|json)$
+RewriteRule ^ /503.php [L]
+
+# ----------------------------------------
+# ✅ FIX: photos/ (lowercase) → Photos/ (capital)
+# Linux servers are case-sensitive; old PHP files used lowercase path.
+# Unconditional 301 so browser always follows to the canonical URL,
+# even if the photos/ directory still exists on the server.
+# ----------------------------------------
+RewriteRule ^photos/(.+)$ /Photos/$1 [L,R=301]
+
+# ----------------------------------------
+# ✅ FIX: loc.html → loc.php
+# Branch Locator page was rebuilt as a PHP page (shared navbar/footer,
+# site design system) instead of a standalone static HTML file.
+# ----------------------------------------
+RewriteRule ^loc\.html$ /loc.php [L,R=301]
+
+# ----------------------------------------
+# ✅ CLEAN URL: /status → status.php
+# Internal rewrite (not a redirect) so the address bar stays /status.
+# ----------------------------------------
+RewriteRule ^status/?$ status.php [L]
+
+# ----------------------------------------
+# ✅ BROWSER CACHING (Expires)
+# ----------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 month"
+
+  # Images
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  
+  # CSS, JavaScript
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType application/x-javascript "access plus 1 month"
+
+  # Fonts
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType font/otf "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# ----------------------------------------
+# ✅ DISABLE ETAG TO AVOID CACHE ISSUES
+# ----------------------------------------
+<IfModule mod_headers.c>
+  FileETag None
+  Header unset ETag
+</IfModule>
+
+# ----------------------------------------
+# ✅ ENABLE HSTS (Strict Transport Security)
+# ----------------------------------------
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>
+
+# ----------------------------------------
+# ✅ CUSTOM ERROR PAGES
+# ----------------------------------------
+ErrorDocument 400 /400.php
+ErrorDocument 401 /401.php
+ErrorDocument 403 /403.php
+ErrorDocument 404 /404.php
+ErrorDocument 500 /500.php
+ErrorDocument 503 /503.php
+
+# ----------------------------------------
+# ✅ CACHING HEADERS FOR STATIC FILES
+# ----------------------------------------
+<IfModule mod_headers.c>
+  # Remove deprecated headers
+  Header unset Pragma
+
+  # Static Assets (fingerprinted by unique filename on upload — safe to cache long)
+  <FilesMatch "\.(jpg|jpeg|png|gif|webp|css|js|woff2|woff|ttf|otf|svg|eot)$">
+      Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # Service worker script — must NEVER be cached long. Unlike other .js files
+  # this one isn't fingerprinted per-deploy, and browsers need to reliably
+  # see updates to it (offline-fallback logic) rather than serve a stale
+  # cached copy for up to a year like the rule above.
+  <Files "sw.js">
+      Header set Cache-Control "no-cache, must-revalidate"
+  </Files>
+
+  # HTML and PHP — dynamic content fetched from DB, MUST NOT be cached.
+  # "public, max-age=3600" was causing admin updates to stay invisible for up to
+  # 1 hour in browsers and ISP proxies. Fixed: private + no-store so every
+  # request goes directly to the server and returns fresh DB data.
+  <FilesMatch "\.(html|php)$">
+      Header always set Cache-Control "no-store, no-cache, must-revalidate, private"
+      Header always set Pragma "no-cache"
+      Header always set Expires "0"
+  </FilesMatch>
+</IfModule>

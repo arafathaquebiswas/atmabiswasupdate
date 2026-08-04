@@ -1,0 +1,11 @@
+# Uploaded content (job application CVs, blog/gallery images, notice PDFs)
+# is never trusted to execute as code — only ever served as static files.
+# Defense in depth alongside the MIME-validated-extension fix applied to
+# every upload handler; verified in an isolated test before being applied
+# here: a .php file placed in this directory now returns 403 instead of
+# executing, while normal image/PDF serving is unaffected.
+php_flag engine off
+
+<FilesMatch "\.(php|phtml|php\d|pht|phar)$">
+    Require all denied
+</FilesMatch>

@@ -1,0 +1,151 @@
+[  {
+    "code": "0000",
+    "branch_name": "ATMABISWAS-Head Office Branch",
+    "mobile": "+8801714812943",
+    "address": "Asma Place, Chuadanga",
+    "district": "Chuadanga",
+    "division": "Khulna",
+    "latitude": 23.640763,
+    "longitude": 88.8439262
+  },
+  {
+    "code": "0038",
+    "branch_name": "ATMABISWAS-Bakura Branch",
+    "mobile": "01946584658",
+    "address": "Poschim Para, Bakura, Jessore Sadar, Jessore",
+    "district": "Jessore",
+    "division": "Khulna",
+    "latitude": 22.9821008,
+    "longitude": 87.3132674
+  },
+  {
+    "code": "0035",
+    "branch_name": "ATMABISWAS-Chanchra Branch",
+    "mobile": "01725186276",
+    "address": "Chanchra Bazar Para, Jessore Sadar, Jessore",
+    "district": "Jessore",
+    "division": "Khulna",
+    "latitude": 22.9821008,
+    "longitude": 87.3132674
+  },
+  {
+    "code": "0037",
+    "branch_name": "ATMABISWAS-Chutipur Branch",
+    "mobile": "01939208897",
+    "address": "Chutipur Bazar, Ganganandopur, Jhikorgasa, Jessore",
+    "district": "Jessore",
+    "division": "Khulna",
+    "latitude": 22.9821008,
+    "longitude": 87.3132674
+  },
+  {
+    "code": "0009",
+    "branch_name": "ATMABISWAS-Kotchadpur Branch",
+    "mobile": "01939208897",
+    "address": "Chutipur Bazar, Ganganandopur, Jhikorgasa, Jessore",
+    "district": "Jessore",
+    "division": "Khulna",
+    "latitude": 22.9821008,
+    "longitude": 87.3132674
+  },
+  {
+    "code": "0009",
+    "branch_name": "ATMABISWAS-Main Branch",
+    "mobile": "01959573095",
+    "address": "Cinema Hall Para, Chuadanga",
+    "district": "Chuadanga",
+    "division": "Khulna",
+    "latitude": 23.651591,
+    "longitude": 88.6709115
+  },
+  {
+    "code": "0001",
+    "branch_name": "ATMABISWAS-Alukdia Branch",
+    "mobile": "01958573058",
+    "address": "Alukdia Bazar, Alukdia, Chuadanga",
+    "district": "Chuadanga",
+    "division": "Khulna",
+    "latitude": 23.7272751,
+    "longitude": 88.4522133
+  },
+  {
+    "code": "0016",
+    "branch_name": "ATMABISWAS-Gokulkhali Branch",
+    "mobile": "01958573067",
+    "address": "Gokulkhali Bazar, Gokulkhali, Alamdanga, Chuadanga",
+    "district": "Chuadanga",
+    "division": "Khulna",
+    "latitude": 23.7272751,
+    "longitude": 88.4522133
+  },
+  {
+    "code": "0013",
+    "branch_name": "ATMABISWAS-Asmankhali Branch",
+    "mobile": "01935508310",
+    "address": "Asmankhali Bazar, Asmankhali, Alamdanga, Chuadanga",
+    "district": "Chuadanga",
+    "division": "Khulna",
+    "latitude": 23.758226,
+    "longitude": 88.3688892
+  },
+  {
+    "code": "0018",
+    "branch_name": "ATMABISWAS-Bamundi Branch",
+    "mobile": "01753252065",
+    "address": "Bamundi Bazar, Bamundi, Gangni, Meherpur",
+    "district": "Meherpur",
+    "division": "Khulna",
+    "latitude": 23.758226,
+    "longitude": 88.3688892
+  },
+  {
+    "code": "0023",
+    "branch_name": "ATMABISWAS-Amla Branch",
+    "mobile": "01914201810",
+    "address": "Khamar Para, Amla, Mirpur, Kushtia",
+    "district": "Kushtia",
+    "division": "Khulna",
+    "latitude": 23.9031805,
+    "longitude": 88.6817425
+  },
+  {
+    "code": "0007",
+    "branch_name": "ATMABISWAS-Alamdanga Branch",
+    "mobile": "01958573038",
+    "address": "Rail Station Para, Alamdanga, Chuadanga",
+    "district": "Chuadanga",
+    "division": "Khulna",
+    "latitude": 23.8094222,
+    "longitude": 88.6854423
+  },
+  {
+    "code": "0010",
+    "branch_name": "ATMABISWAS-Patikabari Branch",
+    "mobile": "01723295031",
+    "address": "Master Para, Patikabari, Kushtia Sadar, Kushtia",
+    "district": "Kushtia",
+    "division": "Khulna",
+    "latitude": 23.7885721,
+    "longitude": 88.9100969
+  },
+  {
+    "code": "0032",
+    "branch_name": "ATMABISWAS-Jhaudia Branch",
+    "mobile": "01787555674",
+    "address": "Jhaudia Shahimoszid Para, Jhaudia, EB, Kushtia",
+    "district": "Kushtia",
+    "division": "Khulna",
+    "latitude": 23.7885721,
+    "longitude": 88.9100969
+  },
+  {
+    "code": "0034",
+    "branch_name": "ATMABISWAS-Sheikhpara Branch",
+    "mobile": "01799414835",
+    "address": "Mul Tree Beni, Sailokupa, Jhenaidah",
+    "district": "Jhenaidah",
+    "division": "Khulna",
+    "latitude": 23.7767715,
+    "longitude": 88.728692
+  }
+]

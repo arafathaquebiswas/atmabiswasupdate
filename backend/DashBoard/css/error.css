@@ -1,0 +1,118 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+body {
+  background: linear-gradient(to right, #ff4e50, #f9d423);
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.error-container {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+}
+
+.cross-circle {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+
+.circle-bg {
+  background: white;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+}
+
+.cross .line1{
+  
+    position: absolute;
+    top: 45px;
+    left: 25px;
+    width: 50px;
+    height: 5px;
+    background-color: #ff0000;
+    border-radius: 2px;
+    animation: fadeIn1 0.5s ease-out forwards;
+  
+}
+.cross .line2 {
+  
+    position: absolute;
+    top: 45px;
+    left: 25px;
+    width: 50px;
+    height: 5px;
+    background-color: #ff0000;
+    border-radius: 2px;
+    animation: fadeIn2 0.5s ease-out forwards;
+  
+}
+
+
+@keyframes fadeIn1 {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+    transform: rotate(0deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    transform: rotate(45deg)
+  }
+}
+
+@keyframes fadeIn2 {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+    transform: rotate(0deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    transform: rotate(-45deg)
+  }
+}
+
+h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+button {
+  background: #ffffff;
+  color: #ff4e50;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #f3f3f3;
+}

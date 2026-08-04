@@ -1,0 +1,1235 @@
+/* ═══════════════════════════════════════════════════
+   ATMABISWAS — Shared Inner-Page Styles (pages.css)
+   ═══════════════════════════════════════════════════ */
+
+:root {
+  --primary:  #1e3a5f;
+  --accent:   #0073e6;
+  --bg:       #f1f5f9;
+  --card:     #ffffff;
+  --text:     #1e293b;
+  --muted:    #64748b;
+  --border:   #e2e8f0;
+  --shadow:   0 4px 20px rgba(0, 0, 0, 0.07);
+  --shadow-h: 0 14px 38px rgba(0, 0, 0, 0.13);
+  --radius:   12px;
+  --ease:     all 0.28s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Times New Roman", Times, serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+img { max-width: 100%; height: auto; }
+
+/* ── Page Hero ──────────────────────────────────── */
+.page-hero {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0073e6 100%);
+  color: #fff;
+  text-align: center;
+  padding: 68px 24px 56px;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M0 0h40v40H0zM40 40h40v40H40z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.page-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.page-hero h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
+}
+
+.page-hero p {
+  font-size: 1.05rem;
+  opacity: 0.9;
+  line-height: 1.8;
+}
+
+/* ── Main container ─────────────────────────────── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.container > h2 {
+  font-size: 1.35rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin: 2rem 0 1.2rem;
+  padding-bottom: 10px;
+  position: relative;
+}
+
+.container > h2::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 40px; height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* ── White card ─────────────────────────────────── */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  transition: box-shadow 0.28s ease, transform 0.28s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-h);
+  transform: translateY(-4px);
+}
+
+/* Image as first child of .card */
+.card > img {
+  width: 100%;
+  height: auto;
+  max-height: 380px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 3px solid var(--accent);
+}
+
+/* Direct text/heading children of .card */
+.card > h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary);
+  padding: 1.5rem 1.5rem 0;
+  margin-bottom: 0.6rem;
+}
+
+.card > h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 1.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.card > p {
+  font-size: 0.97rem;
+  color: var(--text);
+  line-height: 1.85;
+  padding: 0.4rem 1.5rem;
+}
+
+.card > p:first-child { padding-top: 1.5rem; }
+
+.card > p:last-child { padding-bottom: 1.5rem; }
+
+/* Sub-section containers inside .card */
+.card > .services,
+.card > .two-col,
+.card > .video-section,
+.card > .gallery,
+.card > .video-container,
+.card > .extra-info {
+  padding: 0 1.5rem 1.5rem;
+}
+
+/* ── card-body (team pages) ─────────────────────── */
+.card-body {
+  padding: 1.2rem 1.4rem;
+  text-align: center;
+}
+
+.card-body h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.card-body h3 {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.card-body p {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── card-content (event/program pages) ─────────── */
+.card-content {
+  padding: 1.1rem 1.3rem;
+  text-align: center;
+}
+
+.card-content h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.card-content p {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Images in othermembers + card-grid cards */
+.othermembers .card > img,
+.card-grid .card > img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-bottom: 2px solid var(--border);
+  max-height: unset;
+}
+
+/* ── Agritural: .content inside .card ──────────── */
+.card > .content {
+  padding: 1.5rem;
+  max-width: unset;
+  margin: 0;
+}
+
+.card > .content h3 {
+  color: var(--primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.card > .content p {
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.85;
+}
+
+/* ── Team: Executive section ────────────────────── */
+.executive-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+}
+
+.oth {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.executive-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 2rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: var(--ease);
+  max-width: 480px;
+  width: 100%;
+}
+
+.executive-card:hover {
+  box-shadow: var(--shadow-h);
+  transform: translateY(-5px);
+}
+
+.executive-card img {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 4px solid var(--accent);
+  object-fit: cover;
+  margin: 0 auto 1.2rem;
+  display: block;
+}
+
+.exec-img-wrap {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 4px solid var(--accent);
+  overflow: hidden;
+  margin: 0 auto 1.2rem;
+  background: var(--bg, #f8fafc);
+  flex-shrink: 0;
+}
+
+.executive-card .exec-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  border: none;
+  border-radius: 0;
+  margin: 0;
+}
+
+.executive-card h2 {
+  font-size: 1.25rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.executive-card p {
+  font-size: 0.93rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.executive-card p strong {
+  color: var(--accent);
+  font-weight: 700;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ── Team: Others / member grid ─────────────────── */
+.othermembers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+}
+
+.othermembers .card {
+  margin-bottom: 0;
+}
+
+.othermembers .card > img {
+  height: 260px;
+  object-fit: cover;
+  object-position: top;
+  max-height: unset;
+}
+
+/* ── Senior Management: Assistant Director profile grid ─ */
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+  max-width: 900px;
+  margin: 0 auto 2rem;
+}
+
+.profile {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: var(--ease);
+}
+
+.profile:hover {
+  box-shadow: var(--shadow-h);
+  transform: translateY(-5px);
+}
+
+.profile img {
+  width: 150px;
+  height: 150px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 3px solid var(--accent);
+  margin: 0 auto 1.2rem;
+  display: block;
+}
+
+.profile h2 {
+  font-size: 1.1rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.profile p {
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ── Services grid (program pages) ─────────────── */
+.services {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.4rem;
+}
+
+.service-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: var(--ease);
+}
+
+.service-card:hover {
+  box-shadow: var(--shadow-h);
+  transform: translateY(-5px);
+}
+
+.service-card img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-bottom: 2px solid var(--border);
+  display: block;
+}
+
+/* Icon variant — used when a service-card has no photo */
+.service-card > i {
+  display: block;
+  color: var(--accent);
+  font-size: 1.6rem;
+  padding: 1.2rem 1rem 0;
+}
+
+.service-card h3 {
+  color: var(--primary);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 1rem 1rem 0.4rem;
+}
+
+.service-card p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  padding: 0 1rem 1rem;
+}
+
+/* ── Two-column layout ──────────────────────────── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.two-col img {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.two-col h3 {
+  color: var(--primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+
+.two-col p {
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.85;
+}
+
+/* ── Video sections (program pages) ─────────────── */
+.video-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.video-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: var(--ease);
+}
+
+.video-card:hover {
+  box-shadow: var(--shadow-h);
+  transform: translateY(-4px);
+}
+
+.video-card iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: none;
+  display: block;
+}
+
+.video-card .content {
+  padding: 1rem 1.2rem 1.2rem;
+}
+
+.video-card .content h4 {
+  color: var(--primary);
+  font-size: 0.97rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.video-card .content p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+/* Responsive video embed (readytoeat) */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.video-container iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ── Gallery ─────────────────────────────────────── */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.gallery img {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.gallery img:hover {
+  transform: scale(1.04);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* ── .section blocks (readytoeat) ───────────────── */
+.section {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  transition: box-shadow 0.28s ease;
+}
+
+.section:hover { box-shadow: var(--shadow-h); }
+
+.section h1,
+.section h2 {
+  color: var(--primary);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-bottom: 10px;
+  position: relative;
+}
+
+.section h2::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 36px; height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.section p {
+  color: var(--text);
+  font-size: 0.97rem;
+  line-height: 1.85;
+  margin-bottom: 0.8rem;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.2rem;
+}
+
+/* ── Card grid for Green Energy (two side-by-side) ─ */
+.card-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.card-grid-2 .card { margin-bottom: 0; }
+
+/* ── Events / Social: segment blocks ────────────── */
+.segment {
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 2.5rem;
+  transition: box-shadow 0.28s ease;
+}
+
+.segment:hover { box-shadow: var(--shadow-h); }
+
+.segment-header {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0073e6 100%);
+  color: #fff;
+  padding: 1.2rem 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.segment-header h2 {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.segment-header i {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.segment > .card-grid {
+  padding: 1.5rem;
+  background: #f8fafc;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.2rem;
+}
+
+.segment .card {
+  margin-bottom: 0;
+  border-radius: 10px;
+}
+
+.segment .card > img {
+  height: 180px;
+  object-fit: cover;
+  border-bottom: 2px solid var(--border);
+  max-height: unset;
+}
+
+.segment .card-content {
+  padding: 1rem;
+  text-align: left;
+}
+
+.segment .card-content h3 {
+  font-size: 0.95rem;
+  color: var(--primary);
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+.segment .card-content p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: left;
+}
+
+/* ── Founder page ───────────────────────────────── */
+.founder-section {
+  padding: 4rem 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.founder-card {
+  background: var(--card);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.11);
+  border-radius: 18px;
+  overflow: hidden;
+  max-width: 1100px;
+  width: 100%;
+  display: flex;
+  border: 1px solid var(--border);
+  transition: box-shadow 0.3s;
+}
+
+.founder-card:hover {
+  box-shadow: 0 18px 56px rgba(0, 0, 0, 0.16);
+}
+
+.founder-card > img {
+  width: 360px;
+  flex-shrink: 0;
+  object-fit: cover;
+  object-position: top center;
+  max-height: unset;
+  border-bottom: none;
+  border-right: 3px solid var(--accent);
+}
+
+.founder-details {
+  flex: 1;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.founder-details h2 {
+  font-size: 1.9rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.founder-details p {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.9;
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.founder-details p:first-of-type {
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+}
+
+/* ── Green Energy: intro paragraph ─────────────── */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.8rem 1.5rem 0;
+  font-size: 1rem;
+  color: var(--text);
+  line-height: 1.85;
+}
+
+/* ── Green Energy: gallery section ─────────────── */
+.latest-pictures {
+  max-width: 1200px;
+  margin: 2rem auto 0;
+  padding: 0 1.5rem 2rem;
+}
+
+.picInfo {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.picInfo h2 {
+  color: var(--primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.picInfo p {
+  color: var(--muted);
+  font-size: 0.97rem;
+}
+
+.pic {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.pic img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.pic img:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+/* ══════════════════════════════════════════════════
+   Green Energy — editorial showcase (Bondhu Chula /
+   Souro Shokti). Deliberately restrained: one typeface
+   family throughout (the site's own serif), no badges,
+   no icon chips, no colour-tinted shadows — the
+   photography and the copy carry the section.
+   ══════════════════════════════════════════════════ */
+.ge2-section {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: clamp(3rem, 6vw, 5.5rem) 1.5rem clamp(2.5rem, 5vw, 4rem);
+}
+
+.ge2-intro h2 {
+  font-size: clamp(2rem, 4.2vw, 2.9rem);
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  margin-bottom: 1.4rem;
+  max-width: 14ch;
+}
+
+.ge2-lead {
+  font-size: 1.12rem;
+  color: var(--text);
+  line-height: 1.95;
+  max-width: 62ch;
+}
+
+/* ── Alternating feature rows ─────────────────────── */
+.ge2-feature {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: clamp(2.5rem, 6vw, 5rem);
+  align-items: start;
+  padding: clamp(3.5rem, 7vw, 5rem) 0;
+}
+
+.ge2-feature:not(:first-of-type) {
+  border-top: 1px solid var(--border);
+}
+
+.ge2-feature--reverse { grid-template-columns: 1fr 1.1fr; }
+.ge2-feature--reverse .ge2-feature-media { order: 2; }
+.ge2-feature--reverse .ge2-feature-text  { order: 1; }
+
+.ge2-feature-media {
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.ge2-feature-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ge2-feature-media:hover img { transform: scale(1.04); }
+
+.ge2-feature-text { padding-top: 0.4rem; }
+
+.ge2-feature-text h3 {
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.3rem;
+  letter-spacing: -0.01em;
+}
+
+.ge2-kicker {
+  font-size: 0.92rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 1.1rem;
+}
+
+.ge2-feature-text > p {
+  font-size: 1rem;
+  color: var(--text);
+  line-height: 1.85;
+  max-width: 48ch;
+  margin-bottom: 1.5rem;
+}
+
+.ge2-facts {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 2;
+  max-width: 48ch;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+
+.ge2-closing {
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-top: clamp(2.5rem, 5vw, 3.5rem);
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+  .ge2-intro h2 { max-width: none; }
+  .ge2-feature,
+  .ge2-feature--reverse {
+    grid-template-columns: 1fr;
+  }
+  .ge2-feature--reverse .ge2-feature-media,
+  .ge2-feature--reverse .ge2-feature-text {
+    order: initial;
+  }
+  .ge2-feature-media { aspect-ratio: 3 / 2; }
+}
+
+/* ── Agriculture: impact block ──────────────────── */
+.info-section {
+  background: linear-gradient(135deg, #1e3a5f, #0073e6);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.info-section h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  color: #fff;
+}
+
+.info-section p {
+  font-size: 0.97rem;
+  line-height: 1.8;
+  opacity: 0.92;
+}
+
+.gtext {
+  text-align: center;
+  color: var(--primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2rem 0 1rem;
+}
+
+/* ── Health: extra-info paragraph ───────────────── */
+.extra-info {
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.8;
+  padding: 0.5rem 1.5rem 1.5rem !important;
+}
+
+/* ── Health: ATMABISWAS Hospital section (centered) ─────── */
+.hospital-section > h2 {
+  text-align: center;
+  padding-bottom: 0.9rem;
+  position: relative;
+}
+
+.hospital-section > h2::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.hospital-section > p.lead {
+  text-align: center;
+  font-size: 1.08rem;
+  color: var(--text);
+  max-width: 640px;
+  margin: 0 auto;
+  line-height: 1.9;
+}
+
+.hospital-section .video-single-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 0 1.5rem 0.5rem;
+}
+
+.hospital-section .video-single {
+  width: 100%;
+  max-width: 640px;
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: var(--ease);
+}
+
+.hospital-section .video-single:hover {
+  box-shadow: var(--shadow-h);
+  transform: translateY(-4px);
+}
+
+.hospital-section .video-single iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: none;
+  display: block;
+}
+
+.hospital-section .extra-info {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+  border-top: 1px solid var(--border);
+  padding-top: 1.3rem !important;
+}
+
+/* ── Agriculture: support services icon grid ────── */
+.agri-support-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.agri-support-item {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  padding: 1.4rem 1.2rem;
+  transition: var(--ease);
+}
+
+.agri-support-item:hover {
+  box-shadow: var(--shadow-h);
+  transform: translateY(-5px);
+}
+
+.agri-support-item i {
+  color: var(--accent);
+  font-size: 1.6rem;
+  margin-bottom: 0.7rem;
+  display: block;
+}
+
+.agri-support-item h4 {
+  color: var(--primary);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.agri-support-item p {
+  color: var(--muted);
+  font-size: 0.87rem;
+  line-height: 1.6;
+}
+
+/* ── Agriculture: objectives checklist ──────────── */
+.agri-objectives {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.9rem 1.5rem;
+  list-style: none;
+  margin-top: 0.5rem;
+}
+
+.agri-objectives li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  color: var(--text);
+  font-size: 0.96rem;
+  line-height: 1.6;
+}
+
+.agri-objectives li i {
+  color: var(--accent);
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Agriculture: impact highlights (inside .info-section) ─ */
+.info-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+  list-style: none;
+}
+
+.info-highlights li {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ── Tag/pill list (light background — program pages) ───── */
+.tag-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  list-style: none;
+  margin-top: 0.5rem;
+}
+
+.tag-pill-list li {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.87rem;
+  font-weight: 600;
+}
+
+/* ── Agriculture: call-to-action band ───────────── */
+.agri-cta {
+  background: linear-gradient(135deg, #1e3a5f, #0073e6);
+  border-radius: var(--radius);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  color: #fff;
+  margin-bottom: 2rem;
+}
+
+.agri-cta h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.agri-cta p {
+  font-size: 0.97rem;
+  opacity: 0.92;
+  max-width: 640px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.75;
+}
+
+.agri-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+.agri-cta-btn {
+  display: inline-block;
+  background: #fff;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.7rem 1.5rem;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: var(--ease);
+}
+
+.agri-cta-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 1024px) {
+  .two-col { grid-template-columns: 1fr; }
+  .founder-card { flex-direction: column; }
+  .founder-card > img {
+    width: 100%;
+    max-height: 360px;
+    border-right: none;
+    border-bottom: 3px solid var(--accent);
+  }
+  .founder-details { padding: 2rem; }
+}
+
+@media (max-width: 768px) {
+  .page-hero h1   { font-size: 1.7rem; }
+  .page-hero      { padding: 50px 20px 42px; }
+  .container      { padding: 1.5rem 1rem 3rem; }
+  .oth            { flex-direction: column; align-items: center; }
+  .othermembers   { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  /* eve.php only — single column on mobile (higher specificity beats the
+     narrower .othermembers breakpoints below, regardless of source order) */
+  .othermembers.eve-othermembers { grid-template-columns: 1fr; }
+  .gallery, .pic  { grid-template-columns: repeat(2, 1fr); }
+  .services       { grid-template-columns: 1fr; }
+  .agri-support-grid { grid-template-columns: 1fr; }
+  .video-section  { grid-template-columns: 1fr; }
+  .segment > .card-grid { padding: 1rem; }
+  .profile-grid   { grid-template-columns: repeat(2, 1fr); max-width: 640px; }
+}
+
+@media (max-width: 480px) {
+  .page-hero h1    { font-size: 1.35rem; }
+  .gallery, .pic   { grid-template-columns: 1fr; }
+  .othermembers    { grid-template-columns: 1fr 1fr; }
+  .card-grid-2     { grid-template-columns: 1fr; }
+  .executive-card  { padding: 1.25rem; }
+  .segment > .card-grid { grid-template-columns: 1fr; }
+  .profile-grid    { grid-template-columns: 1fr; max-width: 320px; }
+}
+
+@media (max-width: 380px) {
+  /* Single column for member cards — two columns too narrow at this size */
+  .othermembers    { grid-template-columns: 1fr; }
+  /* Tighten padding on very small phones */
+  .container       { padding: 1rem 0.75rem 2.5rem; }
+  .page-hero h1    { font-size: 1.2rem; }
+  .page-hero p     { font-size: 0.9rem; }
+  .founder-details { padding: 1rem; }
+  .founder-details h2 { font-size: 1.4rem; }
+  .profile-grid    { grid-template-columns: 1fr; max-width: 280px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card-link,
+  .service-card,
+  .video-card,
+  .segment,
+  .section,
+  .executive-card,
+  .profile,
+  .ab-icon-grid li,
+  .gallery img,
+  .pic img,
+  .agri-support-item,
+  .agri-cta-btn,
+  .video-single,
+  .ge2-feature-media img,
+  .work-video-card { transition: none; transform: none !important; }
+}

@@ -1,0 +1,451 @@
+/* Contact Management Admin — Shared Styles */
+
+.cm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.cm-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.cm-subtitle {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+/* Alert Messages */
+.cm-alert {
+    padding: 0.875rem 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cm-alert-success {
+    background: #ecfdf5;
+    border: 1px solid #6ee7b7;
+    color: #065f46;
+}
+
+.cm-alert-error {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+/* Search & Filter Bar */
+.cm-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.cm-search-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.cm-search-input {
+    padding: 0.5rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    width: 220px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.cm-search-input:focus {
+    border-color: #0073e6;
+    box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.1);
+}
+
+/* Buttons */
+.btn-primary {
+    background: #0073e6;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover { background: #0056b3; }
+
+.btn-secondary {
+    background: #6b7280;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.2s;
+}
+
+.btn-secondary:hover { background: #4b5563; }
+
+.btn-danger {
+    background: #dc2626;
+    color: #fff;
+    padding: 0.375rem 0.75rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-danger:hover { background: #b91c1c; }
+
+.btn-warning {
+    background: #d97706;
+    color: #fff;
+    padding: 0.375rem 0.75rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-warning:hover { background: #b45309; }
+
+.btn-success {
+    background: #16a34a;
+    color: #fff;
+    padding: 0.375rem 0.75rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-success:hover { background: #15803d; }
+
+.btn-edit {
+    background: #0073e6;
+    color: #fff;
+    padding: 0.375rem 0.75rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: background 0.2s;
+}
+
+.btn-edit:hover { background: #0056b3; }
+
+/* Table */
+.cm-table-wrap {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.cm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.cm-table thead th {
+    background: #1e3a5f;
+    color: #fff;
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cm-table tbody td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.cm-table tbody tr:last-child td { border-bottom: none; }
+
+.cm-table tbody tr:hover { background: #f9fafb; }
+
+.cm-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.cm-actions form { margin: 0; }
+
+/* Status badge */
+.badge-active {
+    background: #dcfce7;
+    color: #166534;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Pagination */
+.cm-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-top: 1px solid #f3f4f6;
+    background: #fff;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-radius: 0 0 10px 10px;
+}
+
+.cm-pagination-info {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.cm-pagination-links {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.cm-page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: #374151;
+    transition: all 0.2s;
+}
+
+.cm-page-link:hover,
+.cm-page-link.active {
+    background: #0073e6;
+    border-color: #0073e6;
+    color: #fff;
+}
+
+.cm-page-link.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Form Card */
+.cm-form-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    padding: 2rem;
+    max-width: 700px;
+}
+
+.cm-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.cm-form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.4rem;
+}
+
+.cm-form-group label .required {
+    color: #dc2626;
+    margin-left: 2px;
+}
+
+.cm-form-control {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #1f2937;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+
+.cm-form-control:focus {
+    border-color: #0073e6;
+    box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.1);
+}
+
+.cm-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.cm-form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* Empty state */
+.cm-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #9ca3af;
+}
+
+.cm-empty i {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+/* Filter select */
+.cm-filter-select {
+    padding: 0.5rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.cm-filter-select:focus {
+    border-color: #0073e6;
+}
+
+/* Form card — blue top accent */
+.cm-form-card {
+    border-top: 3px solid #0073e6;
+}
+
+/* Form section headers */
+.cm-form-section {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9ca3af;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 0.5rem;
+    margin: 1.75rem 0 1.1rem;
+}
+
+.cm-form-section:first-child {
+    margin-top: 0;
+}
+
+/* Field hint text */
+.cm-form-hint {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    margin-top: 0.3rem;
+    line-height: 1.4;
+}
+
+/* Inline "add new" link inside a field hint */
+.cm-add-link {
+    color: #0073e6;
+    text-decoration: none;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cm-add-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Info box (used on list pages) */
+.cm-info-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.cm-info-box i {
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+/* Branch count badge on divisions table */
+.cm-branch-count {
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* Responsive form grid */
+@media (max-width: 640px) {
+    .cm-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .cm-form-card {
+        padding: 1.25rem;
+    }
+
+    .cm-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "region": "Chuadanga Region",
+    "designation": "Regional Manager",
+    "mobile": "01725-683174",
+    "address": "Cinama Hall Para, Chuadanga"
+  },
+  {
+    "id": 2,
+    "region": "Dingadah Region",
+    "designation": "Regional Manager",
+    "mobile": "01958-573119",
+    "address": "Dingadah Khejura, Chuadanga Sadar, Chuadanga"
+  },
+  {
+    "id": 3,
+    "region": "AsmanKhali Region",
+    "designation": "Regional Manager",
+    "mobile": "01725-186276",
+    "address": "AsmanKhali Bazar, AsmanKhali, Alamdanga, Chuadanga"
+  },
+  {
+    "id": 4,
+    "region": "Alamdanga Region",
+    "designation": "Regional Manager",
+    "mobile": "01958-573194",
+    "address": "Rail Station Para, Alamdanga, Chuadanga"
+  },
+  {
+    "id": 5,
+    "region": "Kushtia Region",
+    "designation": "Regional Manager",
+    "mobile": "01958-573194",
+    "address": "Stadium Para, Kushtia Sadar, Kushtia"
+  },
+  {
+    "id": 6,
+    "region": "Jibonnagar Region",
+    "designation": "Regional Manager",
+    "mobile": "01725-683174",
+    "address": "Jibonnagar Eidga Para, Jibonnagar, Chuadanga"
+  },
+  {
+    "id": 7,
+    "region": "Jhikorgasa Region",
+    "designation": "Regional Manager",
+    "mobile": "01721-505833",
+    "address": "Jhikorgasa Pazila Mor, Jhikorgasa, Jessore"
+  },
+  {
+    "id": 8,
+    "region": "Chowgasha Region",
+    "designation": "Regional Manager",
+    "mobile": "01722-603003",
+    "address": "Isapur Dewan Para, Chowgasha, Jessore"
+  },
+  {
+    "id": 9,
+    "region": "Pangsha Region",
+    "designation": "Regional Manager",
+    "mobile": "01958-573119",
+    "address": "Dotto Para, Pangsha, Rajbari"
+  }
+]

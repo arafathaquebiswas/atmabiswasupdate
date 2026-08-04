@@ -1,0 +1,261 @@
+22.9821008,87.3132674
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0038
+ATMABISWAS-
+Bakura Branch
+01946584658
+Poschim Para, Bakura, Jessore Sadar, Jessore
+Jessore 
+Khulna
+
+
+22.9821008,87.3132674
+
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0035
+ATMABISWAS-
+Chanchra Branch
+01725186276
+Chanchra Bazar Para, Jessore Sadar, Jessore
+Jessore
+Khulna
+
+
+22.9821008,87.3132674
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0037
+ATMABISWAS-
+Chutipur Branch
+01939208897
+Chutipur Bazar, Ganganandopur, Jhikorgasa, Jessore
+Jessore
+Khulna
+
+
+22.9821008,87.3132674
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0009
+ATMABISWAS-
+Kotchadpur Branch
+01939208897
+Chutipur Bazar, Ganganandopur, Jhikorgasa, Jessore
+Jessore
+Khulna
+
+
+23.651591,88.6709115
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0009
+ATMABISWAS-
+Main Branch
+01959573095
+Cinema Hall Para, Chuadanga
+Chuadanga
+Khulna
+
+
+
+
+23.7272751,88.4522133
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0001
+ATMABISWAS-
+Alukdia Branch
+01958573058
+Alukdia Bazar, Alukdia, Chuadanga
+Chuadanga
+Khulna
+
+
+23.7272751,88.4522133
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0016
+ATMABISWAS-
+Gokulkhali
+Branch
+01958573067
+Gokulkhali Bazar, Gokulkhali, Alamdanga, Chuadanga
+Chuadanga
+Khulna
+
+
+
+
+23.758226,88.3688892
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0013
+ATMABISWAS-
+Asmankhali
+Branch
+01935508310
+Asmankhali Bazar, Asmankhali, Alamdanga, Chuadanga
+Chuadanga
+Khulna
+
+
+23.758226,88.3688892
+
+
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0018
+ATMABISWAS-
+Bamundi
+Branch
+01753252065
+Bamundi Bazar, Bamundi, Gangni, Meherpur
+Meherpur
+Khulna
+
+
+23.9031805,88.6817425
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0023
+ATMABISWAS-
+Amla
+Branch
+01914201810
+Khamar Para, Amla, Mirpur, Kushtia
+Kushtia
+Khulna
+
+
+
+23.8094222,88.6854423
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0007
+ATMABISWAS-
+Alamdanga
+Branch
+01958573038
+Rail Station Para, Alamdanga, Chuadanga
+Chuadanga
+Khulna
+
+
+
+
+23.7885721,88.9100969
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0010
+ATMABISWAS-
+Patikabari
+Branch
+01723295031
+Master Para, Patikabari, Kushtia Sadar, Kushtia
+Kushtia
+Khulna
+
+
+
+
+23.7885721,88.9100969
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0032
+ATMABISWAS-
+Jhaudia
+Branch
+01787555674
+Jhaudia Shahimoszid Para, Jhaudia, EB, Kushtia
+Kushtia
+Khulna
+
+
+23.7767715,88.728692
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0034
+ATMABISWAS-
+Sheikhpara
+Branch
+01799414835
+Mul Tree Beni, Sailokupa, Jhenaidah
+Jhenaidah
+Khulna
+
+
+23.640763,88.8439262
+Code: 
+ Branch name:
+Mobile
+Address:
+District 
+Division
+0000
+ATMABISWAS-
+Head Office  
+Branch
++880 1714-812943
+Asma Place,Chuadanga
+Chuadanga
+Khulna
+
+

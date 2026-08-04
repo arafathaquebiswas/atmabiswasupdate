@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="canonical" href="https://atmabiswas.org/" />
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cool Profile Cards</title>
+    <link rel="stylesheet" href="developers.css">
+    <style>
+        :root {
+            --primary-color: #e63946;
+            /* Deep Red */
+            --secondary-color: #1d3557;
+            /* Dark Blue */
+            --text-color: #f1faee;
+            --card-bg: #457b9d;
+            /* Steel Blue */
+        }
+
+        .light-mode {
+            --primary-color: #ffb703;
+            /* Gold */
+            --secondary-color: #f4f4f4;
+            --text-color: #1d3557;
+            --card-bg: #a8dadc;
+        }
+
+        body {
+            background: var(--secondary-color);
+            color: var(--text-color);
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            border: 2px solid var(--primary-color);
+            color: var(--text-color);
+        }
+
+        .profile-info h2 {
+            color: var(--primary-color);
+        }
+
+        .social-links a {
+            color: var(--primary-color);
+        }
+
+        .social-links a:hover {
+            color: #f77f00;
+            /* Orange Accent */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Meet Our Developers</h1>
+    <div class="profiles">
+        <div class="profile-card">
+            <div class="profile-inner">
+                <div class="profile-front">
+                    <div class="profile-image">
+                        <img src="https://via.placeholder.com/280x180" loading="lazy" alt="Developer 1">
+                    </div>
+                    <div class="profile-info">
+                        <h2>John Doe</h2>
+                        <p>Backend Developer</p>
+                        <div class="skills">PHP | MySQL | Node.js</div>
+                    </div>
+                </div>
+                <div class="profile-back">
+                    <div class="additional-info">
+                        <p>Expert in scalable backend systems and API design.</p>
+                        <div class="social-links">
+                            <a href="#">🔗 LinkedIn</a>
+                            <a href="#">🐦 Twitter</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="profile-card">
+            <div class="profile-inner">
+                <div class="profile-front">
+                    <div class="profile-image">
+                        <img src="https://via.placeholder.com/280x180" loading="lazy" alt="Developer 2">
+                    </div>
+                    <div class="profile-info">
+                        <h2>Mark Smith</h2>
+                        <p>Frontend Developer</p>
+                        <div class="skills">React | Tailwind | JavaScript</div>
+                    </div>
+                </div>
+                <div class="profile-back">
+                    <div class="additional-info">
+                        <p>Specialist in UI/UX design and modern web frameworks.</p>
+                        <div class="social-links">
+                            <a href="#">🔗 LinkedIn</a>
+                            <a href="#">🐦 Twitter</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("themeToggle").addEventListener("click", function () {
+            document.body.classList.toggle("light-mode");
+        });
+
+        document.querySelectorAll(".profile-card").forEach(card => {
+            card.addEventListener("click", function () {
+                this.querySelector(".profile-inner").classList.toggle("flipped");
+            });
+        });
+    </script>
+</body>
+
+</html>

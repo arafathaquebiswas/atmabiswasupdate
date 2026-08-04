@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ATMABISWAS Blog Editor</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card editor-section">
+        <h1>ATMABISWAS Blog Editor</h1>
+        <input type="text" id="blogTitle" placeholder="Blog Title" />
+        <select id="blogCategory">
+          <option value="">Select Category</option>
+          <option value="tech">Technology</option>
+          <option value="life">Lifestyle</option>
+          <option value="travel">Travel</option>
+        </select>
+
+        <!-- Advanced Toolbar -->
+        <div class="toolbar">
+          <!-- Paragraph/Heading Dropdown -->
+          <select onchange="changeBlockFormat(this.value)">
+            <option value="p">📝 Normal Text</option>
+            <option value="h1">Heading 1</option>
+            <option value="h2">Heading 2</option>
+            <option value="h3">Heading 3</option>
+            <option value="blockquote">Quote</option>
+          </select>
+
+          <!-- Font Family Dropdown -->
+          <select onchange="changeFont(this.value)">
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Verdana">Verdana</option>
+          </select>
+
+          <!-- Font Size Dropdown -->
+          <select onchange="changeFontSize(this.value)">
+            <option value="1">Small</option>
+            <option value="2">Medium</option>
+            <option value="3" selected>Large</option>
+            <option value="4">Extra Large</option>
+          </select>
+
+          <!-- Bold, Italic, Underline -->
+          <button onclick="formatText('bold')">
+            <i class="fas fa-bold"></i>
+          </button>
+          <button onclick="formatText('italic')">
+            <i class="fas fa-italic"></i>
+          </button>
+          <button onclick="formatText('underline')">
+            <i class="fas fa-underline"></i>
+          </button>
+
+          <!-- Text Color -->
+          <input
+            type="color"
+            onchange="changeColor(this.value)"
+            title="Text Color"
+          />
+
+          <!-- Text Alignment -->
+          <button onclick="formatText('justifyLeft')">
+            <i class="fas fa-align-left"></i>
+          </button>
+          <button onclick="formatText('justifyCenter')">
+            <i class="fas fa-align-center"></i>
+          </button>
+          <button onclick="formatText('justifyRight')">
+            <i class="fas fa-align-right"></i>
+          </button>
+
+          <!-- Lists -->
+          <button onclick="formatText('insertUnorderedList')">
+            <i class="fas fa-list-ul"></i>
+          </button>
+          <button onclick="formatText('insertOrderedList')">
+            <i class="fas fa-list-ol"></i>
+          </button>
+
+          <!-- Indent/Outdent -->
+          <button onclick="formatText('indent')">
+            <i class="fas fa-indent"></i>
+          </button>
+          <button onclick="formatText('outdent')">
+            <i class="fas fa-outdent"></i>
+          </button>
+
+          <!-- Link -->
+          <button onclick="createLink()"><i class="fas fa-link"></i></button>
+
+          <!-- Upload Image -->
+          <button onclick="triggerUpload()">
+            <i class="fas fa-image"></i>
+          </button>
+          <input type="file" id="imageUpload" hidden accept="image/*" />
+        </div>
+
+        <!-- Editor Area -->
+        <div
+          id="editor"
+          contenteditable="true"
+          ondragover="handleDragOver(event)"
+          ondrop="handleDrop(event)"
+          ondragleave="handleDragLeave(event)"
+          placeholder="Start writing your post..."
+        ></div>
+
+        <!-- Publish Button -->
+        <button class="publish-btn" onclick="savePost()">
+          <i class="fas fa-paper-plane"></i> Publish Post
+        </button>
+      </div>
+    </div>
+
+    <script>
+      function formatText(command) {
+        document.execCommand(command, false, null);
+        document.getElementById("editor").focus();
+      }
+
+      function changeColor(color) {
+        document.execCommand("foreColor", false, color);
+      }
+
+      function changeBlockFormat(tag) {
+        document.execCommand("formatBlock", false, tag);
+      }
+
+      function changeFont(font) {
+        document.execCommand("fontName", false, font);
+      }
+
+      function changeFontSize(size) {
+        document.execCommand("fontSize", false, size);
+      }
+
+      function createLink() {
+        const url = prompt("Enter the URL:");
+        if (url) document.execCommand("createLink", false, url);
+      }
+
+      function triggerUpload() {
+        document.getElementById("imageUpload").click();
+      }
+
+      document
+        .getElementById("imageUpload")
+        .addEventListener("change", function (e) {
+          handleImage(e.target.files[0]);
+        });
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        e.target.classList.add("drag-over");
+      }
+
+      function handleDragLeave(e) {
+        e.target.classList.remove("drag-over");
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        e.target.classList.remove("drag-over");
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) handleImage(file);
+      }
+
+      function handleImage(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.createElement("img");
+          img.src = e.target.result;
+          img.style.maxWidth = "100%";
+          document.getElementById("editor").appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function savePost() {
+        const title = document.getElementById("blogTitle").value;
+        const category = document.getElementById("blogCategory").value;
+        const content = document.getElementById("editor").innerHTML;
+        if (!title || !category || !content) {
+          alert("Please fill all fields!");
+          return;
+        }
+        const post = {
+          id: Date.now(),
+          title,
+          category,
+          content,
+          date: new Date().toLocaleString(),
+        };
+        let posts = JSON.parse(localStorage.getItem("posts") || "[]");
+        posts.unshift(post);
+        localStorage.setItem("posts", JSON.stringify(posts));
+        displayPosts();
+        clearEditor();
+      }
+
+      function displayPosts() {
+        const posts = JSON.parse(localStorage.getItem("posts") || "[]");
+        const preview = document.getElementById("postPreview");
+        preview.innerHTML = "";
+        posts.forEach((post) => {
+          const card = document.createElement("div");
+          card.className = "post-card";
+          card.innerHTML = `
+            <h3>${post.title}</h3>
+            <div class="meta">
+              <span style="background: #f0f0f0; padding: 0.3rem 0.6rem; border-radius: 5px;">
+                ${post.category}
+              </span>
+              <span>${post.date}</span>
+            </div>
+            <div>${post.content}</div>
+            <button onclick="deletePost(${post.id})">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          `;
+          preview.appendChild(card);
+        });
+      }
+
+      function deletePost(id) {
+        let posts = JSON.parse(localStorage.getItem("posts") || "[]");
+        posts = posts.filter((post) => post.id !== id);
+        localStorage.setItem("posts", JSON.stringify(posts));
+        displayPosts();
+      }
+
+      function clearEditor() {
+        document.getElementById("blogTitle").value = "";
+        document.getElementById("blogCategory").value = "";
+        document.getElementById("editor").innerHTML = "";
+      }
+
+      displayPosts();
+    </script>
+  </body>
+</html>

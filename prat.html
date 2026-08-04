@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATMABISWAS - Partners</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .Partnercontainer {
+            background-color: #ffffff;
+            width: 100vw;
+            height: 80vh;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 1rem;
+            font-size: 2rem;
+            color: #2c3e50;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 40%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .carousel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.5s ease;
+        }
+
+        .carousel img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px solid #2c3e50;
+            cursor: pointer;
+            transition: transform 0.5s ease, border-color 0.3s;
+            margin: 0 1rem;
+            object-fit: cover;
+        }
+
+        .carousel img.selected {
+            border-color: #f39c12;
+            transform: scale(1.1);
+        }
+
+        .content {
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            width: 100vw;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .content .logo-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1a252f;
+            border-right: 2px solid white;
+        }
+
+        .content .logo-section img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px solid #e84148;
+        }
+
+        .content .info-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .content h2 {
+            margin: 0 0 10px;
+            color: floralwhite;
+        }
+
+        .content p {
+            display: block;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: floralwhite;
+        }
+
+        .explore-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: 2px solid white;
+            color: white;
+            background-color: transparent;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: background-color 0.3s, color 0.3s;
+            align-self: start;
+        }
+
+        .explore-button:hover {
+            background-color: white;
+            color: #2c3e50;
+        }
+
+        .navigation {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: #2c3e50;
+            cursor: pointer;
+            user-select: none;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .navigation:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .prev {
+            left: 2rem;
+        }
+
+        .next {
+            right: 2rem;
+        }
+
+        .navigation.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        .info-section{
+            padding-bottom:1rem ;
+        }
+
+        /* Fixed mobile description visibility */
+        @media (max-width: 768px) {
+            .Partnercontainer {
+                height: auto;
+                /*padding-bottom: 2rem;*/
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                margin-top: 1rem;
+            }
+
+            .carousel-container {
+                height: 150px;
+            }
+
+            .carousel img {
+                width: 80px;
+                height: 80px;
+                margin: 0 0.5rem;
+            }
+
+            .carousel img.selected {
+                transform: scale(1.2);
+            }
+
+            .content {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .content .logo-section {
+                border-right: none;
+                border-bottom: 2px solid white;
+                padding: 20px 0;
+            }
+
+            .content .info-section {
+                padding: 10px;
+            }
+
+            .content .info-section .mobile-hidden {
+                display: none;
+            }
+
+            .explore-button {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .navigation {
+                font-size: 1.5rem;
+                width: 35px;
+                height: 35px;
+            }
+            
+            .prev {
+                left: 0.5rem;
+            }
+            
+            .next {
+                right: 0.5rem;
+            }
+              .explore-button{
+                padding-bottom: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .carousel img {
+                width: 90px;
+                height: 90px;
+                margin: 0 0.4rem;
+            }
+
+            .carousel img.selected {
+                transform: scale(1.1);
+            }
+            
+            .content .logo-section img {
+                width: 120px;
+                height: 120px;
+            }
+            .explore-button{
+                padding-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="Partnercontainer">
+        <h1>ATMABISWAS - Partners</h1>
+
+        <div class="carousel-container">
+            <div class="navigation prev">&#8249;</div>
+            <div class="carousel">
+                <img src="partner/pksf.png" alt="PKSF">
+                <img src="partner/sonali.png" alt="Sonali Bank">
+                <img src="partner/agroni.png" alt="Agroni Bank">
+                <img src="partner/shahjalal.png" alt="Shahjalal Bank">
+                <img src="partner/smc.png" alt="SMC">
+                <img src="partner/sbac.png" alt="SBAC Bank">
+                <img src="partner/mercantile.png" alt="Mercantile Bank">
+                <img src="partner/midland.png" alt="Midland Bank">
+                <img src="partner/fsib.png" alt="FSIB">
+                <img src="partner/prime.png" alt="Prime Bank">
+                <img src="partner/jamuna.png" alt="Jamuna Bank">
+                <img src="partner/trust.png" alt="Trust Bank">
+                <img src="partner/ncc.png" alt="NCC Bank">
+                <img src="partner/southeast.png" alt="Southeast Bank">
+                <img src="partner/uttara.png" alt="Uttara Bank">
+                <img src="partner/idcol.png" alt="IDCOL">
+            </div>
+            <div class="navigation next">&#8250;</div>
+        </div>
+
+        <div class="content">
+            <div class="logo-section">
+                <img src="partner/pksf.png" alt="Selected Club Logo" id="club-logo">
+            </div>
+            <div class="info-section">
+                <h2 id="club-title">Palli Karma-Sahayak Foundation (PKSF)</h2>
+                <!-- Added mobile-hidden class to description -->
+                <p class="club-description mobile-hidden" id="club-description">
+                    The Palli Karma-Sahayak Foundation (PKSF) is a national public sector direct access entity working as a sustainable platform for government to nongovernment organisation collaboration based in Bangladesh, with a mission of sustainable poverty eradication in Bangladesh by undertaking multidimensional human-centered development programmes.
+                </p>
+                <button class="explore-button">Explore Partnership</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const carousel = document.querySelector('.carousel');
+    const prev = document.querySelector('.prev');
+    const next = document.querySelector('.next');
+    const images = Array.from(document.querySelectorAll('.carousel img'));
+    const title = document.getElementById('club-title');
+    const description = document.getElementById('club-description');
+    const logo = document.getElementById('club-logo');
+    const exploreButton = document.querySelector('.explore-button');
+
+    const activities = [
+        {
+            "title": "Palli Karma-Sahayak Foundation (PKSF)",
+            "description": "The Palli Karma-Sahayak Foundation (PKSF) is a national public sector direct access entity working as a sustainable platform for government to nongovernment organisation collaboration based in Bangladesh, with a mission of sustainable poverty eradication in Bangladesh by undertaking multidimensional human-centered development programmes.",
+            "logo": "partner/pksf.png",
+            "url": "https://pksf.org.bd/"
+        },
+        {
+            "title": "Sonali Bank PLC (SBPLC) ",
+            "description": "Sonali Bank PLC (SBPLC) is a trusted partner, committed to dependable banking services and financial solutions. Our collaboration ensures secure transactions, efficient service, and reliable support. Together, we foster growth, drive innovation, and deliver seamless banking experiences you can trust.",
+            "logo": "partner/sonali.png",
+            "url": "https://www.sonalibank.com.bd/"
+        },
+        {
+            "title": "AgroniBank PLC",
+            "description": "Proudly partnered with AgroniBank to empower farmers and agribusinesses with seamless financial solutions. Together, we support growth, innovation, and sustainability in agriculture. Access tailored loans, secure investments, and expert financial guidance for a prosperous future.",
+            "logo": "partner/agroni.png",
+            "url": "https://www.agranibank.org/"
+        },
+        {
+            "title": "Shahjalal Bank PLC",
+            "description": "Shahjalal Bank PLC is a leading private commercial bank in Bangladesh. It offers a wide range of financial products and services to individuals, businesses, and institutions. Shahjalal Bank PLC is committed to providing innovative banking solutions and excellent customer service.",
+            "logo": "partner/shahjalal.png",
+            "url": "https://sjiblbd.com/"
+        },
+        {
+            "title": "SMC ",
+            "description": "We are proud to partner with SMC to drive innovation and excellence. Together, we are committed to delivering high-quality solutions, enhancing efficiency, and ensuring customer satisfaction. Our collaboration empowers businesses with cutting-edge technology and seamless integration. Join us in shaping the future!",
+            "logo":"partner/smc.png",
+            "url": "https://www.smc-bd.org/"
+        },
+        {
+            "title": "SBAC Bank PLC",
+            "description": "Proudly partnered with SBAC Bank PLC, we strive to provide seamless financial solutions tailored to your needs. Together, we ensure secure transactions, innovative banking services, and a commitment to excellence. Our collaboration empowers businesses and individuals with trusted financial support. Experience the future of banking with us. ",
+            "logo": "partner/sbac.png",
+            "url": "https://www.sbacbank.com/"
+        },
+        {
+            "title": "Mercantile  Bank PLC ",
+            "description": "We are proud to partner with Mercantile Bank PLC, a trusted leader in banking and financial services. Together, we strive to deliver seamless and secure financial solutions, empowering businesses and individuals to achieve their goals. Our collaboration ensures innovation, reliability, and excellence in every transaction.",
+            "logo": "partner/mercantile.png",
+            "url": "https://www.mercantilebank.com/"
+        },
+        {
+            "title": "Midland Bank PLC",
+            "description": "Midland Bank PLC is our trusted financial partner, providing secure and innovative banking solutions. With their expertise, we ensure seamless transactions and reliable financial support for our clients. Together, we strive for excellence, growth, and customer satisfaction. Partnering with Midline Bank PLC means stability, trust, and success.",
+            "logo": "partner/midland.png",
+            "url": "https://www.midlandbankbd.net/"
+        },
+        {
+            "title": "First Security Islami Bank PLC",
+            "description": "First Security Islami Bank PLC Bank PLC is our valued partner, providing trusted and innovative financial solutions. Through this collaboration, we ensure secure transactions, seamless banking services, and enhanced financial support for our clients. Together, we are committed to growth, efficiency, and customer satisfaction. Experience the strength of a reliable financial partnership with us.",
+            "logo": "partner/fsib.png",
+            "url": "https://fsibplc.com/"
+        },
+        {
+            "title": "Prime Bank PLC",
+            "description": "Prime Bank PLC is our trusted partner, bringing reliability and excellence in financial services. Through this partnership, we ensure secure transactions, innovative banking solutions, and seamless financial support for our clients. Together, we strive for growth, efficiency, and customer satisfaction. Experience the power of strong financial collaboration with us.",
+            "logo": "partner/prime.png",
+            "url": "https://www.primebank.com.bd/"
+        },
+        {
+            "title": "Jamuna Bank PLC",
+            "description": "Jamuna Bank PLC is a valued partner, committed to providing exceptional banking services and financial solutions. Our collaboration ensures top-notch security, seamless transactions, and reliable support for all our clients. Together, we focus on empowering growth, fostering innovation, and delivering the best in banking experiences. Trust in our partnership with Jamuna Bank for all your financial needs.",
+            "logo": "partner/jamuna.png",
+            "url": "https://jamunabankbd.com/"
+        },
+        {
+            "title": "Trust Bank PLC ",
+            "description": "Trust Bank PLC is a valued partner, committed to delivering top-tier financial services and support. With our collaboration, we offer trusted banking solutions that ensure secure, efficient, and seamless experiences for our customers. Together, we focus on empowering financial growth and building lasting relationships. Join us in benefiting from a partnership that prioritizes trust, reliability, and innovation.",
+            "logo": "partner/trust.png",
+            "url": "https://eservice.tblbd.com/website/BranchList"
+        },
+        {
+            "title": "NCC Bank PLC",
+            "description": "NCC Bank is a key partner, known for its dedication to customer satisfaction and innovative banking solutions. Through our partnership, we provide reliable and secure financial services that help drive success and growth. Together, we work towards offering seamless banking experiences, ensuring that your financial needs are met with excellence. Trust in a partnership built on strength, integrity, and forward-thinking solutions.",
+            "logo": "partner/ncc.png",
+            "url": "https://www.nccbank.com.bd/"
+        },
+        {
+            "title": "Southeast Bank PLC",
+            "description": "Southeast Bank PLC is a trusted partner, offering innovative financial solutions designed to meet the needs of our clients. Our collaboration ensures seamless, secure banking experiences with a focus on reliability and customer satisfaction. Together, we strive to empower financial growth and deliver exceptional service. With Southeast Bank by our side, we are committed to providing top-tier support for your financial journey.",
+            "logo": "partner/southeast.png",
+            "url": "https://www.southeastbank.com.bd/"
+        },
+        {
+            "title": "Uttara Bank PLC",
+            "description": "Uttara Bank PLC is a valued partner, renowned for its strong financial services and customer-centric approach. Through our partnership, we offer secure, reliable banking solutions tailored to meet your needs. Together, we are committed to providing seamless and efficient financial experiences, supporting your growth and success. Trust in our collaboration to deliver exceptional service and innovative banking solutions.",
+            "logo": "partner/uttara.png",
+            "url": "https://www.uttarabank-bd.com/"
+        },
+        {
+            "title": "IDCOL",
+            "description": "IDCOL (Infrastructure Development Company Limited) is a strategic partner, committed to financing sustainable infrastructure and driving impactful growth. Through our collaboration, we foster innovation, support key sectors, and deliver solutions that advance long-term development. Trust in IDCOL's expertise to build a brighter, more sustainable future.",
+            "logo": "partner/idcol.png",
+            "url": "https://idcol.org/"
+        },
+    ]
+
+    let currentIndex = 0;
+    let autoChangeInterval;
+
+    function updateCarousel() {
+        // Calculate actual image width including margins
+        const img = images[0];
+        const style = window.getComputedStyle(img);
+        const imgWidth = img.offsetWidth + 
+                         parseInt(style.marginLeft) + 
+                         parseInt(style.marginRight);
+
+        // Use dynamic width in calculation
+        const offset = -currentIndex * imgWidth;
+        carousel.style.transform = `translateX(calc(50% + ${offset}px))`;
+
+        images.forEach((img, index) => {
+            img.classList.toggle('selected', index === currentIndex);
+        });
+
+        prev.classList.toggle('disabled', currentIndex === 0);
+        next.classList.toggle('disabled', currentIndex === images.length - 1);
+    }
+
+    function updateContent(index) {
+        const activity = activities[index];
+        title.textContent = activity.title;
+        description.textContent = activity.description;
+        logo.src = activity.logo;
+        
+        // Make button work
+        exploreButton.onclick = function() {
+            if (activity.url && activity.url !== "#") {
+                window.open(activity.url, '_blank');
+            }
+        };
+    }
+
+    function moveToIndex(index) {
+        currentIndex = index;
+        updateContent(currentIndex);
+        updateCarousel();
+        resetAutoChange();
+    }
+
+    prev.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            moveToIndex(currentIndex - 1);
+        }
+    });
+
+    next.addEventListener('click', () => {
+        if (currentIndex < images.length - 1) {
+            moveToIndex(currentIndex + 1);
+        }
+    });
+
+    function autoChange() {
+        currentIndex = (currentIndex + 1) % activities.length;
+        updateContent(currentIndex);
+        updateCarousel();
+    }
+
+    function startAutoChange() {
+        autoChangeInterval = setInterval(autoChange, 3000);
+    }
+
+    function resetAutoChange() {
+        clearInterval(autoChangeInterval);
+        startAutoChange();
+    }
+
+    // Add click event to images
+    images.forEach((img, index) => {
+        img.addEventListener('click', () => {
+            moveToIndex(index);
+        });
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', updateCarousel);
+
+    // Initialize
+    updateCarousel();
+    startAutoChange();
+});
+    </script>
+</body>
+</html>

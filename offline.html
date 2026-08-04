@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're Offline &ndash; ATMABISWAS</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="/LOGO/NGO_logo_monogram.png">
+<style>
+/* Fully self-contained — this page must render with ZERO network access,
+   so no external stylesheets, fonts, or icon libraries are loaded here. */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: "Times New Roman", Times, serif;
+    background: linear-gradient(135deg, #1e3a5f 0%, #0073e6 50%, #1e3a5f 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 14s ease infinite;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+@keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(15, 30, 60, 0.28);
+    padding: 2.75rem 2.25rem 2.25rem;
+    text-align: center;
+    animation: cardIn .6s ease both;
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1e3a5f;
+    letter-spacing: -.01em;
+    margin-bottom: 1.75rem;
+}
+
+.brand img { width: 28px; height: 28px; border-radius: 6px; }
+.brand span { color: #0073e6; }
+
+.icon-wrap {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1.5rem;
+}
+
+.icon-glow {
+    position: absolute;
+    inset: -14px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,115,230,.35), transparent 70%);
+    animation: pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1);   opacity: .65; }
+    50%      { transform: scale(1.18); opacity: 1; }
+}
+
+.icon-badge {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1e3a5f, #0073e6);
+    box-shadow: 0 12px 30px rgba(0, 115, 230, .38);
+    animation: floaty 4s ease-in-out infinite;
+}
+
+@keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-9px); }
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e3a5f;
+    margin-bottom: .75rem;
+}
+
+.message {
+    font-size: .98rem;
+    color: #475569;
+    line-height: 1.65;
+    max-width: 380px;
+    margin: 0 auto 1.5rem;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .82rem;
+    font-weight: 600;
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 20px;
+    padding: .35rem .9rem;
+    margin-bottom: 1.5rem;
+}
+
+.status .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #dc2626;
+    animation: blink 1.4s ease-in-out infinite;
+}
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+.status.online {
+    color: #15803d;
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+.status.online .dot { background: #16a34a; animation: none; }
+
+.actions { display: flex; flex-wrap: wrap; gap: .85rem; justify-content: center; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .75rem 1.5rem;
+    border-radius: 9px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: .92rem;
+    text-decoration: none;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background: linear-gradient(135deg, #1e3a5f, #0073e6);
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(0, 115, 230, .32);
+    transition: transform .15s ease, box-shadow .2s ease;
+}
+
+.btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0, 115, 230, .42); }
+.btn:focus-visible { outline: 2px solid #0073e6; outline-offset: 2px; }
+
+@media (max-width: 480px) {
+    .card { padding: 2.25rem 1.5rem 1.75rem; }
+    .title { font-size: 1.25rem; }
+    .btn { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body, .card, .icon-badge, .icon-glow, .status .dot { animation: none !important; }
+}
+
+@media (prefers-color-scheme: dark) {
+    .card { background: rgba(17, 24, 39, 0.9); border-color: rgba(255,255,255,0.08); }
+    .brand, .title { color: #e2e8f0; }
+    .message { color: #cbd5e1; }
+}
+</style>
+</head>
+<body>
+    <div class="card">
+        <p class="brand">
+            <img src="/LOGO/NGO_logo_monogram.png" alt="" width="28" height="28"
+                 onerror="this.remove()">
+            ATMA<span>BISWAS</span>
+        </p>
+
+        <div class="icon-wrap">
+            <span class="icon-glow" aria-hidden="true"></span>
+            <span class="icon-badge" aria-hidden="true">
+                <!-- inline SVG "wifi off" icon — no external icon font needed -->
+                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M3 3L21 21" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M5 12.5C7.5 10.2 10.6 9 12 9c1 0 2.1.22 3.2.7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+                    <path d="M1.5 8.5C4.6 5.7 8.2 4.2 12 4.2c3.8 0 7.4 1.5 10.5 4.3" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+                    <path d="M8.3 16C9.3 15.1 10.6 14.6 12 14.6c1 0 2 .27 2.85.77" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+                    <circle cx="12" cy="19.3" r="1.4" fill="#ffffff"/>
+                </svg>
+            </span>
+        </div>
+
+        <h1 class="title">You're Offline</h1>
+        <p class="message">
+            It looks like you've lost your internet connection. Check your Wi-Fi
+            or mobile data and try again — this page will reload automatically
+            once you're back online.
+        </p>
+
+        <p class="status" id="netStatus">
+            <span class="dot" aria-hidden="true"></span>
+            <span id="netStatusText">No connection detected</span>
+        </p>
+
+        <div class="actions">
+            <button type="button" class="btn" onclick="window.location.reload()">
+                Try Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        var statusEl = document.getElementById('netStatus');
+        var statusText = document.getElementById('netStatusText');
+
+        function setOnline() {
+            statusEl.classList.add('online');
+            statusText.textContent = 'Back online — reloading…';
+            setTimeout(function () { window.location.reload(); }, 800);
+        }
+
+        window.addEventListener('online', setOnline);
+        if (navigator.onLine) setOnline();
+    }());
+    </script>
+</body>
+</html>

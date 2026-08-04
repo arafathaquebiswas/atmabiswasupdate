@@ -1,0 +1,118 @@
+body {
+  background: linear-gradient(to right, #6a11cb, #2575fc);
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.success-container {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+}
+
+.checkmark-circle {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+
+.background {
+  background: white;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+}
+
+.checkmark {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  width: 50px;
+  height: 25px;
+  border-left: 5px solid #4caf50;
+  border-bottom: 5px solid #4caf50;
+  transform: rotate(-45deg);
+  animation: draw 0.5s ease-out forwards;
+}
+
+@keyframes draw {
+  from {
+    height: 0;
+    width: 0;
+  }
+  to {
+    height: 25px;
+    width: 50px;
+  }
+}
+
+h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+button {
+  background: #ffffff;
+  color: #2575fc;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #e6e6e6;
+}
+
+/* 📱 Responsive for mobile devices */
+@media (max-width: 480px) {
+  .success-container {
+    padding: 24px;
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 30px;
+  }
+
+  p {
+    font-size: 25px;
+  }
+
+  .checkmark-circle {
+    width: 150px;
+    height: 150;
+  }
+
+  .checkmark {
+    top: 20px;
+    left: 20px;
+    width: 40px;
+    height: 20px;
+    border-left: 4px solid #4caf50;
+    border-bottom: 4px solid #4caf50;
+  }
+
+  button {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 20px;
+  }
+}

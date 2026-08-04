@@ -1,0 +1,408 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #f4f7f6;
+  overflow-x: hidden;
+  font-family: "Times New Roman", Times, serif;
+}
+
+/* ── Number Counter Section ────────────────────────── */
+.Numbercontainer {
+  padding: 56px 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f0f6ff 100%);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.numbers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 28px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.number-card {
+  background: #ffffff;
+  flex: 1;
+  min-width: 210px;
+  max-width: 260px;
+  text-align: center;
+  border-radius: 18px;
+  padding: 32px 24px 28px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+  border: 1px solid #e5e7eb;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.number-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0073e6, #1e3a5f);
+}
+
+.number-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 14px 36px rgba(0,0,0,.14);
+}
+
+.number-icon {
+  width: 54px;
+  height: 54px;
+  background: linear-gradient(135deg, rgba(0,115,230,.12), rgba(30,58,95,.08));
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.number-icon i {
+  font-size: 1.5rem;
+  color: #0073e6;
+}
+
+.number-card h2 {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.number-card p {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Section Banner (Our Goals / Latest) ───────────── */
+.sectionalparts,
+.sectionalpartsnew {
+  width: 100%;
+  padding: 56px 20px 48px;
+  text-align: center;
+}
+
+.sectionalparts {
+  background: linear-gradient(135deg, #e8f0fe 0%, #dce8f7 100%);
+  border-top: 1px solid #c7d9f5;
+  border-bottom: 1px solid #c7d9f5;
+}
+
+.sectionalpartsnew {
+  background: #f4f7f6;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 32px;
+}
+
+.sectionalparts h2,
+.sectionalpartsnew h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-bottom: 12px;
+  position: relative;
+  display: inline-block;
+}
+
+.sectionalparts h2::after,
+.sectionalpartsnew h2::after {
+  content: '';
+  display: block;
+  width: 56px;
+  height: 3px;
+  background: linear-gradient(90deg, #0073e6, #1e3a5f);
+  border-radius: 2px;
+  margin: 10px auto 0;
+}
+
+.sectionalparts p,
+.sectionalpartsnew p {
+  font-size: 1.05rem;
+  color: #4b5563;
+  line-height: 1.8;
+  max-width: 720px;
+  margin: 0 auto;
+  margin-top: 8px;
+}
+
+/* ── Join With Us / Section Buttons ────────────────── */
+.secbtns {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+
+.secbtn {
+  border-radius: 24px;
+  font-family: "Arial", sans-serif;
+  font-weight: 700;
+  background-color: #0073e6;
+  color: #ffffff;
+  padding: 11px 28px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.secbtn:hover {
+  background-color: #005bb5;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,115,230,.25);
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 992px) {
+  .number-card {
+    min-width: 190px;
+    max-width: none;
+  }
+
+  .sectionalparts h2,
+  .sectionalpartsnew h2 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .Numbercontainer { padding: 40px 16px; }
+
+  .numbers {
+    gap: 16px;
+  }
+
+  .number-card {
+    min-width: 160px;
+    padding: 24px 16px 20px;
+  }
+
+  .number-card h2 { font-size: 2.1rem; }
+
+  .sectionalparts,
+  .sectionalpartsnew { padding: 40px 16px 32px; }
+
+  .sectionalparts h2,
+  .sectionalpartsnew h2 { font-size: 1.55rem; }
+
+  .sectionalparts p,
+  .sectionalpartsnew p { font-size: 0.95rem; }
+
+  .secbtns { flex-direction: column; gap: 0.75rem; }
+  .secbtn  { padding: 9px 22px; }
+}
+
+@media (max-width: 480px) {
+  .numbers { flex-direction: column; align-items: center; }
+
+  .number-card {
+    width: 85%;
+    min-width: 0;
+    max-width: 320px;
+    padding: 22px 18px 18px;
+  }
+
+  .number-card h2 { font-size: 2rem; }
+
+  .sectionalparts,
+  .sectionalpartsnew { padding: 32px 12px 28px; }
+
+  .sectionalparts h2,
+  .sectionalpartsnew h2 { font-size: 1.4rem; }
+
+  .sectionalparts p,
+  .sectionalpartsnew p { font-size: 0.9rem; }
+}
+
+/* ── Join With Us ───────────────────────────────────── */
+.join-family {
+  text-align: center;
+  padding: 50px 20px;
+  font-family: Arial, sans-serif;
+}
+
+.join-family h2 {
+  font-size: 2em;
+  font-weight: bold;
+  color: #0073e6;
+  margin-bottom: 40px;
+}
+
+.family-options {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+  flex-wrap: wrap;
+}
+
+.family-options a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  gap: 0.5rem;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.option:hover {
+  transform: scale(1.1);
+}
+
+.option img {
+  width: 60px;
+  height: auto;
+}
+
+.option i {
+  font-size: 2rem;
+  color: #0073e6;
+}
+
+.option p {
+  font-size: 1.2em;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .family-options {
+    flex-direction: column;
+    gap: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .join-family { padding: 36px 16px; }
+  .join-family h2 { font-size: 1.5em; margin-bottom: 28px; }
+}
+
+/* ── Latest News grid (test.php) ─────────────────── */
+.ln-section {
+    background: #f4f7f6;
+    padding: 8px 20px 64px;
+}
+.ln-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+    gap: 28px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.ln-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.07);
+    overflow: hidden;
+    transition: transform .3s ease, box-shadow .3s ease;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+}
+.ln-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0,0,0,.13);
+}
+.ln-card-img-wrap {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+    flex-shrink: 0;
+}
+.ln-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .4s ease;
+}
+.ln-card:hover .ln-card-img { transform: scale(1.06); }
+.ln-card-accent {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #0073e6, #1e3a5f);
+}
+.ln-card-body {
+    padding: 16px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.ln-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e3a5f;
+    margin: 0 0 8px;
+    line-height: 1.45;
+    font-family: "Times New Roman", Times, serif;
+}
+.ln-desc-wrap {
+    overflow: hidden;
+    transition: max-height .35s ease;
+    max-height: 2.9em;
+}
+.ln-desc-wrap.expanded { max-height: 600px; }
+.ln-card-desc {
+    font-size: .85rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.ln-read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    margin-top: 8px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #0073e6;
+    font-size: .8rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    transition: color .2s;
+    align-self: flex-start;
+}
+.ln-read-more:hover { color: #005bb5; }
+.ln-read-more i { font-size: .7rem; transition: transform .25s; }
+.ln-read-more.expanded i { transform: rotate(180deg); }
+@media (max-width: 640px) {
+    .ln-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+    .ln-card-img-wrap { height: 150px; }
+    .ln-section { padding: 8px 12px 48px; }
+}
+@media (max-width: 420px) {
+    .ln-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ln-card, .ln-card-img { transition: none; }
+}
+
+/* ── Gap between partners section and footer ─── */
+.Partnercontainer {
+    margin-bottom: 60px;
+}

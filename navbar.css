@@ -1,0 +1,388 @@
+/* ═══════════════════════════════════════════════
+   ATMABISWAS — Desktop Navbar
+   ═══════════════════════════════════════════════ */
+
+/* ── Reset (scoped) ─────────────────────────── */
+.navbar *, .navbar *::before, .navbar *::after,
+.mobile-header *, .mobile-header *::before, .mobile-header *::after {
+  box-sizing: border-box;
+}
+
+/* ── Outer sticky band (full-width white strip on top, cyan strip below) ── */
+.navbar-band {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #ffffff;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.12);
+  font-family: "Times New Roman", Times, serif;
+}
+
+/* ── Centered navbar container ──────────────── */
+.navbar {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ── Top Row ────────────────────────────────── */
+.navbar .top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 24px;
+  border-bottom: 1px solid #dce8f0;
+}
+
+.navbar .top-row .logo a {
+  display: block;
+  line-height: 0;
+}
+
+.navbar .top-row .logo a img {
+  height: 62px;
+  width: auto;
+}
+
+.navbar .top-row .bars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navbar .top-row .bars a {
+  color: #1e3a5f;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 20px;
+  transition: background-color 0.2s, color 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.navbar .top-row .bars a:hover {
+  background-color: #1e3a5f;
+  color: #ffffff;
+}
+
+.navbar .top-row .bars a.active {
+  background-color: #1e3a5f;
+  color: #ffffff;
+}
+
+/* ── Language toggle (desktop, sits with Notice/Career/Press) ── */
+.navbar .top-row .bars .lang-toggle-btn {
+  font-family: inherit;
+  color: #1e3a5f;
+  background: #eef4fb;
+  border: 1px solid #cfe0f0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.navbar .top-row .bars .lang-toggle-btn:hover {
+  background-color: #1e3a5f;
+  color: #ffffff;
+}
+
+/* ── Bottom Row ─────────────────────────────── */
+/* Full-width cyan band */
+.navbar-band .bottom-band {
+  width: 100%;
+  background-color: #1e3a5f;
+}
+
+.navbar .bottom-row {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 48px;
+  padding: 0 24px;
+  position: relative;
+}
+
+/* Direct nav links */
+.navbar .bottom-row > a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  letter-spacing: 0.015em;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.navbar .bottom-row > a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 15px;
+  right: 15px;
+  height: 3px;
+  background-color: #ffffff;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+  border-radius: 2px 2px 0 0;
+  opacity: 0.85;
+}
+
+.navbar .bottom-row > a:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar .bottom-row > a:hover::after,
+.navbar .bottom-row > a.active::after {
+  transform: scaleX(1);
+}
+
+.navbar .bottom-row > a.active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Login / Dashboard — floated right without disturbing center alignment */
+.navbar .bottom-row .nav-login-btn {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 18px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  color: #ffffff;
+  text-decoration: none;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.navbar .bottom-row .nav-login-btn::after {
+  display: none;
+}
+
+.navbar .bottom-row .nav-login-btn:hover {
+  background-color: #ffffff;
+  color: #1e3a5f;
+  border-color: #ffffff;
+}
+
+/* ── Dropdown ───────────────────────────────── */
+.dropdown {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.maindrop {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0 15px;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.015em;
+  transition: background-color 0.2s;
+  position: relative;
+  user-select: none;
+}
+
+.maindrop::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 15px;
+  right: 15px;
+  height: 3px;
+  background-color: #ffffff;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+  border-radius: 2px 2px 0 0;
+  opacity: 0.85;
+}
+
+.maindrop a {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.arrow-icon {
+  font-size: 0.7rem;
+  transition: transform 0.25s ease;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.dropdown:hover .maindrop {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dropdown:hover .maindrop::after {
+  transform: scaleX(1);
+}
+
+.dropdown:hover .arrow-icon {
+  transform: rotate(180deg);
+}
+
+/* Dropdown panel */
+.dropdown-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  min-width: 220px;
+  z-index: 1001;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  border-top: 3px solid #1e3a5f;
+  box-shadow: 0 10px 28px rgba(37, 183, 219, 0.18), 0 4px 10px rgba(0,0,0,0.1);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown:hover .dropdown-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-content a {
+  color: #1e3a5f;
+  padding: 11px 18px;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: block;
+  border-bottom: 1px solid #edf6f9;
+  transition: background-color 0.18s, color 0.18s, padding-left 0.18s;
+}
+
+.dropdown-content a:last-child {
+  border-bottom: none;
+}
+
+.dropdown-content a:hover {
+  background-color: #1e3a5f;
+  color: #ffffff;
+  padding-left: 24px;
+}
+
+/* ── Mobile Header ──────────────────────────── */
+.mobile-header {
+  display: none;
+  width: 100%;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  min-height: 62px;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.mobile-header .logo img {
+  height: 42px;
+  width: auto;
+  display: block;
+}
+
+.mobile-header .menu-toggle {
+  display: flex;
+  width: 28px;
+  height: 22px;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mobile-header .menu-toggle .bar {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background-color: #1e3a5f;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.mobile-header .menu-toggle.active .bar:nth-child(1) {
+  transform: translateY(9px) rotate(45deg);
+}
+.mobile-header .menu-toggle.active .bar:nth-child(2) {
+  opacity: 0;
+}
+.mobile-header .menu-toggle.active .bar:nth-child(3) {
+  transform: translateY(-9px) rotate(-45deg);
+}
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 768px) {
+  .navbar-band {
+    display: none;
+  }
+  .mobile-header {
+    display: flex;
+  }
+}
+
+@media (min-width: 769px) {
+  .navbar-band {
+    display: block !important;
+  }
+  .mobile-header {
+    display: none !important;
+  }
+}
+
+/* ── Small desktop: prevent login button overlapping centered links ── */
+@media (min-width: 769px) and (max-width: 960px) {
+  .navbar .bottom-row {
+    padding-left: 12px;
+    padding-right: 116px;
+  }
+
+  .navbar .bottom-row > a,
+  .maindrop {
+    padding: 0 8px;
+    font-size: 0.84rem;
+  }
+}
+
+/* ── Accessibility ──────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .navbar .bottom-row > a::after,
+  .maindrop::after,
+  .arrow-icon,
+  .dropdown-content,
+  .mobile-header .menu-toggle .bar {
+    transition: none;
+  }
+}
