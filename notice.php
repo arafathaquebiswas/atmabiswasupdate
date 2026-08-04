@@ -1,13 +1,21 @@
 <?php
-include 'backend/Database/db.php';
+include_once 'config.php';
+include_once 'backend/Database/db.php';
 
-$database = new Db();
-$conn = $database->connect();
-
-$sql = "SELECT * FROM pdsfiles";
-$stmt = $conn->prepare($sql);
-$stmt->execute();
-$pdfs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$pdfs = [];
+try {
+    $database = new Db();
+    $conn = $database->connect();
+    if ($conn) {
+        $sql = "SELECT * FROM pdsfiles ORDER BY id DESC";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        $pdfs = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+} catch (Throwable $e) {
+    error_log("Notice DB error: " . $e->getMessage());
+    $pdfs = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -62,7 +70,7 @@ $pdfs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <div class="card-meta">
                                 <span class="card-date">
                                     <i class="fa-regular fa-calendar"></i>
-                                    <?php echo explode(' ', $pdf['upload_date'])[0]; ?>
+                                    <?php echo !empty($pdf['upload_date']) ? htmlspecialchars(explode(' ', $pdf['upload_date'])[0]) : date('Y-m-d'); ?>
                                 </span>
                                 <span class="card-badge">View Notice</span>
                             </div>

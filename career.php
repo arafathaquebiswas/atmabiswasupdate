@@ -1,14 +1,21 @@
 <?php
-include 'backend/Database/db.php';
-$database = new Db();
-$connection = $database->connect();
+include_once 'config.php';
+include_once 'backend/Database/db.php';
 
-$sql = "SELECT * FROM jobs";
-
-$stmt = $connection->prepare($sql);
-$stmt->execute();
-$res = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+$res = [];
+try {
+    $database = new Db();
+    $connection = $database->connect();
+    if ($connection) {
+        $sql = "SELECT * FROM jobs";
+        $stmt = $connection->prepare($sql);
+        $stmt->execute();
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+} catch (Throwable $e) {
+    error_log("Career DB error: " . $e->getMessage());
+    $res = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
