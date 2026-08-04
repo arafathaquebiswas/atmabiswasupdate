@@ -1,13 +1,10 @@
 <?php
-include 'backend/Database/db.php';
+include_once 'backend/Database/db.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'vendor/autoload.php';  // Load PHPMailer classes via Composer autoload
-
-$db = new Db();
-$conn = $db->connect();
+require_once 'vendor/autoload.php';  // Load PHPMailer classes via Composer autoload
 
 $uploadDir = "uploads/application_cvs/";
 if (!file_exists($uploadDir)) {
@@ -68,16 +65,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $cvFile = processPdf($_FILES["cvfile"], $maxSize, $allowedTypes, $uploadDir);
 
     // Insert into database
-    $sql = "INSERT INTO cv_applications (jobId, job_title, fullname, email, phone_no, fileDir)
-            VALUES (:job_id, :job_title, :fullname, :email, :phone_no, :fileDir)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(":job_id", $jobId);
-    $stmt->bindParam(":job_title", $jobTitle);
-    $stmt->bindParam(":fullname", $fullName);
-    $stmt->bindParam(":email", $email);
-    $stmt->bindParam(":phone_no", $phone);
-    $stmt->bindParam(":fileDir", $cvFile);
-    $stmt->execute();
+    try {
+        $db   = new Db();
+        $conn = $db->connect();
+        if ($conn) {
+            $sql = "INSERT INTO cv_applications (jobId, job_title, fullname, email, phone_no, fileDir)
+                    VALUES (:job_id, :job_title, :fullname, :email, :phone_no, :fileDir)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(":job_id", $jobId);
+            $stmt->bindParam(":job_title", $jobTitle);
+            $stmt->bindParam(":fullname", $fullName);
+            $stmt->bindParam(":email", $email);
+            $stmt->bindParam(":phone_no", $phone);
+            $stmt->bindParam(":fileDir", $cvFile);
+            $stmt->execute();
+        }
+    } catch (Throwable $e) {
+        error_log("sendingMail DB insert error: " . $e->getMessage());
+    }
 
     // Send Email
     try {

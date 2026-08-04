@@ -1,15 +1,15 @@
 <?php
-include '../Database/db.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-$database = new Db();
-$connection = $database->connect();
+require_once __DIR__ . '/../Database/db.php';
 
 $usernameErr = "";
-$passErr = "";
-$invalid = "";
+$passErr     = "";
+$invalid     = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_EMAIL);
     $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
 
@@ -22,22 +22,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if ($username && $password) {
+        try {
+            $database   = new Db();
+            $connection = $database->connect();
 
-        $sql = "SELECT * FROM admins WHERE email = :username";
-        $stmt = $connection->prepare($sql);
-        $stmt->bindParam(":username", $username);
-        $stmt->execute();
+            if ($connection) {
+                $sql  = "SELECT * FROM admins WHERE email = :username";
+                $stmt = $connection->prepare($sql);
+                $stmt->bindParam(":username", $username);
+                $stmt->execute();
 
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$user || !password_verify($password, $user['pswd'])) {
-
-            $invalid = "Invalid Credentials";
-        } else {
-
-            $_SESSION['username'] = $user['fullname'];
-            header("Location: ../DashBoard/dashboard.php");
-            exit();
+                if (!$user || !password_verify($password, $user['pswd'])) {
+                    $invalid = "Invalid Credentials";
+                } else {
+                    $_SESSION['username'] = $user['fullname'];
+                    header("Location: ../DashBoard/dashboard.php");
+                    exit();
+                }
+            } else {
+                $invalid = "Database connection unavailable.";
+            }
+        } catch (Throwable $e) {
+            error_log("Login DB error: " . $e->getMessage());
+            $invalid = "Database error occurred. Please try again later.";
         }
     }
 }

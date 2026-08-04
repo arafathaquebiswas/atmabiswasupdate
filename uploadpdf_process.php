@@ -6,32 +6,24 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-include 'backend/Database/db.php';
-
-$db = new Db();
-$conn = $db->connect();
-
-$pdf_title = htmlspecialchars($_POST["pdf_title"]);
+include_once 'backend/Database/db.php';
 
 $uploadDir = "uploads/pdfs/";
-
 $maxSize = 10 * 1024 * 1024;
 
 if (!file_exists($uploadDir)) {
-
     mkdir($uploadDir, 0755, true);
 }
 
 function processPdf($pdfFile, $maxSize, $allowedTypes, $uploadDir)
 {
+    if (!isset($pdfFile) || $pdfFile["error"] !== UPLOAD_ERR_OK) {
+        echo "<p>An Error Occurred!</p>";
+        exit();
+    }
 
     $fileInfo = new finfo(FILEINFO_MIME_TYPE);
     $mimetype = $fileInfo->file($pdfFile["tmp_name"]);
-
-    if ($pdfFile["error"] !== UPLOAD_ERR_OK) {
-        echo "<p>An Error Occurd!</p>";
-        exit();
-    }
 
     if (!array_key_exists($mimetype, $allowedTypes)) {
         echo "<p>Invalid File Type</p>";
@@ -44,13 +36,11 @@ function processPdf($pdfFile, $maxSize, $allowedTypes, $uploadDir)
     }
 
     $ext = $allowedTypes[$mimetype];
-
     $newFileName = "Notice_" . bin2hex(random_bytes(16)) . "." . $ext;
-
     $target = $uploadDir . $newFileName;
 
     if (!move_uploaded_file($pdfFile["tmp_name"], $target)) {
-        echo "<p>Error Occurd While Uploading</p>";
+        echo "<p>Error Occurred While Uploading</p>";
         exit();
     }
 
@@ -59,31 +49,38 @@ function processPdf($pdfFile, $maxSize, $allowedTypes, $uploadDir)
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     try {
+        $db = new Db();
+        $conn = $db->connect();
 
-        $maxSize = 10 * 1024 * 1024;
-        // Maps a validated MIME type to the extension we save with — never
-        // taken from the attacker-supplied filename.
-        $allowedTypes = ["application/pdf" => "pdf"];
-        $uploadDir = "uploads/pdfs/";
-
-        $pdfFile = $_FILES["pdf_file"];
-
-        $pdfPath = processPdf($pdfFile, $maxSize, $allowedTypes, $uploadDir);
-
-        if (!file_exists($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+        if (!$conn) {
+            header("Location: backend/DashBoard/error.php?type=Upload");
+            exit();
         }
 
-        $sql = "INSERT INTO pdsfiles (pdf_title,pdf_path) VALUES (:pdf_title,:pdf_path)";
-        $stmt = $conn->prepare($sql);
+        $pdf_title = htmlspecialchars($_POST["pdf_title"] ?? 'Official Notice');
+        $allowedTypes = ["application/pdf" => "pdf"];
 
+        if (!isset($_FILES["pdf_file"])) {
+            header("Location: backend/DashBoard/error.php?type=Upload");
+            exit();
+        }
+
+        $pdfFile = $_FILES["pdf_file"];
+        $pdfPath = processPdf($pdfFile, $maxSize, $allowedTypes, $uploadDir);
+
+        $sql = "INSERT INTO pdsfiles (pdf_title, pdf_path) VALUES (:pdf_title, :pdf_path)";
+        $stmt = $conn->prepare($sql);
         $stmt->bindParam(":pdf_title", $pdf_title);
         $stmt->bindParam(":pdf_path", $pdfPath);
 
-
         $stmt->execute();
         header("Location: backend/DashBoard/success.php?type=Upload");
-    } catch (PDOException $e) {
+        exit();
+
+    } catch (Throwable $e) {
+        error_log("uploadpdf_process error: " . $e->getMessage());
         header("Location: backend/DashBoard/error.php?type=Upload");
+        exit();
     }
 }
+

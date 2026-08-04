@@ -27,7 +27,7 @@ try {
   }
 
   // Use the centralized database connection
-  include 'Database/db.php';
+  require_once __DIR__ . '/Database/db.php';
   $db = new Db();
   $pdo = $db->connect();
 

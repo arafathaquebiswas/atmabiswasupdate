@@ -1,34 +1,26 @@
 <?php 
-
-
 header('Content-Type: application/json');
 
-
-include 'Database/db.php';
-
-$database = new Db();
-
-$conn = $database->connect();
-
+require_once __DIR__ . '/Database/db.php';
 
 try {
-    $sql = "SELECT COUNT(*) as totalBranchs FROM branch";
+    $database = new Db();
+    $conn     = $database->connect();
 
-$stmt = $conn->prepare($sql);
-
-$stmt->execute();
-
-$res = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-echo json_encode(['value' => (int)$res[0]['totalBranchs']]);
-
-} catch (Exception $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    if ($conn) {
+        $total = 0;
+        try {
+            $stmt = $conn->query("SELECT COUNT(*) as totalBranchs FROM branch");
+            $total = (int)$stmt->fetchColumn();
+        } catch (Throwable $e) {
+            $stmt = $conn->query("SELECT COUNT(*) as totalBranchs FROM branches");
+            $total = (int)$stmt->fetchColumn();
+        }
+        echo json_encode(['value' => $total]);
+        exit;
+    }
+} catch (Throwable $e) {
+    error_log("getBranchNumber error: " . $e->getMessage());
 }
 
-
-
-
-
-
-?>
+echo json_encode(['value' => 0]);

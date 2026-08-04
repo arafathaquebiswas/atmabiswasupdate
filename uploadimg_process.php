@@ -5,14 +5,9 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-include 'backend/Database/db.php';
-
-$db         = new Db();
-$connection = $db->connect();
+include_once 'backend/Database/db.php';
 
 $uploadDir    = "uploads/images/";
-// Maps a validated MIME type to the extension we save with — the saved
-// file's extension is never taken from the attacker-supplied filename.
 $allowedTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
 $imageSize    = 2 * 1024 * 1024;
 
@@ -20,28 +15,15 @@ if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0755, true);
 }
 
-// Auto-add display_order column if missing
-try {
-    $col = $connection->query(
-        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE()
-           AND TABLE_NAME   = 'img_upload'
-           AND COLUMN_NAME  = 'display_order'"
-    );
-    if ((int)$col->fetchColumn() === 0) {
-        $connection->exec("ALTER TABLE img_upload ADD COLUMN display_order INT NOT NULL DEFAULT 0");
-    }
-} catch (Exception $e) { /* non-fatal */ }
-
 function processFile($imageFile, $allowedTypes, $imageSize, $uploadDir)
 {
-    $fileType = new finfo(FILEINFO_MIME_TYPE);
-    $mimeType = $fileType->file($imageFile['tmp_name']);
-
-    if ($imageFile['error'] !== UPLOAD_ERR_OK) {
+    if (!isset($imageFile) || $imageFile['error'] !== UPLOAD_ERR_OK) {
         echo "<p>Uploading ran into an error!</p>";
         exit();
     }
+
+    $fileType = new finfo(FILEINFO_MIME_TYPE);
+    $mimeType = $fileType->file($imageFile['tmp_name']);
 
     if ($imageFile['size'] > $imageSize) {
         echo "<p>File is too large! Maximum size is 2 MB.</p>";
@@ -61,16 +43,41 @@ function processFile($imageFile, $allowedTypes, $imageSize, $uploadDir)
         echo "<p>Failed to move uploaded image!</p>";
         exit();
     }
-    @chmod($target, 0644);
     return $target;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     try {
+        $db         = new Db();
+        $connection = $db->connect();
+
+        if (!$connection) {
+            header("Location: backend/DashBoard/error.php?type=upload");
+            exit();
+        }
+
+        // Auto-add display_order column if missing
+        try {
+            $col = $connection->query(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE()
+                   AND TABLE_NAME   = 'img_upload'
+                   AND COLUMN_NAME  = 'display_order'"
+            );
+            if ((int)$col->fetchColumn() === 0) {
+                $connection->exec("ALTER TABLE img_upload ADD COLUMN display_order INT NOT NULL DEFAULT 0");
+            }
+        } catch (Exception $e) { /* non-fatal */ }
+
         $img_title       = htmlspecialchars($_POST["img_title"]       ?? "ATMA BISWAS");
         $img_description = htmlspecialchars($_POST["img_description"] ?? "");
         $img_type        = $_POST["imagetype"] ?? "latest_news";
         $display_order   = (int)($_POST["display_order"] ?? 0);
+
+        if (!isset($_FILES["image_file"])) {
+            header("Location: backend/DashBoard/error.php?type=upload");
+            exit();
+        }
 
         $imageFile  = $_FILES["image_file"];
         $image_path = processFile($imageFile, $allowedTypes, $imageSize, $uploadDir);
@@ -86,7 +93,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->execute();
 
         header("Location: backend/DashBoard/success.php?type=upload");
-    } catch (Exception $e) {
+        exit();
+    } catch (Throwable $e) {
+        error_log("uploadimg_process error: " . $e->getMessage());
         header("Location: backend/DashBoard/error.php?type=upload");
+        exit();
     }
 }

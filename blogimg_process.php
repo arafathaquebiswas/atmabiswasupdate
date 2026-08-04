@@ -6,14 +6,9 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-include 'backend/Database/db.php';
-
-$db = new Db();
-$connection = $db->connect();
+include_once 'backend/Database/db.php';
 
 $uploadDir = "uploads/blog_imgs/";
-// Maps a validated MIME type to the extension we save with — the saved
-// file's extension is never taken from the attacker-supplied filename.
 $allowedTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
 $imageSize = 2 * 1024 * 1024;
 
@@ -56,7 +51,15 @@ function processFile($imageFile, $allowedTypes, $imageSize, $uploadDir)
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     try {
-        $coverid = htmlspecialchars($_GET['id']);
+        $db = new Db();
+        $connection = $db->connect();
+
+        if (!$connection) {
+            header("Location: backend/DashBoard/error.php?type=upload");
+            exit();
+        }
+
+        $coverid = !empty($_GET['id']) ? htmlspecialchars($_GET['id']) : null;
         $imgTitle = !empty($_POST['img_title']) ? htmlspecialchars($_POST['img_title']) : null;
         $source = !empty($_POST['blog_source']) ? filter_var($_POST['blog_source'], FILTER_SANITIZE_URL) : null;
         $image_path = null;
@@ -83,8 +86,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $params[':blog_source'] = $source;
         }
 
-        // If no fields present, redirect with error
-        if (empty($fields)) {
+        // If no fields or no ID present, redirect with error
+        if (empty($fields) || !$coverid) {
             header("Location: backend/DashBoard/error.php?type=empty");
             exit();
         }
@@ -99,8 +102,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         header("Location: backend/DashBoard/success.php?type=upload");
         exit();
 
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
+        error_log("blogimg_process error: " . $e->getMessage());
         header("Location: backend/DashBoard/error.php?type=upload");
         exit();
     }
 }
+
