@@ -35,7 +35,13 @@ require_once __DIR__ . '/config.php';
     <link rel="stylesheet" href="<?= SITE_ROOT ?>/error.css?v=<?php echo filemtime(__DIR__ . '/error.css'); ?>">
 </head>
 <body>
-    <?php include __DIR__ . '/Navbar.php'; ?>
+    <?php
+    try {
+        include __DIR__ . '/Navbar.php';
+    } catch (Throwable $e) {
+        error_log("Navbar include error on error page: " . $e->getMessage());
+    }
+    ?>
 
     <main>
     <div class="error-page">
@@ -122,7 +128,13 @@ require_once __DIR__ . '/config.php';
     </div>
     </main>
 
-    <?php include __DIR__ . '/footer.php'; ?>
+    <?php
+    try {
+        include __DIR__ . '/footer.php';
+    } catch (Throwable $e) {
+        error_log("Footer include error on error page: " . $e->getMessage());
+    }
+    ?>
 
     <script src="<?= SITE_ROOT ?>/error.js?v=<?php echo filemtime(__DIR__ . '/error.js'); ?>"></script>
 </body>
