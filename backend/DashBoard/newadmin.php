@@ -15,7 +15,7 @@ header('Location: ' . auth_login_url());
 exit();
 
 // Unreachable legacy code retained for reference only.
-    include '../Database/db.php';
+    include_once '../Database/db.php';
     session_start();
 
     $nameErr = "";

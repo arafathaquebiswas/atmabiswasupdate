@@ -1,5 +1,5 @@
 <?php
-include '../Database/db.php';
+include_once '../Database/db.php';
 require_once __DIR__ . '/../auth.php';
 session_start();
 

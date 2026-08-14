@@ -15,7 +15,7 @@ if (!$blog_id) {
 
 $pdo = null;
 try {
-    include '../Database/db.php';
+    include_once '../Database/db.php';
     $pdo = (new Db())->connect();
 } catch (Exception $e) {
     die('Database connection failed.');

@@ -1,6 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-include '../../Database/db.php';
+include_once '../../Database/db.php';
 
 header('Content-Type: application/json');
 

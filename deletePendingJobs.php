@@ -4,7 +4,7 @@ require_once __DIR__ . '/backend/auth.php';
 require_login();
 require_super_admin('delete this job application');
 
-include "backend/Database/db.php";
+include_once "backend/Database/db.php";
 
 $database = new Db();
 

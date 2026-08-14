@@ -5,7 +5,7 @@ require_once __DIR__ . '/auth.php';
 require_login();
 require_super_admin('delete this job position');
 
-include "Database/db.php";
+include_once "Database/db.php";
 
 $database = new Db();
 

@@ -3,7 +3,7 @@ require_once __DIR__ . '/../auth.php';
 
 require_login();
 
-include '../Database/db.php';
+include_once '../Database/db.php';
 
 $db = new Db();
 $conn = $db->connect();

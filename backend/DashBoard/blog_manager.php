@@ -9,7 +9,7 @@ require_once '../../config.php';
 $pdo = null;
 $db_error = null;
 try {
-    include '../Database/db.php';
+    include_once '../Database/db.php';
     $pdo = (new Db())->connect();
 } catch (Exception $e) {
     $db_error = 'Database connection failed.';

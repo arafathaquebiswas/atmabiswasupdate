@@ -4,7 +4,7 @@ require_once __DIR__ . '/../auth.php';
 
 require_login();
 
-include '../Database/db.php';
+include_once '../Database/db.php';
 
 $database = new Db();
 
