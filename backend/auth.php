@@ -139,6 +139,8 @@ function auth_rehydrate_session(): bool
             return false;
         }
 
+        auth_ensure_role_column($conn);
+
         if (!empty($_SESSION['admin_id'])) {
             $stmt = $conn->prepare(
                 "SELECT adminId, fullname, email, role FROM admins WHERE adminId = ? LIMIT 1"
@@ -312,6 +314,67 @@ function can_manage_admin(array $target): bool
     }
 
     return (int) $target['adminId'] !== $admin['id'];
+}
+
+/**
+ * Make sure admins.role exists, adding it the first time it is needed.
+ *
+ * blog_manager.php migrates the blogs table the same way, so this matches how
+ * the rest of the project heals its own schema. It means the role system works
+ * on a database that has never had migrate_roles.php run against it.
+ *
+ * Returns true when the column is available to query.
+ */
+function auth_ensure_role_column(PDO $conn): bool
+{
+    static $ready = null;
+    if ($ready !== null) {
+        return $ready;
+    }
+
+    try {
+        if ($conn->query("SHOW COLUMNS FROM admins LIKE 'role'")->fetch() !== false) {
+            return $ready = true;
+        }
+
+        $conn->exec("ALTER TABLE admins ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'admin'");
+
+        // Guarantee one super admin, otherwise every destructive action would be
+        // locked out for everybody. MySQL cannot read the table it updates, so
+        // the subquery is wrapped in a derived table.
+        $conn->exec(
+            "UPDATE admins SET role = 'super_admin'
+             WHERE adminId = (SELECT adminId FROM (SELECT MIN(adminId) AS adminId FROM admins) AS first_admin)"
+        );
+
+        return $ready = true;
+    } catch (Throwable $e) {
+        error_log('auth_ensure_role_column failed: ' . $e->getMessage());
+        return $ready = false;
+    }
+}
+
+/**
+ * Column names present on the admins table, as a lookup map.
+ *
+ * The table has drifted between installs: some carry a legacy NOT NULL
+ * `username` alongside `email`, some do not. Callers build their statements
+ * from this rather than assuming one shape.
+ */
+function admin_table_columns(PDO $conn): array
+{
+    static $columns = null;
+    if ($columns !== null) {
+        return $columns;
+    }
+
+    try {
+        $names = $conn->query("SHOW COLUMNS FROM admins")->fetchAll(PDO::FETCH_COLUMN);
+        return $columns = array_flip($names);
+    } catch (Throwable $e) {
+        error_log('admin_table_columns failed: ' . $e->getMessage());
+        return $columns = [];
+    }
 }
 
 /**

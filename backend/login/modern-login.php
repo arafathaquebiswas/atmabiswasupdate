@@ -23,6 +23,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if ($username && $password) {
+        auth_ensure_role_column($connection);
+
         $sql = "SELECT * FROM admins WHERE email = :username";
         $stmt = $connection->prepare($sql);
         $stmt->bindParam(":username", $username);

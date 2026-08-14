@@ -8,6 +8,10 @@ include_once '../Database/db.php';
 $db = new Db();
 $conn = $db->connect();
 
+// Creates admins.role if this database predates the role system, so every
+// query below can rely on it.
+auth_ensure_role_column($conn);
+
 $currentAdmin = current_admin();
 $isSuper      = is_super_admin();
 

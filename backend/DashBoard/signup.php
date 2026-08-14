@@ -29,24 +29,57 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ? ROLE_SUPER_ADMIN
             : ROLE_ADMIN;
 
-        $sql = "INSERT INTO admins (fullname,email,pswd,role) VALUES (:fullname,:email,:pswd,:role)";
-
         $hashpw = password_hash($password, PASSWORD_DEFAULT);
 
-        $stmt = $conn->prepare($sql);
+        try {
+            // Adds the column on a database that predates the role system, so
+            // the INSERT below always has somewhere to put the role.
+            $hasRole = auth_ensure_role_column($conn);
+            $has     = admin_table_columns($conn);
 
-        $stmt->bindParam(":fullname", $fullname);
+            $values = [
+                'fullname' => $fullname,
+                'email'    => $email,
+                'pswd'     => $hashpw,
+            ];
 
-        $stmt->bindParam(":email", $email);
+            if ($hasRole) {
+                $values['role'] = $newRole;
+            }
 
-        $stmt->bindParam(":pswd", $hashpw);
+            // Older installs keep a NOT NULL `username` next to `email`; it has
+            // no default, so it has to be written or the INSERT fails with 1364.
+            if (isset($has['username'])) {
+                $values['username'] = $email;
+            }
 
-        $stmt->bindParam(":role", $newRole);
+            $fields       = array_keys($values);
+            $placeholders = array_map(static fn($f) => ':' . $f, $fields);
 
-        if ($stmt->execute()) {
-            header("Location: successfulRegistration.php");
-        } else {
-            echo "Registration Failed";
+            $sql  = 'INSERT INTO admins (' . implode(',', $fields) . ')'
+                  . ' VALUES (' . implode(',', $placeholders) . ')';
+            $stmt = $conn->prepare($sql);
+
+            if ($stmt->execute($values)) {
+                header("Location: successfulRegistration.php");
+                exit();
+            }
+
+            $error = 'Registration failed. Please try again.';
+        } catch (PDOException $e) {
+            // Never render the driver message: it exposes server paths and schema.
+            error_log('Admin signup failed: ' . $e->getMessage());
+            $error = ($e->getCode() === '23000')
+                ? 'An admin with that email already exists.'
+                : 'Registration failed because of a database error. Please try again.';
         }
+    } else {
+        $error = 'Passwords do not match.';
     }
+}
+
+if (!empty($error)) {
+    echo '<p style="font-family:sans-serif;color:#b91c1c;padding:16px">'
+        . htmlspecialchars($error, ENT_QUOTES, 'UTF-8')
+        . ' <a href="adminSignup.php">Go back</a></p>';
 }

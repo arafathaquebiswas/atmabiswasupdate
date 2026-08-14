@@ -28,6 +28,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $connection = $database->connect();
 
             if ($connection) {
+                // Ensures the role column exists before the row is read, so the
+                // session is given the real role rather than defaulting to admin.
+                auth_ensure_role_column($connection);
+
                 $sql  = "SELECT * FROM admins WHERE email = :username";
                 $stmt = $connection->prepare($sql);
                 $stmt->bindParam(":username", $username);
