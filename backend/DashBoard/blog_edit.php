@@ -1,9 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login/loging.php");
-    exit();
-}
+require_once __DIR__ . '/../auth.php';
+
+require_login();
 
 require_once '../../config.php';
 require_once 'csrf_helper.php';
@@ -104,8 +102,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (isset($has['status'])) {
+            $currentStatus   = $post['status'] ?? 'published';
+            $submittedStatus = $_POST['status'] ?? 'published';
+            // Switching a post to draft unpublishes it, so a plain admin keeps
+            // whatever status the post already had.
+            if ($submittedStatus !== $currentStatus && !is_super_admin()) {
+                $submittedStatus = $currentStatus;
+            }
             $sets[]   = 'status=?';
-            $values[] = $_POST['status'] ?? 'published';
+            $values[] = $submittedStatus;
         }
         if (isset($has['category'])) {
             $sets[]   = 'category=?';
@@ -267,10 +272,14 @@ body { background:#f5f7fa; font-family:system-ui,-apple-system,'Segoe UI',sans-s
                 <?php if (isset($has['status'])): ?>
                 <div class="mb-3">
                     <label class="form-label">Status</label>
-                    <select class="form-select form-select-sm" name="status">
+                    <select class="form-select form-select-sm" name="status"
+                        <?= is_super_admin() ? '' : 'disabled title="Only a super admin can publish or unpublish"' ?>>
                         <option value="published" <?= ($post['status'] ?? 'published') === 'published' ? 'selected' : '' ?>>Published</option>
                         <option value="draft"     <?= ($post['status'] ?? '') === 'draft'     ? 'selected' : '' ?>>Draft</option>
                     </select>
+                    <?php if (!is_super_admin()): ?>
+                        <small class="text-muted">Super admin permission required to change this.</small>
+                    <?php endif; ?>
                 </div>
                 <?php endif; ?>
 

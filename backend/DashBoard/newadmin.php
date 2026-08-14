@@ -1,4 +1,20 @@
 <?php
+/**
+ * Deprecated duplicate login form.
+ *
+ * This page used to authenticate with a plaintext password comparison
+ * ("SELECT * FROM admins WHERE username=:username AND pswd=:password") and had
+ * no role handling, which made it a way around the real login. It now forwards
+ * to the canonical login page; the markup below is left only for reference and
+ * is never reached.
+ */
+require_once __DIR__ . '/../auth.php';
+
+auth_boot();
+header('Location: ' . auth_login_url());
+exit();
+
+// Unreachable legacy code retained for reference only.
     include '../Database/db.php';
     session_start();
 

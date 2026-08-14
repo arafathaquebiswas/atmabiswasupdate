@@ -1,9 +1,8 @@
 <?php
-session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: backend/login/loging.php");
-    exit();
-}
+require_once __DIR__ . '/backend/auth.php';
+
+require_login();
+require_super_admin('delete this image');
 
 include_once 'backend/Database/db.php';
 

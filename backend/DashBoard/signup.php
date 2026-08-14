@@ -1,10 +1,8 @@
 <?php
 
-session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login/loging.php");
-    exit();
-}
+require_once __DIR__ . '/../auth.php';
+
+require_login();
 
 include '../Database/db.php';
 
@@ -23,7 +21,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $confirm_password = $_POST["confirm_password"];
 
     if ($password === $confirm_password) {
-        $sql = "INSERT INTO admins (fullname,email,pswd) VALUES (:fullname,:email,:pswd)";
+        // Only a super admin may create another super admin. Anyone else gets a
+        // plain admin no matter what the form posted, so an admin cannot grant
+        // itself or anyone else super admin access.
+        $requestedRole = auth_normalize_role($_POST['role'] ?? ROLE_ADMIN);
+        $newRole = (is_super_admin() && $requestedRole === ROLE_SUPER_ADMIN)
+            ? ROLE_SUPER_ADMIN
+            : ROLE_ADMIN;
+
+        $sql = "INSERT INTO admins (fullname,email,pswd,role) VALUES (:fullname,:email,:pswd,:role)";
 
         $hashpw = password_hash($password, PASSWORD_DEFAULT);
 
@@ -34,6 +40,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->bindParam(":email", $email);
 
         $stmt->bindParam(":pswd", $hashpw);
+
+        $stmt->bindParam(":role", $newRole);
 
         if ($stmt->execute()) {
             header("Location: successfulRegistration.php");

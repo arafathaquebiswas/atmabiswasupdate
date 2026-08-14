@@ -1,9 +1,8 @@
 <?php
-session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login/loging.php");
-    exit();
-}
+require_once __DIR__ . '/../auth.php';
+
+require_login();
+require_super_admin('delete this job');
 
 include '../Database/db.php';
 

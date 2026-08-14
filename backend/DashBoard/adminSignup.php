@@ -1,13 +1,11 @@
 <?php
-session_start();
+require_once __DIR__ . '/../auth.php';
 
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login/loging.php");
-    exit();
-}
+require_login();
 
-
-
+// The role selector is only rendered for super admins; signup.php enforces the
+// same rule server-side, so a forged "role" field cannot escalate privileges.
+$canAssignRoles = is_super_admin();
 ?>
 
 
@@ -206,6 +204,16 @@ if (!isset($_SESSION['username'])) {
                 <input type="password" name="confirm_password" class="form-control" id="confirm_password" required>
                 <div id="match-message" class="small mt-1 text-danger d-none">Passwords do not match.</div>
             </div>
+
+            <?php if ($canAssignRoles): ?>
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <select name="role" class="form-control">
+                        <option value="admin" selected>Admin — can add and edit content</option>
+                        <option value="super_admin">Super Admin — can also deactivate, unpublish and delete</option>
+                    </select>
+                </div>
+            <?php endif; ?>
 
             <button type="submit" class="btn btn-primary">Sign Up</button>
         </form>

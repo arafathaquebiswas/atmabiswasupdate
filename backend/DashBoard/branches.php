@@ -1,9 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login/loging.php");
-    exit();
-}
+require_once __DIR__ . '/../auth.php';
+
+require_login();
 
 require_once __DIR__ . '/../Database/db.php';
 require_once __DIR__ . '/csrf_helper.php';
@@ -18,6 +16,13 @@ $msg_type = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
     $action = $_POST['action'] ?? '';
     $id     = (int)($_POST['id'] ?? 0);
+
+    // Deleting a branch, or toggling it inactive, is destructive.
+    if (in_array($action, ['delete', 'toggle'], true)) {
+        require_super_admin(
+            $action === 'delete' ? 'delete a branch' : 'activate or deactivate a branch'
+        );
+    }
 
     if ($id > 0) {
         try {
@@ -213,6 +218,7 @@ $query_string = http_build_query(array_filter(['search' => $search, 'division' =
                                     <a class="btn-edit" href="edit_branch.php?id=<?= (int)$b['id'] ?>">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
+                                    <?php if (is_super_admin()): ?>
                                     <form method="POST" onsubmit="return confirm('Toggle status?')">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="toggle">
@@ -230,6 +236,7 @@ $query_string = http_build_query(array_filter(['search' => $search, 'division' =
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>

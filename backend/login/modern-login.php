@@ -1,5 +1,6 @@
 <?php
 include '../Database/db.php';
+require_once __DIR__ . '/../auth.php';
 session_start();
 
 $database = new Db();
@@ -32,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (!$user || !password_verify($password, $user['pswd'])) {
             $invalid = "Invalid email or password";
         } else {
-            $_SESSION['username'] = $user['fullname'];
+            auth_login_admin($user);
             header("Location: ../DashBoard/dashboard.php");
             exit();
         }

@@ -1,9 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login/loging.php");
-    exit();
-}
+require_once __DIR__ . '/../auth.php';
+
+require_login();
 
 require_once __DIR__ . '/../Database/db.php';
 require_once __DIR__ . '/csrf_helper.php';
@@ -16,6 +14,13 @@ $table_missing = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
     $action = $_POST['action'] ?? '';
     $id     = (int)($_POST['id'] ?? 0);
+
+    // Deleting a division, or toggling it inactive, is destructive.
+    if (in_array($action, ['delete', 'toggle'], true)) {
+        require_super_admin(
+            $action === 'delete' ? 'delete a division' : 'activate or deactivate a division'
+        );
+    }
 
     if ($id > 0) {
         try {
@@ -175,6 +180,7 @@ try {
                             </td>
                             <td>
                                 <div class="cm-actions">
+                                    <?php if (is_super_admin()): ?>
                                     <form method="POST" onsubmit="return confirm('Toggle status of this division?')">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="toggle">
@@ -193,6 +199,7 @@ try {
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>

@@ -4,11 +4,10 @@ include '../../Database/db.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['username'])) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Unauthorized']);
-    exit();
-}
+require_once __DIR__ . '/../../auth.php';
+
+require_login(true);
+require_super_admin('delete this image', true);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);

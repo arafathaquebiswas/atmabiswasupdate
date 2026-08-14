@@ -1,9 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login/loging.php");
-    exit();
-}
+require_once __DIR__ . '/../auth.php';
+
+require_login();
 
 require_once '../../config.php';
 
@@ -96,6 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ajax']) && $pdo) {
                 echo json_encode(['ok' => true, 'val' => $new]);
                 break;
             case 'status':
+                // Flipping published -> draft unpublishes a live post.
+                require_super_admin('publish or unpublish a post', true);
                 $cur = (string)$pdo->query("SELECT COALESCE(status,'published') FROM blogs WHERE blog_id=$aid")->fetchColumn();
                 $new = ($cur === 'draft') ? 'published' : 'draft';
                 $pdo->prepare("UPDATE blogs SET status=? WHERE blog_id=?")->execute([$new, $aid]);
@@ -114,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ajax']) && $pdo) {
 $flash = '';
 $flash_type = 'success';
 if (($_GET['action'] ?? '') === 'delete' && ($did = (int)($_GET['id'] ?? 0)) && $pdo) {
+    require_super_admin('delete a press post');
     try {
         $pdo->prepare("DELETE FROM blogs WHERE blog_id=?")->execute([$did]);
         $flash = 'Press post deleted.';

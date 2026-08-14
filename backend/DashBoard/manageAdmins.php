@@ -1,42 +1,48 @@
 <?php
-session_start();
+require_once __DIR__ . '/../auth.php';
 
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login/loging.php");
-    exit();
-}
+require_login();
 
 include '../Database/db.php';
 
 $db = new Db();
 $conn = $db->connect();
 
+$currentAdmin = current_admin();
+$isSuper      = is_super_admin();
+
 $message = '';
 $messageType = '';
 
-// Handle delete admin request
+// Handle delete admin request. Deleting an account is destructive, so it is
+// restricted to super admins; an admin never reaches the DELETE statement.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_admin'])) {
-    $adminId = $_POST['admin_id'] ?? '';
-    $currentUsername = $_SESSION['username'];
+    require_super_admin('delete an admin account');
 
-    if (empty($adminId)) {
+    $adminId = (int)($_POST['admin_id'] ?? 0);
+
+    if ($adminId <= 0) {
         $message = 'Invalid admin ID.';
         $messageType = 'error';
     } else {
         try {
-            // Get admin info to check if trying to delete self
-            $stmt = $conn->prepare("SELECT fullname FROM admins WHERE adminId = ?");
+            $stmt = $conn->prepare("SELECT adminId, fullname, role FROM admins WHERE adminId = ?");
             $stmt->execute([$adminId]);
             $adminToDelete = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$adminToDelete) {
                 $message = 'Admin not found.';
                 $messageType = 'error';
-            } elseif ($adminToDelete['fullname'] === $currentUsername) {
+            } elseif (!can_manage_admin($adminToDelete)) {
                 $message = 'You cannot delete your own account.';
                 $messageType = 'error';
+            } elseif (
+                auth_normalize_role($adminToDelete['role']) === ROLE_SUPER_ADMIN
+                && count_super_admins($conn) <= 1
+            ) {
+                $message = 'This is the last super admin. Promote another account first.';
+                $messageType = 'error';
             } else {
-                // Delete the admin
                 $stmt = $conn->prepare("DELETE FROM admins WHERE adminId = ?");
                 if ($stmt->execute([$adminId])) {
                     $message = 'Admin deleted successfully!';
@@ -47,6 +53,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_admin'])) {
                 }
             }
         } catch (PDOException $e) {
+            error_log('Delete admin failed: ' . $e->getMessage());
+            $message = 'Database error occurred.';
+            $messageType = 'error';
+        }
+    }
+}
+
+// Handle role change. Granting or removing super admin access is itself a
+// super-admin-only operation, so an admin can never strip a super admin.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_role'])) {
+    require_super_admin('change an admin role');
+
+    $adminId = (int)($_POST['admin_id'] ?? 0);
+    $newRole = auth_normalize_role($_POST['new_role'] ?? '');
+
+    if ($adminId <= 0) {
+        $message = 'Invalid admin ID.';
+        $messageType = 'error';
+    } else {
+        try {
+            $stmt = $conn->prepare("SELECT adminId, fullname, role FROM admins WHERE adminId = ?");
+            $stmt->execute([$adminId]);
+            $target = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$target) {
+                $message = 'Admin not found.';
+                $messageType = 'error';
+            } elseif (!can_manage_admin($target)) {
+                $message = 'You cannot change your own role.';
+                $messageType = 'error';
+            } elseif (
+                auth_normalize_role($target['role']) === ROLE_SUPER_ADMIN
+                && $newRole !== ROLE_SUPER_ADMIN
+                && count_super_admins($conn) <= 1
+            ) {
+                $message = 'This is the last super admin. Promote another account first.';
+                $messageType = 'error';
+            } else {
+                $stmt = $conn->prepare("UPDATE admins SET role = ? WHERE adminId = ?");
+                $stmt->execute([$newRole, $adminId]);
+                $message = sprintf(
+                    '%s is now %s.',
+                    $target['fullname'],
+                    role_label($newRole)
+                );
+                $messageType = 'success';
+            }
+        } catch (PDOException $e) {
+            error_log('Change admin role failed: ' . $e->getMessage());
             $message = 'Database error occurred.';
             $messageType = 'error';
         }
@@ -56,10 +111,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_admin'])) {
 // Get all admins
 $admins = [];
 try {
-    $stmt = $conn->prepare("SELECT adminId, fullname, email FROM admins ORDER BY fullname ASC");
+    $stmt = $conn->prepare("SELECT adminId, fullname, email, role FROM admins ORDER BY role ASC, fullname ASC");
     $stmt->execute();
     $admins = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
+    error_log('Load admins failed: ' . $e->getMessage());
     $message = 'Failed to load admins list.';
     $messageType = 'error';
 }
@@ -76,6 +132,16 @@ try {
     <link rel="stylesheet" href="css/manageAdmins.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="icon" type="image/png" href="../images/logo/logo.png">
+    <style>
+        .role-badge { display:inline-flex; align-items:center; gap:.4rem; margin-top:.5rem;
+                      padding:.25rem .7rem; border-radius:999px; font-size:.75rem; font-weight:600; }
+        .role-badge.role-super { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
+        .role-badge.role-admin { background:#e0f2fe; color:#075985; border:1px solid #7dd3fc; }
+        .role-form { display:inline-block; margin-right:.5rem; }
+        .role-select { padding:.4rem .6rem; border:1px solid #cbd5e1; border-radius:6px;
+                       font-size:.8rem; background:#fff; cursor:pointer; }
+        .btn.disabled { opacity:.6; cursor:not-allowed; }
+    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -151,14 +217,21 @@ try {
                             <?php else: ?>
                                 <div class="admins-grid">
                                     <?php foreach ($admins as $admin): ?>
-                                        <div class="admin-card <?php echo $admin['fullname'] === $_SESSION['username'] ? 'current-user' : ''; ?>">
+                                        <?php
+                                        $rowRole   = auth_normalize_role($admin['role'] ?? null);
+                                        $rowIsSuper = $rowRole === ROLE_SUPER_ADMIN;
+                                        $isSelf     = (int)$admin['adminId'] === $currentAdmin['id'];
+                                        // Only a super admin may act on an account, and never on their own.
+                                        $canManage  = $isSuper && !$isSelf;
+                                        ?>
+                                        <div class="admin-card <?php echo $isSelf ? 'current-user' : ''; ?>">
                                             <div class="admin-avatar">
-                                                <i class="fas fa-user-shield"></i>
+                                                <i class="fas <?php echo $rowIsSuper ? 'fa-crown' : 'fa-user-shield'; ?>"></i>
                                             </div>
                                             <div class="admin-info">
                                                 <h3 class="admin-name">
                                                     <?php echo htmlspecialchars($admin['fullname']); ?>
-                                                    <?php if ($admin['fullname'] === $_SESSION['username']): ?>
+                                                    <?php if ($isSelf): ?>
                                                         <span class="current-badge">You</span>
                                                     <?php endif; ?>
                                                 </h3>
@@ -168,20 +241,37 @@ try {
                                                 </p>
                                                 <p class="admin-id">
                                                     <i class="fas fa-id-card"></i>
-                                                    ID: <?php echo $admin['adminId']; ?>
+                                                    ID: <?php echo (int)$admin['adminId']; ?>
                                                 </p>
+                                                <span class="role-badge <?php echo $rowIsSuper ? 'role-super' : 'role-admin'; ?>">
+                                                    <i class="fas <?php echo $rowIsSuper ? 'fa-crown' : 'fa-user'; ?>"></i>
+                                                    <?php echo htmlspecialchars(role_label($rowRole)); ?>
+                                                </span>
                                             </div>
                                             <div class="admin-actions">
-                                                <?php if ($admin['fullname'] !== $_SESSION['username']): ?>
+                                                <?php if ($canManage): ?>
+                                                    <form method="POST" class="role-form">
+                                                        <input type="hidden" name="admin_id" value="<?php echo (int)$admin['adminId']; ?>">
+                                                        <select name="new_role" class="role-select" onchange="this.form.submit()">
+                                                            <option value="admin" <?php echo $rowIsSuper ? '' : 'selected'; ?>>Admin</option>
+                                                            <option value="super_admin" <?php echo $rowIsSuper ? 'selected' : ''; ?>>Super Admin</option>
+                                                        </select>
+                                                        <input type="hidden" name="change_role" value="1">
+                                                    </form>
                                                     <button class="btn btn-danger btn-sm"
-                                                        onclick="confirmDeleteAdmin(<?php echo $admin['adminId']; ?>, '<?php echo htmlspecialchars($admin['fullname']); ?>')">
+                                                        onclick="confirmDeleteAdmin(<?php echo (int)$admin['adminId']; ?>, '<?php echo htmlspecialchars($admin['fullname'], ENT_QUOTES, 'UTF-8'); ?>')">
                                                         <i class="fas fa-trash"></i>
                                                         Delete
                                                     </button>
-                                                <?php else: ?>
+                                                <?php elseif ($isSelf): ?>
                                                     <span class="btn btn-outline btn-sm disabled">
                                                         <i class="fas fa-lock"></i>
                                                         Current User
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="btn btn-outline btn-sm disabled" title="Only a super admin can change roles or delete accounts">
+                                                        <i class="fas fa-lock"></i>
+                                                        Super Admin Only
                                                     </span>
                                                 <?php endif; ?>
                                             </div>
@@ -211,6 +301,14 @@ try {
                         <div class="notice-item">
                             <i class="fas fa-user-shield"></i>
                             <span>You cannot delete your own account</span>
+                        </div>
+                        <div class="notice-item">
+                            <i class="fas fa-crown"></i>
+                            <span>Only a Super Admin can change roles or delete admin accounts</span>
+                        </div>
+                        <div class="notice-item">
+                            <i class="fas fa-lock"></i>
+                            <span>The last remaining Super Admin cannot be deleted or demoted</span>
                         </div>
                     </div>
                 </div>
