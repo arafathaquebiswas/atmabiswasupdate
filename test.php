@@ -27,9 +27,20 @@ try {
     }
 } catch (Exception $e) { /* non-fatal — column may not exist, query will skip it */ }
 
-$sel = $has_order_col
-    ? "img_title, img_description, img_path, display_order"
-    : "img_title, img_description, img_path, 0 AS display_order";
+// This table has drifted between installs: some carry img_title and
+// img_description, some only img_name. Alias whatever exists to the names the
+// markup below expects, so a missing column cannot blank out the whole section.
+$img_cols = [];
+try {
+    $img_cols = array_flip($conn->query("SHOW COLUMNS FROM img_upload")->fetchAll(PDO::FETCH_COLUMN));
+} catch (Exception $e) { /* fall through to the safe defaults below */ }
+
+$title_expr = isset($img_cols['img_title'])       ? 'img_title'
+            : (isset($img_cols['img_name'])       ? 'img_name' : "''");
+$desc_expr  = isset($img_cols['img_description']) ? 'img_description' : "''";
+$order_expr = $has_order_col                      ? 'display_order'   : '0';
+
+$sel = "{$title_expr} AS img_title, {$desc_expr} AS img_description, img_path, {$order_expr} AS display_order";
 $ord = $has_order_col ? "display_order ASC, img_path ASC" : "img_path ASC";
 
 if (!function_exists('check_latest_img_exists')) {
@@ -51,18 +62,17 @@ try {
     $latest = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $latest = array_values(array_filter($latest, fn($img) => check_latest_img_exists($img['img_path'])));
 
-    // Auto-migrate: if no latest_news rows exist but img_slider rows do, convert them.
-    // (The public homepage slider is hardcoded HTML; img_slider type is unused in the public site.)
-    if (empty($latest)) {
-        $chk2 = $conn->query("SELECT COUNT(*) FROM img_upload WHERE img_type = 'img_slider'");
-        if ((int)$chk2->fetchColumn() > 0) {
-            $conn->exec("UPDATE img_upload SET img_type = 'latest_news' WHERE img_type = 'img_slider'");
-            $stmt->execute();
-            $latest = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $latest = array_values(array_filter($latest, fn($img) => check_latest_img_exists($img['img_path'])));
-        }
-    }
+    // Deliberately no fallback to img_slider rows here. This section and the
+    // homepage slider (imageSlider.php) are separate sections: img_slider
+    // belongs to the slider, latest_news belongs here, and the admin's choice
+    // decides which. This block used to run
+    //     UPDATE img_upload SET img_type='latest_news' WHERE img_type='img_slider'
+    // whenever this section was empty, which rewrote every slider image into a
+    // Latest image on page load and left the slider permanently empty.
 } catch (Exception $e) {
+    // Log rather than swallow: an empty section and a broken query looked
+    // identical before, which hid a missing-column error indefinitely.
+    error_log('Latest images query failed: ' . $e->getMessage());
     $latest = [];
 }
 
