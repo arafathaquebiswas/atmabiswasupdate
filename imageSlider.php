@@ -17,6 +17,13 @@
  * so the homepage never renders an empty or broken slider.
  */
 
+/**
+ * Most slides the homepage will ever show. Extra slider images are kept in the
+ * database and stay visible in the admin dashboard — this caps display only,
+ * and never deletes or recategorises anything.
+ */
+$sliderMax = 6;
+
 $sliderItems = [];
 
 try {
@@ -42,11 +49,28 @@ try {
             ? 'ORDER BY display_order ASC, img_id DESC'
             : 'ORDER BY img_id DESC';
 
+        // Only published/active rows. No such column exists today — being in the
+        // table as img_slider is what "published" means here — so this stays
+        // empty unless one is added later.
+        $publishedWhere = '';
+        foreach (['status', 'is_active', 'published'] as $flag) {
+            if (isset($sliderCols[$flag])) {
+                $publishedWhere = $flag === 'status'
+                    ? " AND (status = 'published' OR status = 'active' OR status IS NULL)"
+                    : " AND ({$flag} = 1 OR {$flag} IS NULL)";
+                break;
+            }
+        }
+
+        // Fetch a buffer beyond the cap so that rows whose file has gone
+        // missing from disk do not shrink the slider below the cap; the hard
+        // cap is applied after that filtering, below.
         $stmt = $sliderConn->prepare(
             'SELECT ' . implode(', ', $select) . '
                FROM img_upload
-              WHERE img_type = :type
-              ' . $orderBy
+              WHERE img_type = :type' . $publishedWhere . '
+              ' . $orderBy . '
+              LIMIT ' . ($sliderMax * 3)
         );
         // 'img_slider' is the exact value the upload form posts; the UI label
         // says "Image Slider" but the stored value is img_slider.
@@ -74,6 +98,13 @@ try {
     }
 } catch (Throwable $e) {
     error_log('Homepage slider query failed: ' . $e->getMessage());
+}
+
+// Hard cap. Applied after the missing-file filter so a broken row cannot let a
+// seventh slide through, and after ordering so this is the lowest Display Order
+// values that survive.
+if (count($sliderItems) > $sliderMax) {
+    $sliderItems = array_slice($sliderItems, 0, $sliderMax);
 }
 
 if (empty($sliderItems)) {

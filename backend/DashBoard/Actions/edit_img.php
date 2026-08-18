@@ -83,6 +83,24 @@ try {
     $db   = new Db();
     $conn = $db->connect();
 
+    // Display Order must stay unique among slider images; latest_news is exempt.
+    // The row being edited is excluded so re-saving it unchanged is allowed.
+    if ($img_type === 'img_slider') {
+        $dupe = $conn->prepare(
+            "SELECT COUNT(*) FROM img_upload
+              WHERE img_type = 'img_slider' AND display_order = :order AND img_path <> :self"
+        );
+        $dupe->execute([':order' => $display_order, ':self' => $old_path]);
+
+        if ((int) $dupe->fetchColumn() > 0) {
+            http_response_code(409);
+            echo json_encode([
+                'error' => "Display Order {$display_order} is already in use. Please choose another number."
+            ]);
+            exit();
+        }
+    }
+
     $stmt = $conn->prepare(
         "UPDATE img_upload
          SET img_title = :title, img_description = :desc, img_type = :type,

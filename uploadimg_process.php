@@ -74,6 +74,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $img_type        = $_POST["imagetype"] ?? "latest_news";
         $display_order   = (int)($_POST["display_order"] ?? 0);
 
+        // Display Order must be unique among slider images. latest_news has no
+        // ordering system, so it is exempt. Nothing else is renumbered to make
+        // room — the admin picks a free number.
+        if ($img_type === 'img_slider') {
+            $dupe = $connection->prepare(
+                "SELECT COUNT(*) FROM img_upload
+                  WHERE img_type = 'img_slider' AND display_order = :order"
+            );
+            $dupe->execute([':order' => $display_order]);
+
+            if ((int) $dupe->fetchColumn() > 0) {
+                // Checked before processFile() moves anything, so a rejected
+                // upload leaves no orphan file behind in uploads/images/.
+                header("Location: backend/DashBoard/error.php?type=upload&msg="
+                    . rawurlencode("Display Order {$display_order} is already in use. Please choose another number."));
+                exit();
+            }
+        }
+
         if (!isset($_FILES["image_file"])) {
             header("Location: backend/DashBoard/error.php?type=upload");
             exit();

@@ -1,7 +1,12 @@
 <?php
 // Custom error message
 $errorType = $_GET['type'] ?? 'Error';
-$errorMsg = $errorType === 'upload' ? 'File upload failed.' : 'Something went wrong.';
+// Callers may pass a specific reason (e.g. a duplicate Display Order); fall
+// back to the generic wording when they do not. Escaped on output below.
+$customMsg = trim($_GET['msg'] ?? '');
+$errorMsg  = $customMsg !== ''
+    ? $customMsg
+    : ($errorType === 'upload' ? 'File upload failed.' : 'Something went wrong.');
 ?>
 
 <!DOCTYPE html>
