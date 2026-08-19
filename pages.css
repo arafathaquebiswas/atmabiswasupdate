@@ -461,6 +461,13 @@ img { max-width: 100%; height: auto; }
   line-height: 1.85;
 }
 
+/* Alternating image/text sections (Green Energy). Desktop only: below 900px
+   .two-col already collapses to a single column, where image-first is the
+   natural reading order on every page that uses it. */
+@media (min-width: 901px) {
+  .two-col--reverse > div:first-child { order: 2; }
+}
+
 /* ── Video sections (program pages) ─────────────── */
 .video-section {
   display: grid;
@@ -787,126 +794,6 @@ img { max-width: 100%; height: auto; }
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
 }
 
-/* ══════════════════════════════════════════════════
-   Green Energy — editorial showcase (Bondhu Chula /
-   Souro Shokti). Deliberately restrained: one typeface
-   family throughout (the site's own serif), no badges,
-   no icon chips, no colour-tinted shadows — the
-   photography and the copy carry the section.
-   ══════════════════════════════════════════════════ */
-.ge2-section {
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: clamp(3rem, 6vw, 5.5rem) 1.5rem clamp(2.5rem, 5vw, 4rem);
-}
-
-.ge2-intro h2 {
-  font-size: clamp(2rem, 4.2vw, 2.9rem);
-  font-weight: 700;
-  color: var(--primary);
-  line-height: 1.18;
-  letter-spacing: -0.015em;
-  text-wrap: balance;
-  margin-bottom: 1.4rem;
-  max-width: 14ch;
-}
-
-.ge2-lead {
-  font-size: 1.12rem;
-  color: var(--text);
-  line-height: 1.95;
-  max-width: 62ch;
-}
-
-/* ── Alternating feature rows ─────────────────────── */
-.ge2-feature {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: clamp(2.5rem, 6vw, 5rem);
-  align-items: start;
-  padding: clamp(3.5rem, 7vw, 5rem) 0;
-}
-
-.ge2-feature:not(:first-of-type) {
-  border-top: 1px solid var(--border);
-}
-
-.ge2-feature--reverse { grid-template-columns: 1fr 1.1fr; }
-.ge2-feature--reverse .ge2-feature-media { order: 2; }
-.ge2-feature--reverse .ge2-feature-text  { order: 1; }
-
-.ge2-feature-media {
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-
-.ge2-feature-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.ge2-feature-media:hover img { transform: scale(1.04); }
-
-.ge2-feature-text { padding-top: 0.4rem; }
-
-.ge2-feature-text h3 {
-  font-size: clamp(1.6rem, 3vw, 2rem);
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 0.3rem;
-  letter-spacing: -0.01em;
-}
-
-.ge2-kicker {
-  font-size: 0.92rem;
-  color: var(--muted);
-  font-style: italic;
-  margin-bottom: 1.1rem;
-}
-
-.ge2-feature-text > p {
-  font-size: 1rem;
-  color: var(--text);
-  line-height: 1.85;
-  max-width: 48ch;
-  margin-bottom: 1.5rem;
-}
-
-.ge2-facts {
-  font-size: 0.85rem;
-  color: var(--muted);
-  line-height: 2;
-  max-width: 48ch;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--border);
-}
-
-.ge2-closing {
-  text-align: center;
-  max-width: 480px;
-  margin: 0 auto;
-  padding-top: clamp(2.5rem, 5vw, 3.5rem);
-  font-size: 0.95rem;
-  color: var(--muted);
-  line-height: 1.7;
-}
-
-@media (max-width: 900px) {
-  .ge2-intro h2 { max-width: none; }
-  .ge2-feature,
-  .ge2-feature--reverse {
-    grid-template-columns: 1fr;
-  }
-  .ge2-feature--reverse .ge2-feature-media,
-  .ge2-feature--reverse .ge2-feature-text {
-    order: initial;
-  }
-  .ge2-feature-media { aspect-ratio: 3 / 2; }
-}
 
 /* ── Agriculture: impact block ──────────────────── */
 .info-section {
@@ -1230,6 +1117,5 @@ img { max-width: 100%; height: auto; }
   .agri-support-item,
   .agri-cta-btn,
   .video-single,
-  .ge2-feature-media img,
   .work-video-card { transition: none; transform: none !important; }
 }

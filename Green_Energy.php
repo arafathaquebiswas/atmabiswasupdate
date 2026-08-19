@@ -27,39 +27,74 @@
         </div>
     </section>
 
-    <div class="ge2-section">
+    <div class="container">
+        <div class="card">
+            <p>
+                ATMABISWAS has worked alongside rural families in Bangladesh since 1991, and access to clean, affordable
+                energy remains one of the clearest dividing lines between households that prosper and households that
+                struggle. Smoke-filled kitchens damage the health of women and children, firewood costs consume scarce
+                income, and communities beyond the national grid are left without dependable electricity. Our green
+                energy work addresses these realities directly, at household level, with practical technology that
+                families can afford, operate and maintain themselves.
+            </p>
+        </div>
 
-        <div class="ge2-intro">
+        <div class="card">
             <h2>Cleaner energy for a stronger Bangladesh</h2>
-            <p class="ge2-lead">Two ATMABISWAS initiatives are changing how rural households cook, light, and power their daily lives — practical steps toward sustainable development in Bangladesh.</p>
+            <p>
+                Two ATMABISWAS initiatives carry this work forward. <strong>Bondhu Chula</strong> replaces open-fire
+                cooking with an efficient, low-smoke cookstove, while <strong>Souro Shokti</strong> brings solar
+                electricity to homes and small businesses the grid has not reached. Together they reduce household
+                expenditure, protect family health, and lower the pressure that firewood collection places on local
+                forests — changing how rural households cook, light and power their daily lives.
+            </p>
         </div>
 
-        <div class="ge2-feature">
-            <div class="ge2-feature-media">
-                <img src="Bondhu Chula/bondhu_chula1.jpg" loading="lazy" alt="ATMABISWAS Bondhu Chula clean cookstove programme in rural Bangladesh">
-            </div>
-            <div class="ge2-feature-text">
-                <h3>Bondhu Chula</h3>
-                <p class="ge2-kicker">ATMABISWAS's clean cooking initiative</p>
-                <p>A modern, fuel-efficient cookstove built to replace open-fire cooking. Bondhu Chula cuts indoor smoke, protects family health, and eases the daily burden on household budgets and local forests.</p>
-                <p class="ge2-facts">Reduces indoor air pollution · Saves fuel · Improves family health · Environment friendly · Supports rural households</p>
+        <div class="card">
+            <h2>Bondhu Chula</h2>
+            <div class="two-col">
+                <div>
+                    <img src="Bondhu Chula/bondhu_chula1.jpg" loading="lazy" alt="ATMABISWAS Bondhu Chula clean cookstove programme in rural Bangladesh">
+                </div>
+                <div>
+                    <h3>ATMABISWAS's clean cooking initiative</h3>
+                    <p>
+                        A modern, fuel-efficient cookstove built to replace open-fire cooking. Bondhu Chula cuts indoor
+                        smoke, protects family health, and eases the daily burden on household budgets and local forests.
+                    </p>
+                    <ul class="agri-objectives">
+                        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Reduces indoor air pollution</li>
+                        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Saves fuel</li>
+                        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Improves family health</li>
+                        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Environment friendly</li>
+                        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Supports rural households</li>
+                    </ul>
+                </div>
             </div>
         </div>
 
-        <div class="ge2-feature ge2-feature--reverse">
-            <div class="ge2-feature-media">
-                <img src="Bondhu Chula/bondhu_chula8.jpg" loading="lazy" alt="ATMABISWAS Souro Shokti solar energy programme in rural Bangladesh">
-            </div>
-            <div class="ge2-feature-text">
-                <h3>Souro Shokti</h3>
-                <p class="ge2-kicker">ATMABISWAS's solar energy initiative &middot; সৌর শক্তি</p>
-                <p>Dependable, renewable electricity for communities beyond the reach of the national grid. Souro Shokti lights homes, powers small businesses, and reduces dependence on fossil fuels.</p>
-                <p class="ge2-facts">Renewable energy · Affordable electricity · Climate-friendly solution · Rural electrification · Sustainable future</p>
+        <div class="card">
+            <h2>Souro Shokti</h2>
+            <div class="two-col two-col--reverse">
+                <div>
+                    <img src="Bondhu Chula/bondhu_chula8.jpg" loading="lazy" alt="ATMABISWAS Souro Shokti solar energy programme in rural Bangladesh">
+                </div>
+                <div>
+                    <h3>ATMABISWAS's solar energy initiative &middot; সৌর শক্তি</h3>
+                    <p>
+                        Dependable, renewable electricity for communities beyond the reach of the national grid. Souro
+                        Shokti lights homes, powers small businesses, and reduces dependence on fossil fuels.
+                    </p>
+                    <ul class="agri-objectives">
+                        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Renewable energy</li>
+                        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Affordable electricity</li>
+                        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Climate-friendly solution</li>
+                        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Rural electrification</li>
+                        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Sustainable future</li>
+                    </ul>
+                </div>
             </div>
         </div>
-
-        <p class="ge2-closing">Two practical steps toward a cleaner, more resilient Bangladesh.</p>
-
     </div>
 
     <div class="latest-pictures">
@@ -74,6 +109,18 @@
             <img src="Bondhu Chula/bondhu_chula5.jpg" loading="lazy" alt="ATMABISWAS clean energy initiative – Bondhu Chula stove installation">
             <img src="Bondhu Chula/bondhu_chula6.jpg" loading="lazy" alt="ATMABISWAS solar energy program – Souro Shokti community project">
             <img src="Bondhu Chula/bondhu_chula7.jpg" loading="lazy" alt="ATMABISWAS renewable energy outreach – solar power for rural Bangladesh">
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>Toward sustainable development</h2>
+            <p>
+                Clean cooking and solar electricity are modest technologies, but their effect compounds over years:
+                healthier households, lower expenditure, less pressure on forests, and communities better able to
+                withstand a changing climate. ATMABISWAS will continue to widen access to both across the districts we
+                serve, so that a cleaner, more resilient Bangladesh is built from the household upward.
+            </p>
         </div>
     </div>
 
