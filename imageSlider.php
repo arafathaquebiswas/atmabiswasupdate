@@ -27,6 +27,7 @@ $sliderMax = 6;
 $sliderItems = [];
 
 try {
+    require_once __DIR__ . '/storage.php';
     include_once __DIR__ . '/backend/Database/db.php';
     $sliderConn = (new Db())->connect();
 
@@ -77,8 +78,9 @@ try {
         $stmt->execute([':type' => 'img_slider']);
 
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $path = ltrim((string) $row['img_path'], '/');
-            if ($path === '' || !is_file(__DIR__ . '/' . $path)) {
+            // Resolves under uploads/ or media/, whichever holds the file.
+            $path = media_resolve($row['img_path']);
+            if ($path === '') {
                 continue; // row points at a file that is no longer on disk
             }
 

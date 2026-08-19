@@ -59,3 +59,44 @@ function media_dir(string $sub): string
     media_path($sub);                      // ensure it exists + is guarded
     return 'media/' . trim($sub, '/') . '/';
 }
+
+/**
+ * Resolve a stored media path to one that actually exists on disk.
+ *
+ * Values in the database are document-root-relative and come from two eras:
+ * older rows say "uploads/blog_imgs/x.png", newer ones "media/blog_imgs/x.png".
+ * Both are served directly, so normally the stored value is returned unchanged.
+ *
+ * If the stored file is missing, the same sub-path is tried under the other
+ * prefix, so a file that moves between the two locations keeps rendering with
+ * no database change. When neither exists an empty string is returned, letting
+ * callers hide the image instead of emitting a broken <img>.
+ *
+ * Remote URLs (YouTube thumbnails, etc.) are passed through untouched.
+ */
+function media_resolve(?string $stored): string
+{
+    $stored = trim((string) $stored);
+    if ($stored === '') {
+        return '';
+    }
+    if (preg_match('~^https?://~i', $stored)) {
+        return $stored;
+    }
+
+    $rel = ltrim($stored, '/');
+    $candidates = [$rel];
+
+    if (strpos($rel, 'uploads/') === 0) {
+        $candidates[] = 'media/' . substr($rel, strlen('uploads/'));
+    } elseif (strpos($rel, 'media/') === 0) {
+        $candidates[] = 'uploads/' . substr($rel, strlen('media/'));
+    }
+
+    foreach ($candidates as $candidate) {
+        if (is_file(__DIR__ . DIRECTORY_SEPARATOR . $candidate)) {
+            return $candidate;
+        }
+    }
+    return '';
+}

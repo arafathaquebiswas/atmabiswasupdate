@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/storage.php';
 include 'config.php';
 include 'backend/Database/db.php';
 
@@ -169,6 +170,19 @@ if (!$current_article && $conn) {
 
 /* ── Related articles ─────────────────────────────────────────── */
 
+/* Cover images live under uploads/ (older posts) or media/ (new uploads), and a
+   row can outlive its file — deployments used to delete uploads/. Resolve each
+   once here so every render site below can treat cover_img as either a working
+   path or empty, instead of emitting an <img> that 404s. */
+function press_resolve_covers(array $rows): array {
+    foreach ($rows as $i => $r) {
+        if (array_key_exists('cover_img', $r)) {
+            $rows[$i]['cover_img'] = media_resolve($r['cover_img']);
+        }
+    }
+    return $rows;
+}
+
 $related = [];
 if ($current_article && $conn) {
     try {
@@ -195,6 +209,16 @@ if ($current_article) {
 $article_url = $current_article
     ? 'https://atmabiswas.org/press.php?id=' . ($current_article['blog_id'] ?? '')
     : 'https://atmabiswas.org/press.php';
+
+if (is_array($current_article) && array_key_exists('cover_img', $current_article)) {
+    $current_article['cover_img'] = media_resolve($current_article['cover_img']);
+}
+if (is_array($featured) && array_key_exists('cover_img', $featured)) {
+    $featured['cover_img'] = media_resolve($featured['cover_img']);
+}
+$posts   = press_resolve_covers($posts);
+$related = press_resolve_covers($related);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

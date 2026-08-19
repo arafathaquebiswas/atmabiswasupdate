@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/storage.php';
 // Latest News image grid — included by index.php
 require_once 'backend/Database/db.php';
 
@@ -60,7 +61,13 @@ try {
     );
     $stmt->execute();
     $latest = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $latest = array_values(array_filter($latest, fn($img) => check_latest_img_exists($img['img_path'])));
+    // Resolve each path under uploads/ or media/, then drop rows whose file is
+    // genuinely absent. Replaces the old existence check, which only looked
+    // where the row said and so hid anything that had moved between the two.
+    foreach ($latest as $_i => $_img) {
+        $latest[$_i]['img_path'] = media_resolve($_img['img_path'] ?? '');
+    }
+    $latest = array_values(array_filter($latest, fn($img) => $img['img_path'] !== ''));
 
     // Deliberately no fallback to img_slider rows here. This section and the
     // homepage slider (imageSlider.php) are separate sections: img_slider
