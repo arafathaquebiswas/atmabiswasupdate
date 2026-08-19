@@ -164,6 +164,10 @@ $_d = $_seo_data[$_seo_page] ?? [
 <meta name="description" content="<?= htmlspecialchars($_d['description']) ?>">
 <meta name="keywords" content="<?= htmlspecialchars($_d['keywords']) ?>">
 <meta name="robots" content="index, follow">
+<!-- Meta/Facebook Business domain verification for atmabiswas.org (Business ID
+     4487371514875279). Emitted server-side from inside <head>: Meta rejects this
+     tag if it is outside <head> or injected by JavaScript. -->
+<meta name="facebook-domain-verification" content="98h9x23l4x08g8yghb8fvv15j7oa00" />
 <link rel="canonical" href="<?= $_d['canonical'] ?>">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ATMABISWAS">
