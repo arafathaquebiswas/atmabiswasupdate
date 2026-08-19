@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/storage.php';
 
 session_start();
 if (!isset($_SESSION['username'])) {
@@ -8,7 +9,7 @@ if (!isset($_SESSION['username'])) {
 
 include_once 'backend/Database/db.php';
 
-$uploadDir = "uploads/blog_imgs/";
+$uploadDir = media_dir("blog_imgs");
 $allowedTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
 $imageSize = 2 * 1024 * 1024;
 

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/storage.php';
 session_start();
 if (!isset($_SESSION['username'])) {
     header("Location: backend/login/loging.php");
@@ -7,7 +8,7 @@ if (!isset($_SESSION['username'])) {
 
 include_once 'backend/Database/db.php';
 
-$uploadDir    = "uploads/images/";
+$uploadDir    = media_dir("images");
 $allowedTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
 $imageSize    = 2 * 1024 * 1024;
 

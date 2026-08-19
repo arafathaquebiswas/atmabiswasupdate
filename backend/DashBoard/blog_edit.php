@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../storage.php';
 require_once __DIR__ . '/../auth.php';
 
 require_login();
@@ -85,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($thumb_file['size'] > 3 * 1024 * 1024) {
                     throw new Exception('Thumbnail must be under 3MB.');
                 }
-                $uploadDir = __DIR__ . '/../../uploads/blog_imgs/';
+                $uploadDir = media_path('blog_imgs');
                 if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
                 $ext      = $allowedThumbTypes[$mime];
                 $filename = 'PRESS_' . bin2hex(random_bytes(16)) . '.' . $ext;
@@ -97,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (file_exists($old_file)) @unlink($old_file);
                 }
                 $sets[]   = 'cover_img=?';
-                $values[] = 'uploads/blog_imgs/' . $filename;
+                $values[] = media_dir('blog_imgs') . $filename;
             }
         }
 

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../../storage.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 include '../../Database/db.php';
 
@@ -62,7 +63,7 @@ if ($hasNewFile) {
     $filename = 'PHOTO_' . bin2hex(random_bytes(16)) . '.' . $ext;
 
     $rootDir   = dirname(dirname(dirname(__DIR__)));
-    $uploadDir = $rootDir . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'images';
+    $uploadDir = rtrim(media_path('images'), DIRECTORY_SEPARATOR);
     $target    = $uploadDir . DIRECTORY_SEPARATOR . $filename;
 
     if (!move_uploaded_file($imageFile['tmp_name'], $target)) {
@@ -76,7 +77,7 @@ if ($hasNewFile) {
         unlink($oldFull);
     }
 
-    $new_path = 'uploads/images/' . $filename;
+    $new_path = media_dir('images') . $filename;
 }
 
 try {

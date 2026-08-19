@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/storage.php';
 include_once 'backend/Database/db.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -6,7 +7,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require_once 'vendor/autoload.php';  // Load PHPMailer classes via Composer autoload
 
-$uploadDir = "uploads/application_cvs/";
+$uploadDir = media_dir("application_cvs");
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0755, true);
 }

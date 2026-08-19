@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../storage.php';
 session_start();
 
 // Check if user is logged in
@@ -112,7 +113,7 @@ try {
     throw new Exception('Thumbnail must be under 3MB.');
   }
 
-  $uploadDir = __DIR__ . '/../uploads/blog_imgs/';
+  $uploadDir = media_path('blog_imgs');
   if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
   $ext      = $allowedThumbTypes[$mime];
@@ -123,7 +124,7 @@ try {
     throw new Exception('Failed to save thumbnail. Check upload directory permissions.');
   }
 
-  $cover_img = 'uploads/blog_imgs/' . $filename;
+  $cover_img = media_dir('blog_imgs') . $filename;
 
   $stmt = $pdo->prepare("
         INSERT INTO blogs

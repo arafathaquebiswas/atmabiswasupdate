@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../storage.php';
 session_start();
 
 if (!isset($_SESSION['username'])) {
@@ -43,7 +44,7 @@ try {
         throw new Exception('Image must be under 5MB.');
     }
 
-    $uploadDir = __DIR__ . '/../uploads/blog_content_imgs/';
+    $uploadDir = media_path('blog_content_imgs');
     if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
     $ext      = $allowedTypes[$mime];
@@ -54,7 +55,7 @@ try {
         throw new Exception('Failed to save image. Check upload directory permissions.');
     }
 
-    echo json_encode(['location' => '/uploads/blog_content_imgs/' . $filename]);
+    echo json_encode(['location' => '/media/blog_content_imgs/' . $filename]);
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);

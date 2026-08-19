@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/storage.php';
 
 session_start();
 if (!isset($_SESSION['username'])) {
@@ -8,7 +9,7 @@ if (!isset($_SESSION['username'])) {
 
 include_once 'backend/Database/db.php';
 
-$uploadDir = "uploads/pdfs/";
+$uploadDir = media_dir("pdfs");
 $maxSize = 10 * 1024 * 1024;
 
 if (!file_exists($uploadDir)) {
