@@ -19,13 +19,13 @@ $_seo_data = [
     'index.php' => [
         'title'       => 'ATMABISWAS – Official NGO Bangladesh | আত্মবিশ্বাস | Since 1991',
         'description' => 'ATMABISWAS (আত্মবিশ্বাস) — Bangladesh\'s trusted NGO since 1991. Empowering rural communities through microfinance, solar energy, agriculture, and enterprise development. Official website.',
-        'keywords'    => 'ATMABISWAS, আত্মবিশ্বাস, Atmabiswas, atma biswas, atma-biswas, NGO Bangladesh, microfinance, solar power, PKSF, RMTP, rural development, agriculture, আত্মবিশ্বাস এনজিও, Atmabiswas NGO, nonprofit organization Bangladesh, registered NGO Bangladesh, বাংলাদেশের এনজিও',
+        'keywords'    => 'ATMABISWAS, আত্মবিশ্বাস, atma biswas, atma-biswas, NGO Bangladesh, microfinance, solar power, PKSF, RMTP, rural development, agriculture, আত্মবিশ্বাস এনজিও, ATMABISWAS NGO, nonprofit organization Bangladesh, registered NGO Bangladesh, বাংলাদেশের এনজিও',
         'canonical'   => 'https://atmabiswas.org/',
     ],
     'aboutus.php' => [
         'title'       => 'About ATMABISWAS (আত্মবিশ্বাস) – Bangladesh NGO | Mission & Vision',
         'description' => 'ATMABISWAS (আত্মবিশ্বাস) — registered Bangladesh NGO since 1991 under the Dept. of Social Welfare. Dedicated to poverty alleviation, rural development, and community empowerment.',
-        'keywords'    => 'ATMABISWAS about, আত্মবিশ্বাস, Atmabiswas Bangladesh, non-governmental organization, rural development, community empowerment, poverty alleviation, NGO 1991 Chuadanga, registered NGO Bangladesh, বাংলাদেশ এনজিও',
+        'keywords'    => 'ATMABISWAS about, আত্মবিশ্বাস, ATMABISWAS Bangladesh, non-governmental organization, rural development, community empowerment, poverty alleviation, NGO 1991 Chuadanga, registered NGO Bangladesh, বাংলাদেশ এনজিও',
         'canonical'   => 'https://atmabiswas.org/aboutus.php',
         'type'        => 'AboutPage',
     ],
@@ -154,7 +154,7 @@ $_seo_data = [
 $_d = $_seo_data[$_seo_page] ?? [
     'title'       => 'ATMABISWAS (আত্মবিশ্বাস) – Bangladesh NGO',
     'description' => 'ATMABISWAS (আত্মবিশ্বাস) is a registered non-governmental organization in Bangladesh empowering rural communities since 1991 through microfinance, agriculture, health, and green energy.',
-    'keywords'    => 'ATMABISWAS, আত্মবিশ্বাস, Atmabiswas, NGO Bangladesh, community development, rural empowerment',
+    'keywords'    => 'ATMABISWAS, আত্মবিশ্বাস, NGO Bangladesh, community development, rural empowerment',
     'canonical'   => 'https://atmabiswas.org/',
 ];
 ?>
@@ -169,6 +169,14 @@ $_d = $_seo_data[$_seo_page] ?? [
      tag if it is outside <head> or injected by JavaScript. -->
 <meta name="facebook-domain-verification" content="98h9x23l4x08g8yghb8fvv15j7oa00" />
 <link rel="canonical" href="<?= $_d['canonical'] ?>">
+
+<!-- Icons. Absolute URLs so they resolve identically from every page depth, and
+     a real /favicon.ico at the site root because that is the location Google
+     probes for the search-result favicon. All are square, which Google requires. -->
+<link rel="icon" href="https://atmabiswas.org/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="48x48" href="https://atmabiswas.org/favicon-48x48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://atmabiswas.org/favicon-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://atmabiswas.org/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ATMABISWAS">
 <meta property="og:locale" content="en_BD">
@@ -199,11 +207,11 @@ $graph[] = [
     '@id'         => 'https://atmabiswas.org/#organization',
     'name'        => 'ATMABISWAS',
     'alternateName' => [
-        'Atmabiswas', 'Atma Biswas', 'Atto Biswas', 'AtmaBiswas', 'Atmabiswash',
+        'ATMA BISWAS', 'Atto Biswas', 'Atmabiswash',
         'AtmaBishwas', 'Atmavishwas', 'attobiswas', 'atmobiswas', 'atma-biswas',
         'Atma Bisbash', 'Atmabisash', 'Atma Bishwas',
-        'Atmabiswas NGO', 'ATMABISWAS NGO', 'ATMABISWAS Bangladesh', 'Atmabiswas Bangladesh',
-        'Atmabiswas Foundation', 'Atmabiswas Organization',
+        'ATMABISWAS NGO', 'ATMABISWAS Bangladesh',
+        'ATMABISWAS Foundation', 'ATMABISWAS Organization',
         'আত্মবিশ্বাস', 'আত্ম বিশ্বাস', 'আত্তো বিশ্বাস', 'আত্মা বিশ্বাস', 'আত্নবিশ্বাস',
         'এটিএমএবিসওয়াস',
     ],
@@ -213,8 +221,8 @@ $graph[] = [
         '@id'        => 'https://atmabiswas.org/#logo',
         'url'        => 'https://atmabiswas.org/LOGO/NGO_logo_monogram.png',
         'contentUrl' => 'https://atmabiswas.org/LOGO/NGO_logo_monogram.png',
-        'width'      => 512,
-        'height'     => 512,
+        'width'      => 615,
+        'height'     => 609,
         'caption'    => 'ATMABISWAS NGO Official Logo',
     ],
     'image'           => ['@id' => 'https://atmabiswas.org/#logo'],
@@ -277,6 +285,7 @@ $graph[] = [
         'Community Development', 'Sustainable Development',
     ],
     'sameAs' => [
+        'https://www.facebook.com/atmabiswas.official',
         'https://www.facebook.com/people/ATMABISWAS-Ngo/61573032346859/',
         'https://www.facebook.com/atmabiswas.chuadanga/',
         'https://www.youtube.com/@ATMABISWAS01',

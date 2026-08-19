@@ -14,7 +14,6 @@
     <title>Food &amp; Agriculture Programs – ATMABISWAS (আত্মবিশ্বাস) Bangladesh</title>
     <?php include 'seo.php'; ?>
     <link rel="stylesheet" href="pages.css?v=<?php echo filemtime(__DIR__ . '/pages.css'); ?>">
-    <link rel="icon" type="image/png" href="LOGO/NGO_logo_monogram.png">
 </head>
 <body>
     <?php include 'Navbar.php' ?>

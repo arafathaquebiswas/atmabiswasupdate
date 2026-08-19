@@ -14,7 +14,6 @@
         gtag('config', 'G-EZVV9DWWY7');
     </script>
     <?php include 'seo.php'; ?>
-    <link rel="icon" type="image/png" href="LOGO/NGO_logo_monogram.png">
     <link rel="stylesheet" href="pages.css?v=<?php echo filemtime(__DIR__ . '/pages.css'); ?>">
 </head>
 <body>

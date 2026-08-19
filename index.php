@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="ATMABISWAS">
     <title>ATMABISWAS – Official NGO Bangladesh | আত্মবিশ্বাস | Since 1991</title>
-    <link rel="icon" type="image/png" href="LOGO/NGO_logo_monogram.png">
     <?php include 'seo.php'; ?>
     <link rel="stylesheet" href="index.css?v=<?php echo filemtime(__DIR__ . '/index.css'); ?>">
     <link rel="stylesheet" href="partners.css?v=<?php echo filemtime(__DIR__ . '/partners.css'); ?>">

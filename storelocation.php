@@ -12,7 +12,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Branch Locations – ATMABISWAS (আত্মবিশ্বাস) Bangladesh</title>
-    <link rel="icon" type="image/png" href="LOGO/NGO_logo_monogram.png">
     <?php include 'seo.php'; ?>
     <style>
         body {

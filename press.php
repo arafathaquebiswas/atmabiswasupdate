@@ -229,7 +229,6 @@ $article_url = $current_article
     <?php else: ?>
     <?php include 'seo.php'; ?>
     <?php endif; ?>
-    <link rel="icon" type="image/png" href="LOGO/NGO_logo_monogram.png">
     <link rel="stylesheet" href="press.css?v=<?php echo filemtime(__DIR__ . '/press.css'); ?>">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EZVV9DWWY7"></script>
