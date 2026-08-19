@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../../storage.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once '../../Database/db.php';
 
@@ -35,7 +36,11 @@ if ($text_content === '') {
 // Site root is three levels up from this file
 // File: backend/DashBoard/Actions/ → backend/DashBoard/ → backend/ → site root
 $siteRoot  = dirname(dirname(dirname(__DIR__)));
-$uploadDir = $siteRoot . DIRECTORY_SEPARATOR . 'office_pic';
+// office_pic/ is tracked in git, so anything written there is reverted by the
+// next deployment — the same fault uploads/ had. New About Us images go to
+// media/, which the repository does not contain. The two seeded images already
+// in office_pic/ stay where they are and keep working.
+$uploadDir = rtrim(media_path('office_pic'), DIRECTORY_SEPARATOR);
 
 // Determine if a new image was uploaded
 $hasNewImage = !empty($_FILES['image_file']['name'])
@@ -74,7 +79,7 @@ if ($hasNewImage) {
         exit();
     }
 
-    $new_image_path = 'office_pic/' . $filename;
+    $new_image_path = media_dir('office_pic') . $filename;
 }
 
 try {
