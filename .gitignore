@@ -1,2 +1,11 @@
 .DS_Store
 node_modules
+
+# Production-generated content. These files are written on the server by the
+# admin dashboard (post images, gallery images, notices, CV uploads). Tracking
+# them made every deployment re-assert a frozen snapshot of this directory over
+# the live one, which is why admin-uploaded media disappeared after each push.
+# Code belongs in git; uploaded content belongs on the server only.
+# uploads/.htaccess stays tracked because it is security config, not content.
+uploads/*
+!uploads/.htaccess
