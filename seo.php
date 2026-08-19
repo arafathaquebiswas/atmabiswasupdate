@@ -164,15 +164,18 @@ $_d = $_seo_data[$_seo_page] ?? [
 <meta name="description" content="<?= htmlspecialchars($_d['description']) ?>">
 <meta name="keywords" content="<?= htmlspecialchars($_d['keywords']) ?>">
 <meta name="robots" content="index, follow">
-<!-- Meta/Facebook Business domain verification for atmabiswas.org (Business ID
-     4487371514875279). Emitted server-side from inside <head>: Meta rejects this
-     tag if it is outside <head> or injected by JavaScript. -->
+<?php /* Meta/Facebook Business domain verification (Business ID 4487371514875279).
+   Emitted server-side inside the head element: Meta rejects the tag if it is
+   outside the head or injected by JavaScript. */ ?>
 <meta name="facebook-domain-verification" content="98h9x23l4x08g8yghb8fvv15j7oa00" />
+<?php /* Google Search Console site verification (URL-prefix property). Server-rendered
+   inside the head element: Google reads the raw HTML and does not run page JavaScript. */ ?>
+<meta name="google-site-verification" content="uwjsTOOKUDyqwLLh_Aehx9vW5Ae0otjEjsLuwDwpEms" />
 <link rel="canonical" href="<?= $_d['canonical'] ?>">
 
-<!-- Icons. Absolute URLs so they resolve identically from every page depth, and
-     a real /favicon.ico at the site root because that is the location Google
-     probes for the search-result favicon. All are square, which Google requires. -->
+<?php /* Icons. Absolute URLs so they resolve identically from every page depth, and
+   a real /favicon.ico at the site root because that is where Google probes for the
+   search-result favicon. All are square, which Google requires. */ ?>
 <link rel="icon" href="https://atmabiswas.org/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="48x48" href="https://atmabiswas.org/favicon-48x48.png">
 <link rel="icon" type="image/png" sizes="192x192" href="https://atmabiswas.org/favicon-192x192.png">
