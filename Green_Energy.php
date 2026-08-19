@@ -112,18 +112,6 @@
         </div>
     </div>
 
-    <div class="container">
-        <div class="card">
-            <h2>Toward sustainable development</h2>
-            <p>
-                Clean cooking and solar electricity are modest technologies, but their effect compounds over years:
-                healthier households, lower expenditure, less pressure on forests, and communities better able to
-                withstand a changing climate. ATMABISWAS will continue to widen access to both across the districts we
-                serve, so that a cleaner, more resilient Bangladesh is built from the household upward.
-            </p>
-        </div>
-    </div>
-
     </main>
     <?php include 'footer.php' ?>
 </body>
