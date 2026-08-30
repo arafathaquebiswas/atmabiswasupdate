@@ -97,13 +97,27 @@ try {
             </div>
             <div class="Sector-list">
                 <?php
-                $newdb = new Db();
-                $newRes = $newdb->connect();
+                // Guarded exactly like the jobs query at the top of this file.
+                // Unguarded, a failed connection threw out of `new Db()` here —
+                // ~24KB into the response, so headers were already sent and
+                // ErrorDocument could not replace the page. The result was a
+                // hard HTTP 500 on the whole career page whenever the database
+                // was unreachable, while every other page degraded quietly.
+                // The count() check below already renders the "No Job Sectors
+                // available currently" notice for the empty case.
+                $finres = [];
+                try {
+                    $newdb = new Db();
+                    $newRes = $newdb->connect();
 
-                $sql = "SELECT job_dept, COUNT(*) AS job_count FROM jobs GROUP BY job_dept";
-                $stm = $newRes->prepare($sql);
-                $stm->execute();
-                $finres = $stm->fetchAll(PDO::FETCH_ASSOC);
+                    $sql = "SELECT job_dept, COUNT(*) AS job_count FROM jobs GROUP BY job_dept";
+                    $stm = $newRes->prepare($sql);
+                    $stm->execute();
+                    $finres = $stm->fetchAll(PDO::FETCH_ASSOC) ?: [];
+                } catch (Throwable $e) {
+                    error_log("Career sector DB error: " . $e->getMessage());
+                    $finres = [];
+                }
 
                 if (count($finres) > 0) {
                     foreach ($finres as $f) {
