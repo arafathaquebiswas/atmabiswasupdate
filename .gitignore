@@ -14,3 +14,8 @@ uploads/*
 # committed: a path the repository does not contain is not touched by the
 # Hostinger deployment, which is exactly the property uploads/ lacked.
 media/
+
+# Private database credentials. Lives ONLY on the server (create it via the
+# Hostinger File Manager from db.config.example.php); never committed, so the
+# real password never enters this public repository.
+backend/Database/db.config.php

@@ -7,9 +7,9 @@ class Db
     // New lines added
     private static $instance = null;
     private $hostname = "localhost";
-    private $user = "u106340611_arafat";
-    private $pswd = "MacBook@007Arafat";
-    private $dbname = "u106340611_arafatbiswas";
+    private $user = "";
+    private $pswd = "";
+    private $dbname = "";
     private $pdo;
 
     // Public constructor for backward compatibility
@@ -51,6 +51,19 @@ class Db
     // Initialize the database connection
     private function initializeConnection()
     {
+        // Load credentials from a private config file that lives ONLY on the
+        // server and is never committed to git (see db.config.example.php).
+        $configFile = __DIR__ . '/db.config.php';
+        if (is_readable($configFile)) {
+            $config = require $configFile;
+            if (is_array($config)) {
+                if (!empty($config['host'])) $this->hostname = $config['host'];
+                if (!empty($config['user'])) $this->user     = $config['user'];
+                if (isset($config['pass']))  $this->pswd     = $config['pass'];
+                if (!empty($config['name'])) $this->dbname   = $config['name'];
+            }
+        }
+
         // Allow environment variables to override default credentials
         if (getenv('DB_HOST')) $this->hostname = getenv('DB_HOST');
         if (getenv('DB_USER')) $this->user     = getenv('DB_USER');
