@@ -19,3 +19,9 @@ media/
 # Hostinger File Manager from db.config.example.php); never committed, so the
 # real password never enters this public repository.
 backend/Database/db.config.php
+
+# Local-only diagnostic. Never commit: when executed on a live server it prints
+# the database host/user/name, the password length, the full table list and
+# every admin email + role — with no authentication. Keeping it out of the
+# repository is what keeps it off the deployed site.
+db_check.php
