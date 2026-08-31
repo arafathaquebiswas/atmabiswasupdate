@@ -51,6 +51,9 @@ foreach ($dirs as $d) {
 
         if ($doWrite) {
             $made = img_make_webp($path);
+            // Narrow copies for phones: a 390px-wide screen has no use for the
+            // 1600px original. Generated once here, never during a page render.
+            img_build_variants($path);
             $after = $made ? filesize($made) : null;
         } else {
             // Dry run: report what already exists, promise nothing about the rest.

@@ -125,15 +125,12 @@ if (empty($sliderItems)) {
     <div class="list">
         <?php foreach ($sliderItems as $i => $slide): ?>
         <div class="item">
-            <?php /* img_picture() emits the same <img> with the same attributes and
-                     adds a <picture>/<source> around it only when a .webp sibling
-                     exists. .slider .list .item img is a descendant selector, so the
-                     wrapper does not affect it and the rendered box is unchanged. */ ?>
-            <?= img_picture(
-                    $slide['path'],
-                    ($i === 0 ? '' : 'loading="lazy" ')
-                    . 'alt="' . htmlspecialchars($slide['alt'], ENT_QUOTES, 'UTF-8') . '"'
-                ) ?>
+            <?php /* Slide 1 is the LCP element: real src + srcset, fetchpriority="high",
+                     never lazy. Slides 2+ carry only data-src, so the preload scanner
+                     cannot fetch them and they stop competing with slide 1 for
+                     bandwidth. imageSlider.js promotes them ahead of being shown.
+                     sizes="100vw" because the slider spans the full viewport width. */ ?>
+            <?= img_slide($slide['path'], $slide['alt'], $i === 0, '100vw') ?>
         </div>
         <?php endforeach; ?>
     </div>
