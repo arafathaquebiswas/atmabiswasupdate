@@ -147,3 +147,59 @@ function getDB()
 {
     return Db::getInstance()->getConnection();
 }
+
+/**
+ * Columns img_upload actually has, as a lookup set.
+ *
+ * The table has drifted between installs: some carry img_title/img_description,
+ * others only img_name, and display_order is added on demand by the upload
+ * handler. imageSlider.php has always adapted its SELECT this way; the write
+ * paths did not, so they inserted columns the live table does not have and the
+ * PDOException surfaced to the admin as a bare "File upload failed."
+ *
+ * Deliberately not cached: the upload handler may ALTER the table to add
+ * display_order moments before writing, and a cached list would miss it.
+ */
+function img_upload_columns(PDO $pdo): array
+{
+    return array_flip($pdo->query("SHOW COLUMNS FROM img_upload")->fetchAll(PDO::FETCH_COLUMN));
+}
+
+/**
+ * Column => value map for an img_upload write, restricted to columns that exist.
+ *
+ * img_name is NOT NULL on the installs that carry it and has no default, so the
+ * title doubles as the name there; installs with img_title keep title and
+ * description separate. img_path is the only column assumed to always exist.
+ */
+function img_upload_payload(
+    PDO $pdo,
+    string $title,
+    string $description,
+    string $path,
+    string $type,
+    int $order
+): array {
+    $cols = img_upload_columns($pdo);
+    $data = ['img_path' => $path];
+
+    if (isset($cols['img_title']))       $data['img_title']       = $title;
+    if (isset($cols['img_description'])) $data['img_description'] = $description;
+    if (isset($cols['img_name']))        $data['img_name']        = $title;
+    if (isset($cols['img_type']))        $data['img_type']        = $type;
+    if (isset($cols['display_order']))   $data['display_order']   = $order;
+
+    return $data;
+}
+
+/** Bind a payload built by img_upload_payload(), typing display_order as int. */
+function img_upload_bind(PDOStatement $stmt, array $payload): void
+{
+    foreach ($payload as $column => $value) {
+        $stmt->bindValue(
+            ':' . $column,
+            $value,
+            $column === 'display_order' ? PDO::PARAM_INT : PDO::PARAM_STR
+        );
+    }
+}

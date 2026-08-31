@@ -86,7 +86,9 @@ try {
 
     // Display Order must stay unique among slider images; latest_news is exempt.
     // The row being edited is excluded so re-saving it unchanged is allowed.
-    if ($img_type === 'img_slider') {
+    $imgCols = img_upload_columns($conn);
+    if ($img_type === 'img_slider'
+        && isset($imgCols['display_order'], $imgCols['img_type'])) {
         $dupe = $conn->prepare(
             "SELECT COUNT(*) FROM img_upload
               WHERE img_type = 'img_slider' AND display_order = :order AND img_path <> :self"
@@ -102,18 +104,28 @@ try {
         }
     }
 
+    // Update only the columns this install has, for the same reason the insert
+    // does: installs carrying img_name instead of img_title otherwise raise
+    // "Unknown column" and the edit silently fails.
+    $payload = img_upload_payload(
+        $conn,
+        $img_title,
+        $img_description,
+        $new_path,
+        $img_type,
+        $display_order
+    );
+    $assignments = [];
+    foreach (array_keys($payload) as $column) {
+        $assignments[] = "{$column} = :{$column}";
+    }
+
     $stmt = $conn->prepare(
-        "UPDATE img_upload
-         SET img_title = :title, img_description = :desc, img_type = :type,
-             img_path = :new_path, display_order = :order
+        "UPDATE img_upload SET " . implode(', ', $assignments) . "
          WHERE img_path = :old_path"
     );
-    $stmt->bindParam(':title',    $img_title);
-    $stmt->bindParam(':desc',     $img_description);
-    $stmt->bindParam(':type',     $img_type);
-    $stmt->bindParam(':new_path', $new_path);
-    $stmt->bindParam(':old_path', $old_path);
-    $stmt->bindParam(':order',    $display_order, PDO::PARAM_INT);
+    img_upload_bind($stmt, $payload);
+    $stmt->bindValue(':old_path', $old_path, PDO::PARAM_STR);
     $stmt->execute();
 
     if ($stmt->rowCount() === 0) {

@@ -78,7 +78,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // Display Order must be unique among slider images. latest_news has no
         // ordering system, so it is exempt. Nothing else is renumbered to make
         // room — the admin picks a free number.
-        if ($img_type === 'img_slider') {
+        // display_order and img_type are not present on every install; the
+        // uniqueness rule only applies where the columns actually exist.
+        $imgCols = img_upload_columns($connection);
+        if ($img_type === 'img_slider'
+            && isset($imgCols['display_order'], $imgCols['img_type'])) {
             $dupe = $connection->prepare(
                 "SELECT COUNT(*) FROM img_upload
                   WHERE img_type = 'img_slider' AND display_order = :order"
@@ -102,21 +106,35 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $imageFile  = $_FILES["image_file"];
         $image_path = processFile($imageFile, $allowedTypes, $imageSize, $uploadDir);
 
-        $sql  = "INSERT INTO img_upload (img_title, img_description, img_path, img_type, display_order)
-                 VALUES (:img_title, :img_description, :img_path, :img_type, :display_order)";
+        // Write only the columns this install has. Hardcoding img_title and
+        // img_description made every upload fail on installs whose table carries
+        // img_name instead: the PDOException was caught below and shown as a bare
+        // "File upload failed." with no indication that the schema was the cause.
+        $payload = img_upload_payload(
+            $connection,
+            $img_title,
+            $img_description,
+            $image_path,
+            $img_type,
+            $display_order
+        );
+        $columns = array_keys($payload);
+        $sql     = "INSERT INTO img_upload (" . implode(', ', $columns) . ")
+                 VALUES (:" . implode(', :', $columns) . ")";
         $stmt = $connection->prepare($sql);
-        $stmt->bindParam(":img_title",       $img_title);
-        $stmt->bindParam(":img_description", $img_description);
-        $stmt->bindParam(":img_path",        $image_path);
-        $stmt->bindParam(":img_type",        $img_type);
-        $stmt->bindParam(":display_order",   $display_order, PDO::PARAM_INT);
+        img_upload_bind($stmt, $payload);
         $stmt->execute();
 
         header("Location: backend/DashBoard/success.php?type=upload");
         exit();
     } catch (Throwable $e) {
+        // Full detail goes to the server log; the admin gets a short, safe reason.
+        // Previously every failure here rendered an identical blank "File upload
+        // failed." page, which is why a schema mismatch looked like a broken
+        // uploader for months.
         error_log("uploadimg_process error: " . $e->getMessage());
-        header("Location: backend/DashBoard/error.php?type=upload");
+        header("Location: backend/DashBoard/error.php?type=upload&msg="
+            . rawurlencode("Could not save the image record. Details are in the server error log."));
         exit();
     }
 }
