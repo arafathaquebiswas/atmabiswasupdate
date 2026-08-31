@@ -1,4 +1,4 @@
-<?php require_once 'config.php'; ?>
+<?php require_once 'config.php'; require_once __DIR__ . '/brand_icons.php'; ?>
 <link rel="stylesheet" href="<?= SITE_ROOT ?>/foot.css?v=<?php echo filemtime(__DIR__ . '/foot.css'); ?>">
 
 <footer class="footer">
