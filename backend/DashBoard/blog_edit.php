@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../image_optimize.php';
 require_once __DIR__ . '/../../storage.php';
 require_once __DIR__ . '/../auth.php';
 
@@ -90,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
                 $ext      = $allowedThumbTypes[$mime];
                 $filename = 'PRESS_' . bin2hex(random_bytes(16)) . '.' . $ext;
-                if (!move_uploaded_file($thumb_file['tmp_name'], $uploadDir . $filename)) {
+                if (!img_store_uploaded($thumb_file['tmp_name'], $uploadDir . $filename)) {
                     throw new Exception('Failed to save thumbnail. Check upload directory permissions.');
                 }
                 if (!empty($post['cover_img'])) {

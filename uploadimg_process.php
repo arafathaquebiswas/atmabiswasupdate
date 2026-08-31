@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/image_optimize.php';
 require_once __DIR__ . '/storage.php';
 session_start();
 if (!isset($_SESSION['username'])) {
@@ -40,7 +41,7 @@ function processFile($imageFile, $allowedTypes, $imageSize, $uploadDir)
     $new    = "PHOTO_" . bin2hex(random_bytes(16)) . "." . $ext;
     $target = $uploadDir . $new;
 
-    if (!move_uploaded_file($imageFile['tmp_name'], $target)) {
+    if (!img_store_uploaded($imageFile['tmp_name'], $target)) {
         echo "<p>Failed to move uploaded image!</p>";
         exit();
     }

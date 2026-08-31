@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../../image_optimize.php';
 require_once __DIR__ . '/../../../storage.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once '../../Database/db.php';
@@ -74,7 +75,7 @@ if ($hasNewImage) {
         mkdir($uploadDir, 0755, true);
     }
 
-    if (!move_uploaded_file($file['tmp_name'], $target)) {
+    if (!img_store_uploaded($file['tmp_name'], $target)) {
         echo json_encode(['error' => 'Failed to save uploaded image']);
         exit();
     }

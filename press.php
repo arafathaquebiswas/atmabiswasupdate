@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/storage.php';
+require_once __DIR__ . '/image_optimize.php';
 include 'config.php';
 include 'backend/Database/db.php';
 
@@ -331,9 +332,10 @@ $related = press_resolve_covers($related);
                 allowfullscreen></iframe>
     </div>
     <?php elseif (!empty($current_article['cover_img'])): ?>
-    <img class="pr-article-img"
-         src="<?= htmlspecialchars($current_article['cover_img']) ?>"
-         alt="<?= htmlspecialchars($current_article['image_title'] ?? $current_article['blog_title']) ?>">
+    <?= img_picture($current_article['cover_img'],
+            'class="pr-article-img" alt="'
+            . htmlspecialchars($current_article['image_title'] ?? $current_article['blog_title'])
+            . '"') ?>
     <?php endif; ?>
 
     <div class="pr-article-body">
@@ -410,8 +412,8 @@ $related = press_resolve_covers($related);
                 <div class="pr-card">
                     <div class="pr-card-media">
                         <?php if ($rel_thumb): ?>
-                        <img src="<?= htmlspecialchars($rel_thumb) ?>"
-                             alt="<?= htmlspecialchars($rel['blog_title']) ?>" loading="lazy">
+                        <?= img_picture($rel_thumb,
+                                'alt="' . htmlspecialchars($rel['blog_title']) . '" loading="lazy"') ?>
                         <?php else: ?>
                         <div class="pr-card-media-empty"><i class="far fa-newspaper"></i></div>
                         <?php endif; ?>
@@ -533,8 +535,8 @@ function copyArticleLink() {
     <a href="press.php?id=<?= $featured['blog_id'] ?>" class="pr-featured">
         <div class="pr-featured-img">
             <?php if ($feat_thumb): ?>
-            <img src="<?= htmlspecialchars($feat_thumb) ?>"
-                 alt="<?= htmlspecialchars($featured['blog_title']) ?>">
+            <?= img_picture($feat_thumb,
+                    'alt="' . htmlspecialchars($featured['blog_title']) . '"') ?>
             <?php else: ?>
             <div class="pr-featured-img-empty"><i class="far fa-newspaper"></i></div>
             <?php endif; ?>
@@ -630,9 +632,8 @@ function copyArticleLink() {
             <article class="pr-card">
                 <div class="pr-card-media">
                     <?php if ($thumb): ?>
-                    <img src="<?= htmlspecialchars($thumb) ?>"
-                         alt="<?= htmlspecialchars($post['blog_title']) ?>"
-                         loading="lazy">
+                    <?= img_picture($thumb,
+                            'alt="' . htmlspecialchars($post['blog_title']) . '" loading="lazy"') ?>
                     <?php else: ?>
                     <div class="pr-card-media-empty"><i class="far fa-newspaper"></i></div>
                     <?php endif; ?>

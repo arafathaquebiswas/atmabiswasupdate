@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../image_optimize.php';
 require_once __DIR__ . '/../storage.php';
 session_start();
 
@@ -122,7 +123,7 @@ try {
   $filename = 'PRESS_' . bin2hex(random_bytes(16)) . '.' . $ext;
   $dest     = $uploadDir . $filename;
 
-  if (!move_uploaded_file($thumb_file['tmp_name'], $dest)) {
+  if (!img_store_uploaded($thumb_file['tmp_name'], $dest)) {
     throw new Exception('Failed to save thumbnail. Check upload directory permissions.');
   }
 
