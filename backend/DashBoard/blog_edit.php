@@ -145,6 +145,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sets[]   = 'canonical_url=?';
             $values[] = trim($_POST['canonical_url'] ?? '');
         }
+        /* Links to the Facebook and Instagram posts about this press item. Both
+           are optional: press.php falls back to the Facebook share dialog when
+           facebook_url is blank, and hides the Instagram button entirely when
+           instagram_url is, since Instagram has nothing to share to. */
+        if (isset($has['facebook_url'])) {
+            $sets[]   = 'facebook_url=?';
+            $values[] = trim($_POST['facebook_url'] ?? '');
+        }
+        if (isset($has['instagram_url'])) {
+            $sets[]   = 'instagram_url=?';
+            $values[] = trim($_POST['instagram_url'] ?? '');
+        }
         if (isset($has['reading_time'])) {
             $sets[]   = 'reading_time=?';
             $values[] = max(1, (int)ceil(str_word_count(strip_tags($content)) / 200));
@@ -424,6 +436,24 @@ body { background:#f5f7fa; font-family:system-ui,-apple-system,'Segoe UI',sans-s
                     <input type="url" class="form-control form-control-sm" name="canonical_url"
                            value="<?= htmlspecialchars($post['canonical_url'] ?? '') ?>"
                            placeholder="https://atmabiswas.org/press.php?id=…">
+                </div>
+                <?php endif; ?>
+                <?php if (isset($has['facebook_url'])): ?>
+                <div>
+                    <label class="form-label">Facebook URL</label>
+                    <input type="url" class="form-control form-control-sm" name="facebook_url"
+                           value="<?= htmlspecialchars($post['facebook_url'] ?? '') ?>"
+                           placeholder="https://www.facebook.com/… (optional)">
+                    <div class="form-text" style="font-size:.72rem;">Link to the Facebook post about this press item. Leave blank to keep the Share-to-Facebook dialog.</div>
+                </div>
+                <?php endif; ?>
+                <?php if (isset($has['instagram_url'])): ?>
+                <div>
+                    <label class="form-label">Instagram URL</label>
+                    <input type="url" class="form-control form-control-sm" name="instagram_url"
+                           value="<?= htmlspecialchars($post['instagram_url'] ?? '') ?>"
+                           placeholder="https://www.instagram.com/p/… (optional)">
+                    <div class="form-text" style="font-size:.72rem;">Link to the Instagram post. Instagram cannot open a share dialog, so the button only appears when this is filled in.</div>
                 </div>
                 <?php endif; ?>
             </div>

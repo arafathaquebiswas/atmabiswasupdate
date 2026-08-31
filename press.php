@@ -356,19 +356,34 @@ $related = press_resolve_covers($related);
     ?>
     <div class="pr-share">
         <span class="pr-share-label">Share:</span>
-        <a href="https://www.facebook.com/sharer/sharer.php?u=<?= $encoded_url ?>"
+        <?php
+        // The post's own Facebook link when the editor supplied one, otherwise
+        // the share dialog that has always been here, so a post without a URL
+        // loses nothing.
+        $fb_post = trim($current_article['facebook_url'] ?? '');
+        $ig_post = trim($current_article['instagram_url'] ?? '');
+        $fb_href = $fb_post !== ''
+            ? $fb_post
+            : 'https://www.facebook.com/sharer/sharer.php?u=' . $encoded_url;
+        ?>
+        <a href="<?= htmlspecialchars($fb_href) ?>"
            target="_blank" rel="noopener" class="pr-share-btn pr-share-fb">
             <i class="fab fa-facebook-f"></i> Facebook
         </a>
-        <a href="https://twitter.com/intent/tweet?url=<?= $encoded_url ?>&text=<?= $encoded_title ?>"
-           target="_blank" rel="noopener" class="pr-share-btn pr-share-tw">
-            <i class="fab fa-x-twitter"></i> X
+        <?php // Instagram has no web share endpoint - no instagram.com/share?url=
+              // exists - so a stored permalink is the only thing this button can
+              // point at, and it is omitted rather than rendered dead when absent. ?>
+        <?php if ($ig_post !== ''): ?>
+        <a href="<?= htmlspecialchars($ig_post) ?>"
+           target="_blank" rel="noopener" class="pr-share-btn pr-share-ig">
+            <i class="fab fa-instagram"></i> Instagram
         </a>
+        <?php endif; ?>
         <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?= $encoded_url ?>"
            target="_blank" rel="noopener" class="pr-share-btn pr-share-li">
             <i class="fab fa-linkedin-in"></i> LinkedIn
         </a>
-        <a href="https://wa.me/?text=<?= $encoded_title ?>%20<?= $encoded_url ?>"
+        <a href="https://wa.me/<?= WHATSAPP_SHARE_NUMBER ?>?text=<?= $encoded_title ?>%20<?= $encoded_url ?>"
            target="_blank" rel="noopener" class="pr-share-btn pr-share-wa">
             <i class="fab fa-whatsapp"></i> WhatsApp
         </a>

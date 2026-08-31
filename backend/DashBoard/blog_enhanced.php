@@ -374,6 +374,12 @@ $cat_options = [
                             <label class="form-label">Canonical URL</label>
                             <input type="url" class="form-control mb-3" name="canonical_url" placeholder="https://atmabiswas.org/press.php?id=… (optional)">
 
+                            <label class="form-label">Facebook URL</label>
+                            <input type="url" class="form-control mb-3" name="facebook_url" placeholder="https://www.facebook.com/… (optional)">
+
+                            <label class="form-label">Instagram URL</label>
+                            <input type="url" class="form-control mb-3" name="instagram_url" placeholder="https://www.instagram.com/p/… (optional)">
+
                             <label class="form-label">Social Share Image URL</label>
                             <input type="url" class="form-control" name="social_image" placeholder="https://… (optional, falls back to thumbnail)">
                         </div>

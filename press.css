@@ -768,9 +768,16 @@ body {
 .pr-share-btn:hover { opacity: .85; }
 
 .pr-share-fb { background: #1877f2; color: #fff; }
-.pr-share-tw { background: #000; color: #fff; }
 .pr-share-li { background: #0a66c2; color: #fff; }
 .pr-share-wa { background: #25d366; color: #fff; }
+
+/* Instagram replaces X in the press share row. Instagram has no flat brand
+   colour the way the others do, so its usual gradient stands in; the button
+   keeps the same size, radius and hover as its neighbours. */
+.pr-share-ig {
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    color: #fff;
+}
 
 .pr-share-copy {
     background: var(--bg);

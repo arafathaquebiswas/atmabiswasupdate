@@ -45,6 +45,8 @@ try {
   $seo_keys      = trim($_POST['seo_keywords']  ?? '');
   $focus_keyword = trim($_POST['focus_keyword'] ?? '');
   $canonical_url = trim($_POST['canonical_url'] ?? '');
+  $facebook_url  = trim($_POST['facebook_url']  ?? '');
+  $instagram_url = trim($_POST['instagram_url'] ?? '');
   $social_img    = trim($_POST['social_image']  ?? '');
   $featured      = isset($_POST['featured']) ? 1 : 0;
 
@@ -126,18 +128,38 @@ try {
 
   $cover_img = media_dir('blog_imgs') . $filename;
 
+  /* facebook_url and instagram_url arrived with a later migration. Naming them
+     unconditionally would break post creation on any install that has not run
+     it yet -- the same hardcoded-column mistake that silently broke every image
+     upload -- so they join the statement only when the table really has them. */
+  $blogCols = array_flip($pdo->query("SHOW COLUMNS FROM blogs")->fetchAll(PDO::FETCH_COLUMN));
+  $optional = [];
+  foreach (['facebook_url' => $facebook_url, 'instagram_url' => $instagram_url] as $col => $val) {
+      if (isset($blogCols[$col])) {
+          $optional[$col] = $val;
+      }
+  }
+  $extraCols   = $optional ? ', ' . implode(', ', array_keys($optional)) : '';
+  $extraParams = $optional ? ', :' . implode(', :', array_keys($optional)) : '';
+
   $stmt = $pdo->prepare("
         INSERT INTO blogs
             (blog_title, slug, blog_content, summary, blog_author, upload_date, year,
              category, source_link, tags, seo_title, seo_description, seo_keywords,
              focus_keyword, canonical_url,
-             social_image, featured, reading_time, cover_img, status)
+             social_image, featured, reading_time, cover_img, status{$extraCols})
         VALUES
             (:title, :slug, :content, :summary, :author, NOW(), YEAR(NOW()),
              :category, :source_link, :tags, :seo_title, :seo_desc, :seo_keys,
              :focus_keyword, :canonical_url,
-             :social_img, :featured, :reading_time, :cover_img, :status)
+             :social_img, :featured, :reading_time, :cover_img, :status{$extraParams})
     ");
+
+  /* bindValue, not bindParam: bindParam binds by reference, so binding a loop
+     variable would leave every parameter pointing at the final iteration. */
+  foreach ($optional as $col => $val) {
+      $stmt->bindValue(':' . $col, $val, PDO::PARAM_STR);
+  }
 
   $post_status = isset($_POST['post_status_action']) && $_POST['post_status_action'] === 'draft'
     ? 'draft' : 'published';

@@ -68,3 +68,9 @@ define('HEALTH_PATH', BASE_URL . '/health.php');
 define('BASE_DIR', $base_dir);
 define('BACKEND_DIR', BASE_DIR . '/backend');
 define('DATABASE_DIR', BACKEND_DIR . '/Database');
+
+// WhatsApp number every share button posts to, digits only with the country
+// code (880 = Bangladesh) and no +, spaces or dashes — the wa.me format.
+// Displayed as +880 1714-812943. Defined once here so the number lives in a
+// single place rather than being repeated in each template that shares a page.
+define('WHATSAPP_SHARE_NUMBER', '8801714812943');
