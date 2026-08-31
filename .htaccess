@@ -169,3 +169,26 @@ ErrorDocument 503 /503.php
       Header always set Expires "0"
   </FilesMatch>
 </IfModule>
+
+# ----------------------------------------
+# ✅ REPOSITORY METADATA IS NOT PUBLIC
+# The deployment copies the repository verbatim into the document root, so
+# files that only ever mattered to development are reachable over HTTP:
+# .gitignore, composer.json and .github/ all answered 200. None of them hold
+# credentials, but they hand a stranger the dependency versions, the deploy
+# mechanism and the paths the repository deliberately excludes, which is free
+# reconnaissance. .git/ was already refused by the server; these were not.
+#
+# Additive only — nothing above this line is altered. "Require all denied" is
+# the same directive uploads/.htaccess already relies on, so it is known to
+# work on this LiteSpeed setup rather than assumed to.
+# ----------------------------------------
+RewriteRule ^\.github(/|$) - [F,L]
+
+<FilesMatch "^\.(gitignore|gitattributes|gitmodules|editorconfig)$">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^(composer\.(json|lock)|package(-lock)?\.json)$">
+    Require all denied
+</FilesMatch>
