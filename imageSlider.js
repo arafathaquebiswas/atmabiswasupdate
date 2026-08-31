@@ -57,8 +57,10 @@ function reloadSlider() {
 
   document.querySelector(".slider .dots li.active").classList.remove("active");
   dots[active].classList.add("active");
-  clearInterval(refreshInterval);
-  refreshInterval = setInterval(() => next.click(), 3000);
+  if (refreshInterval !== null) {
+    clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => next.click(), 3000);
+  }
 }
 
 next.onclick = () => {
@@ -71,15 +73,31 @@ prev.onclick = () => {
   reloadSlider();
 };
 
-/* Slide 2 is needed 3s in. Fetch it once the page has finished its own critical
-   work, so it is ready in time without ever contending with the LCP image. */
-if (document.readyState === "complete") {
-  hydrateSlide(1);
-} else {
-  window.addEventListener("load", () => hydrateSlide(1), { once: true });
+/* Nothing else is fetched, and the carousel does not start advancing, until the
+   first slide has actually finished downloading.
+   Starting the 3s timer at parse time meant that on a slow connection the
+   carousel advanced several times while the hero was still in flight, so the
+   later slides were hydrated and competed with the one image the user was
+   waiting to see. Waiting on the hero costs nothing on a fast connection --
+   where it completes long before the first advance -- and on a slow one it keeps
+   the whole of the available bandwidth pointed at the visible slide. */
+let refreshInterval = null;
+
+function startCarousel() {
+  if (refreshInterval !== null) return;
+  hydrateSlide(1);                                   // ready before the first advance
+  refreshInterval = setInterval(() => next.click(), 3000);
 }
 
-let refreshInterval = setInterval(() => next.click(), 3000);
+const heroImg = items[0] && items[0].querySelector("img");
+if (!heroImg || heroImg.complete) {
+  startCarousel();
+} else {
+  heroImg.addEventListener("load",  startCarousel, { once: true });
+  heroImg.addEventListener("error", startCarousel, { once: true });
+  // A hero that never resolves must not freeze the carousel for good.
+  setTimeout(startCarousel, 10000);
+}
 
 dots.forEach((dot, index) => {
   dot.addEventListener("click", () => {
