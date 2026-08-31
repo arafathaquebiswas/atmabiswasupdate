@@ -1,0 +1,39 @@
+# Keeps the deploy branch in step with main.
+#
+# Hostinger's GitHub integration for atmabiswas.org watches a branch called
+# "master". The repository's branch was renamed main at some point and the
+# integration was never repointed, so it sat watching a branch that no longer
+# existed: every push to main matched nothing and deployed nothing, with no
+# error surfaced anywhere. Production drifted four commits behind before the
+# gap was noticed.
+#
+# Rather than leave that trap in place, main is mirrored onto master on every
+# push and Hostinger deploys from master as it always has. The alternative --
+# repointing the integration at main in hPanel -- is the tidier fix and makes
+# this file unnecessary; it just cannot be done through any API.
+#
+# Nothing should ever commit directly to master. The push below is a plain
+# fast-forward rather than a force, so if master somehow diverges this job
+# fails loudly in the Actions tab instead of silently discarding commits --
+# a visible failure being the whole point, given how this started.
+name: Mirror main to master
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fast-forward master to main
+        run: git push origin HEAD:master
