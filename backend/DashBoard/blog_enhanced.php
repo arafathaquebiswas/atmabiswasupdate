@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../brand_icons.php';
 session_start();
 
 if (!isset($_SESSION['username'])) {
@@ -342,7 +343,7 @@ $cat_options = [
                         </div>
 
                         <div class="panel">
-                            <div class="panel-title"><i class="fab fa-youtube"></i> YouTube / Source Link</div>
+                            <div class="panel-title"><?= brand_icon('youtube') ?> YouTube / Source Link</div>
                             <input type="url" class="form-control" name="source_link" placeholder="https://youtube.com/watch?v=…">
                             <div class="char-counter" style="text-align:left;">Optional — embeds above content.</div>
                         </div>

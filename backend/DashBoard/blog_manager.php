@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../brand_icons.php';
 require_once __DIR__ . '/../auth.php';
 
 require_login();
@@ -570,7 +571,7 @@ body { background: var(--bg); font-family: system-ui,-apple-system,'Segoe UI',sa
             <?= htmlspecialchars($cat_lbl) ?>
         </span>
         <div class="type-icon<?= $type === 'youtube' ? ' yt' : ($type === 'image' ? ' img' : '') ?>">
-            <?php if ($type === 'youtube'): ?><i class="fab fa-youtube"></i> YouTube
+            <?php if ($type === 'youtube'): ?><?= brand_icon('youtube') ?> YouTube
             <?php elseif ($type === 'image'): ?><i class="fas fa-image"></i> Image
             <?php else: ?><i class="fas fa-align-left"></i> Text
             <?php endif; ?>

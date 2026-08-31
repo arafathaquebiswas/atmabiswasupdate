@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/brand_icons.php';
 session_start();
 require_once __DIR__ . '/storage.php';
 require_once __DIR__ . '/image_optimize.php';
@@ -370,7 +371,7 @@ $related = press_resolve_covers($related);
         ?>
         <a href="<?= htmlspecialchars($fb_href) ?>"
            target="_blank" rel="noopener" class="pr-share-btn pr-share-fb">
-            <i class="fab fa-facebook-f"></i> Facebook
+            <?= brand_icon('facebook-f') ?> Facebook
         </a>
         <?php // Instagram has no web share endpoint - no instagram.com/share?url=
               // exists - so a stored permalink is the only thing this button can
@@ -378,16 +379,16 @@ $related = press_resolve_covers($related);
         <?php if ($ig_post !== ''): ?>
         <a href="<?= htmlspecialchars($ig_post) ?>"
            target="_blank" rel="noopener" class="pr-share-btn pr-share-ig">
-            <i class="fab fa-instagram"></i> Instagram
+            <?= brand_icon('instagram') ?> Instagram
         </a>
         <?php endif; ?>
         <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?= $encoded_url ?>"
            target="_blank" rel="noopener" class="pr-share-btn pr-share-li">
-            <i class="fab fa-linkedin-in"></i> LinkedIn
+            <?= brand_icon('linkedin-in') ?> LinkedIn
         </a>
         <a href="https://wa.me/<?= WHATSAPP_SHARE_NUMBER ?>?text=<?= $encoded_title ?>%20<?= $encoded_url ?>"
            target="_blank" rel="noopener" class="pr-share-btn pr-share-wa">
-            <i class="fab fa-whatsapp"></i> WhatsApp
+            <?= brand_icon('whatsapp') ?> WhatsApp
         </a>
         <button class="pr-share-btn pr-share-copy" id="copyLinkBtn" onclick="copyArticleLink()">
             <i class="fas fa-link"></i> Copy Link

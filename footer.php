@@ -59,16 +59,16 @@
         <p>&copy; <?= date('Y') ?> <a href="<?= HOME_PATH ?>">ATMABISWAS</a>. <span data-en="All rights reserved." data-bn="সর্বস্বত্ব সংরক্ষিত।">All rights reserved.</span></p>
         <div class="footer-social">
             <a class="fb" target="_blank" href="https://www.facebook.com/atmabiswas.chuadanga/" aria-label="Facebook">
-                <i class="fab fa-facebook-f"></i>
+                <?= brand_icon('facebook-f') ?>
             </a>
             <a class="yt" target="_blank" href="https://www.youtube.com/channel/UCeqHBixXXoYfaX1gBOP-zOw" aria-label="YouTube">
-                <i class="fab fa-youtube"></i>
+                <?= brand_icon('youtube') ?>
             </a>
             <a class="em" target="_blank" href="https://mail.google.com/mail/?view=cm&fs=1&to=atmabiswas_ngo@yahoo.com" aria-label="Email">
                 <i class="fas fa-envelope"></i>
             </a>
             <a class="li" target="_blank" href="https://www.linkedin.com/company/atmabiswas/" aria-label="LinkedIn">
-                <i class="fab fa-linkedin-in"></i>
+                <?= brand_icon('linkedin-in') ?>
             </a>
         </div>
     </div>

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/brand_icons.php';
 // ── Load editable content from the database ───────────────────────
 // Fallback values are used if the DB table doesn't exist yet.
 // To set up the table run: backend/Database/about_us_migration.sql
@@ -225,7 +226,7 @@ try {
         <div class="work-inner">
             <div class="work-header">
                 <span class="work-tag">
-                    <i class="fa-brands fa-youtube"></i> Our Stories
+                    <?= brand_icon('youtube') ?> Our Stories
                 </span>
                 <h2>Our Work in Action</h2>
                 <p>Watch stories of resilience, community empowerment, and meaningful change from across Bangladesh.</p>
@@ -236,7 +237,7 @@ try {
                         <iframe src="https://www.youtube.com/embed/-rmQDVb3s4k" allowfullscreen loading="lazy"></iframe>
                     </div>
                     <div class="work-video-bar">
-                        <i class="fa-brands fa-youtube"></i>
+                        <?= brand_icon('youtube') ?>
                         <span>Watch Video</span>
                     </div>
                 </div>
@@ -245,7 +246,7 @@ try {
                         <iframe src="https://www.youtube.com/embed/i0UxCHapj40" allowfullscreen loading="lazy"></iframe>
                     </div>
                     <div class="work-video-bar">
-                        <i class="fa-brands fa-youtube"></i>
+                        <?= brand_icon('youtube') ?>
                         <span>Watch Video</span>
                     </div>
                 </div>
@@ -254,7 +255,7 @@ try {
                         <iframe src="https://www.youtube.com/embed/6xb-rN_9j24" allowfullscreen loading="lazy"></iframe>
                     </div>
                     <div class="work-video-bar">
-                        <i class="fa-brands fa-youtube"></i>
+                        <?= brand_icon('youtube') ?>
                         <span>Watch Video</span>
                     </div>
                 </div>
@@ -263,7 +264,7 @@ try {
                         <iframe src="https://www.youtube.com/embed/JS15JTafAv4" allowfullscreen loading="lazy"></iframe>
                     </div>
                     <div class="work-video-bar">
-                        <i class="fa-brands fa-youtube"></i>
+                        <?= brand_icon('youtube') ?>
                         <span>Watch Video</span>
                     </div>
                 </div>
@@ -272,7 +273,7 @@ try {
                         <iframe src="https://www.youtube.com/embed/eDMq_ispQYI" allowfullscreen loading="lazy"></iframe>
                     </div>
                     <div class="work-video-bar">
-                        <i class="fa-brands fa-youtube"></i>
+                        <?= brand_icon('youtube') ?>
                         <span>Watch Video</span>
                     </div>
                 </div>
@@ -281,7 +282,7 @@ try {
                         <iframe src="https://www.youtube.com/embed/nxDIwvOqTVg" allowfullscreen loading="lazy"></iframe>
                     </div>
                     <div class="work-video-bar">
-                        <i class="fa-brands fa-youtube"></i>
+                        <?= brand_icon('youtube') ?>
                         <span>Watch Video</span>
                     </div>
                 </div>

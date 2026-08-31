@@ -7,6 +7,12 @@ if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
 <link rel="stylesheet" href="<?= SITE_ROOT ?>/navbar.css?v=<?php echo filemtime(__DIR__ . '/navbar.css'); ?>">
 <link rel="stylesheet" href="<?= SITE_ROOT ?>/menutoggle.css?v=<?php echo filemtime(__DIR__ . '/menutoggle.css'); ?>">
 <link rel="stylesheet" href="<?= SITE_ROOT ?>/sidebar.css?v=<?php echo filemtime(__DIR__ . '/sidebar.css'); ?>">
+<?php /* The solid icon font still comes from cdnjs. Opening the connection
+         early overlaps DNS, TCP and TLS with HTML parsing instead of paying for
+         them after the stylesheet is discovered -- the font itself did not
+         finish until 7.9s on Slow 4G. Costs nothing and changes no markup. */ ?>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
