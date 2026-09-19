@@ -58,7 +58,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             exit();
         }
 
-        $pdf_title = htmlspecialchars($_POST["pdf_title"] ?? 'Official Notice');
+        // Clean UTF-8 in the database; escaping happens where it is displayed.
+        $pdf_title = trim($_POST["pdf_title"] ?? 'Official Notice');
         $allowedTypes = ["application/pdf" => "pdf"];
 
         if (!isset($_FILES["pdf_file"])) {

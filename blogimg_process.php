@@ -62,7 +62,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         $coverid = !empty($_GET['id']) ? htmlspecialchars($_GET['id']) : null;
-        $imgTitle = !empty($_POST['img_title']) ? htmlspecialchars($_POST['img_title']) : null;
+        // Clean UTF-8 in the database; escaping happens where it is displayed.
+        $imgTitle = !empty($_POST['img_title']) ? trim($_POST['img_title']) : null;
         $source = !empty($_POST['blog_source']) ? filter_var($_POST['blog_source'], FILTER_SANITIZE_URL) : null;
         $image_path = null;
 

@@ -71,8 +71,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
         } catch (Exception $e) { /* non-fatal */ }
 
-        $img_title       = htmlspecialchars($_POST["img_title"]       ?? "ATMA BISWAS");
-        $img_description = htmlspecialchars($_POST["img_description"] ?? "");
+        // Stored as the admin typed it. htmlspecialchars() here turned a typed
+        // " into &quot; in the database, and every display site escapes again on
+        // output -- correctly -- so it reached the page as &amp;quot; and rendered
+        // as the literal text &quot;. Escaping belongs at output, where the
+        // context is known, and it is already applied there: test.php,
+        // uploadimg.php and viewallPage.php all escape these fields.
+        $img_title       = trim($_POST["img_title"]       ?? "ATMA BISWAS");
+        $img_description = trim($_POST["img_description"] ?? "");
         $img_type        = $_POST["imagetype"] ?? "latest_news";
         $display_order   = (int)($_POST["display_order"] ?? 0);
 
