@@ -18,7 +18,11 @@ document.addEventListener("DOMContentLoaded", function () {
   function runAllCounters(branchCount) {
     animateCounter("number1", 1500,              7000);
     animateCounter("number2", 100,               5500, "K");
-    animateCounter("number3", branchCount,       4000);
+    // Skipped when the count is unknown, so the card keeps the text it has
+    // rather than animating to a number nobody can vouch for.
+    if (typeof branchCount === "number") {
+      animateCounter("number3", branchCount,     4000);
+    }
     animateCounter("number4", currentYear - 1994, 4000);
   }
 
@@ -38,11 +42,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // The branch count comes from the database on every load and is never
+  // hardcoded here. The old fallback of 30 meant an unreachable endpoint
+  // quietly published a made-up figure indistinguishable from a real one.
+  // null is passed through instead and the branch counter is skipped.
   fetch("/backend/getBranchNumber.php")
     .then(res => res.json())
     .then(data => {
-      const count = (data && typeof data.value === "number") ? data.value : 30;
-      setupObserver(count);
+      const value = data && data.value;
+      setupObserver(typeof value === "number" ? value : null);
     })
-    .catch(() => setupObserver(30));
+    .catch(() => setupObserver(null));
 });
