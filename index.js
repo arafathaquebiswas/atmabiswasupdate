@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const currentYear = new Date().getFullYear();
+  const FOUNDING_YEAR = 1991;
 
   function animateCounter(id, end, duration, suffix) {
     const el = document.getElementById(id);
@@ -23,7 +24,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (typeof branchCount === "number") {
       animateCounter("number3", branchCount,     4000);
     }
-    animateCounter("number4", currentYear - 1994, 4000);
+    // ATMABISWAS was founded in 1991 -- the page title, the h1, aboutus.php,
+    // founder.php, eve.php, generalbody.php and seo.php all say so. This line
+    // was the only place in the project reading 1994, and it undercounted the
+    // organisation by three years. Derived from the current year rather than
+    // stored, so it rolls over on its own every 1 January.
+    animateCounter("number4", currentYear - FOUNDING_YEAR, 4000);
   }
 
   function setupObserver(branchCount) {
