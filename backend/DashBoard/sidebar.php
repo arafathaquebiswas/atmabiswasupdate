@@ -57,6 +57,10 @@
             <i class="fas fa-pen-to-square"></i>
             <span>About Us Editor</span>
         </a>
+        <a href="homepage_stats.php" class="nav-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Homepage Statistics</span>
+        </a>
         <div style="padding:0.5rem 1.5rem;font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;opacity:0.6;margin-top:0.5rem;">
             Contact Management
         </div>
