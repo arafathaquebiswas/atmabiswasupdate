@@ -183,12 +183,51 @@ function img_store_uploaded(string $tmpName, string $target): bool
     if (!move_uploaded_file($tmpName, $target)) {
         return false;
     }
-    // Both are best-effort: an upload must never fail because the optimiser
-    // could not encode a variant. Done once, here, so no page render ever
-    // encodes anything.
-    img_make_webp($target);
-    img_build_variants($target);
+
+    // The move is all that happens while the request is still being decided.
+    // Encoding used to run here, which put the most expensive work in the
+    // request BEFORE the database row was written: when it exhausted memory on
+    // a 6000x4000 photo the process died with the file already on disk and no
+    // row referencing it, so the admin lost the upload and was left an orphan
+    // file. Deferring it inverts that -- the row is committed first, and the
+    // worst a failed encode can now cost is the variants, with the original
+    // still served exactly as before.
+    img_defer_optimization($target);
     return true;
+}
+
+/**
+ * Run the encoding after the response has been handed back to the visitor.
+ *
+ * LiteSpeed and FPM can both close the connection and keep executing, which is
+ * what makes this safe: the redirect has already been sent, so the admin sees
+ * the result at normal speed no matter how large the photo is. Where neither
+ * exists the work still runs at shutdown, after the insert and the redirect
+ * header, so the ordering guarantee holds even without the early flush.
+ */
+function img_defer_optimization(string $absPath): void
+{
+    static $queued = [];
+    if (isset($queued[$absPath])) {
+        return;                       // one pass per file per request
+    }
+    $queued[$absPath] = true;
+
+    register_shutdown_function(static function () use ($absPath) {
+        if (function_exists('litespeed_finish_request')) {
+            @litespeed_finish_request();
+        } elseif (function_exists('fastcgi_finish_request')) {
+            @fastcgi_finish_request();
+        }
+        // Best-effort by definition: a variant that cannot be produced leaves
+        // the original in place, which is only slower, never broken.
+        try {
+            img_make_webp($absPath);
+            img_build_variants($absPath);
+        } catch (Throwable $e) {
+            error_log('img_defer_optimization failed for ' . basename($absPath) . ': ' . $e->getMessage());
+        }
+    });
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
