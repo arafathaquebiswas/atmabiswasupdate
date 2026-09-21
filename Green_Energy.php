@@ -11,7 +11,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Green Energy &amp; Solar Programs – ATMABISWAS (আত্মবিশ্বাস) Bangladesh</title>
+    <title>Green Energy &amp; Solar – ATMABISWAS (আত্মবিশ্বাস) Bangladesh</title>
     <?php include 'seo.php'; ?>
     <link rel="stylesheet" href="pages.css?v=<?php echo filemtime(__DIR__ . '/pages.css'); ?>">
 </head>

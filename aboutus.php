@@ -53,7 +53,7 @@ try {
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About ATMABISWAS (আত্মবিশ্বাস) – Bangladesh NGO | Mission &amp; Vision</title>
+    <title>About ATMABISWAS (আত্মবিশ্বাস) – Bangladesh NGO Since 1991</title>
     <?php include 'seo.php'; ?>
     <link rel="stylesheet" href="aboutus.css?v=<?php echo filemtime(__DIR__ . '/aboutus.css'); ?>">
 </head>

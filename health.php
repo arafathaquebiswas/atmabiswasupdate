@@ -11,7 +11,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Health &amp; Nutrition Programs – ATMABISWAS (আত্মবিশ্বাস) Bangladesh</title>
+    <title>Health &amp; Nutrition – ATMABISWAS (আত্মবিশ্বাস) NGO Bangladesh</title>
     <?php include 'seo.php'; ?>
     <link rel="stylesheet" href="pages.css?v=<?php echo filemtime(__DIR__ . '/pages.css'); ?>">
 </head>

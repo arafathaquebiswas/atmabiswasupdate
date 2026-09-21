@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="ATMABISWAS">
-    <title>ATMABISWAS – Official NGO Bangladesh | আত্মবিশ্বাস | Since 1991</title>
+    <title>ATMABISWAS (আত্মবিশ্বাস) – Bangladesh NGO Since 1991</title>
     <?php include 'seo.php'; ?>
     <link rel="stylesheet" href="index.css?v=<?php echo filemtime(__DIR__ . '/index.css'); ?>">
     <link rel="stylesheet" href="partners.css?v=<?php echo filemtime(__DIR__ . '/partners.css'); ?>">
