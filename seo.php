@@ -17,14 +17,14 @@ $_seo_logo = 'https://atmabiswas.org/LOGO/NGO_logo_monogram.png';
 // parent — must match a real, existing nav category, not an invented one).
 $_seo_data = [
     'index.php' => [
-        'title'       => 'ATMABISWAS – Official NGO Bangladesh | আত্মবিশ্বাস | Since 1991',
-        'description' => 'ATMABISWAS (আত্মবিশ্বাস) — Bangladesh\'s trusted NGO since 1991. Empowering rural communities through microfinance, solar energy, agriculture, and enterprise development. Official website.',
+        'title'       => 'ATMABISWAS (আত্মবিশ্বাস) – Bangladesh NGO Since 1991',
+        'description' => 'ATMABISWAS (আত্মবিশ্বাস) — Bangladesh\'s trusted NGO since 1991, empowering rural communities through microfinance, solar energy and agriculture.',
         'keywords'    => 'ATMABISWAS, আত্মবিশ্বাস, atma biswas, atma-biswas, NGO Bangladesh, microfinance, solar power, PKSF, RMTP, rural development, agriculture, আত্মবিশ্বাস এনজিও, ATMABISWAS NGO, nonprofit organization Bangladesh, registered NGO Bangladesh, বাংলাদেশের এনজিও',
         'canonical'   => 'https://atmabiswas.org/',
     ],
     'aboutus.php' => [
-        'title'       => 'About ATMABISWAS (আত্মবিশ্বাস) – Bangladesh NGO | Mission & Vision',
-        'description' => 'ATMABISWAS (আত্মবিশ্বাস) — registered Bangladesh NGO since 1991 under the Dept. of Social Welfare. Dedicated to poverty alleviation, rural development, and community empowerment.',
+        'title'       => 'About ATMABISWAS (আত্মবিশ্বাস) – Bangladesh NGO Since 1991',
+        'description' => 'ATMABISWAS (আত্মবিশ্বাস) — registered Bangladesh NGO since 1991, dedicated to poverty alleviation and rural community empowerment.',
         'keywords'    => 'ATMABISWAS about, আত্মবিশ্বাস, ATMABISWAS Bangladesh, non-governmental organization, rural development, community empowerment, poverty alleviation, NGO 1991 Chuadanga, registered NGO Bangladesh, বাংলাদেশ এনজিও',
         'canonical'   => 'https://atmabiswas.org/aboutus.php',
         'type'        => 'AboutPage',
@@ -38,19 +38,19 @@ $_seo_data = [
     ],
     'career.php' => [
         'title'       => 'Jobs & Careers at ATMABISWAS (আত্মবিশ্বাস) – NGO Bangladesh',
-        'description' => 'Explore job openings at ATMABISWAS (আত্মবিশ্বাস) NGO Bangladesh. Apply for positions in microfinance, health, agriculture, and community development. Join our team.',
+        'description' => 'Job openings at ATMABISWAS (আত্মবিশ্বাস) NGO Bangladesh — apply for roles in microfinance, health, agriculture and community development.',
         'keywords'    => 'ATMABISWAS jobs, আত্মবিশ্বাস চাকরি, NGO career Bangladesh, job vacancies Chuadanga, ATMABISWAS recruitment, NGO employment Bangladesh',
         'canonical'   => 'https://atmabiswas.org/career.php',
     ],
     'health.php' => [
-        'title'       => 'Health & Nutrition Programs – ATMABISWAS (আত্মবিশ্বাস) Bangladesh',
+        'title'       => 'Health & Nutrition – ATMABISWAS (আত্মবিশ্বাস) NGO Bangladesh',
         'description' => 'ATMABISWAS (আত্মবিশ্বাস) promotes community health in rural Bangladesh through free medicine, sanitation, and nutrition awareness campaigns.',
         'keywords'    => 'ATMABISWAS health, আত্মবিশ্বাস স্বাস্থ্য, nutrition Bangladesh, rural health NGO, free medicine, sanitation Bangladesh',
         'canonical'   => 'https://atmabiswas.org/health.php',
         'section'     => 'What We Do',
     ],
     'Green_Energy.php' => [
-        'title'       => 'Green Energy & Solar Programs – ATMABISWAS (আত্মবিশ্বাস) Bangladesh',
+        'title'       => 'Green Energy & Solar – ATMABISWAS (আত্মবিশ্বাস) Bangladesh',
         'description' => 'ATMABISWAS (আত্মবিশ্বাস) advances solar power, biogas, and sustainable energy programs for rural communities in Bangladesh.',
         'keywords'    => 'ATMABISWAS green energy, আত্মবিশ্বাস সোলার, solar power Bangladesh, renewable energy NGO, biogas Bangladesh, sustainable energy rural',
         'canonical'   => 'https://atmabiswas.org/Green_Energy.php',
@@ -64,7 +64,7 @@ $_seo_data = [
         'section'     => 'What We Do',
     ],
     'Agricultural.php' => [
-        'title'       => 'Food & Agriculture Programs – ATMABISWAS (আত্মবিশ্বাস) Bangladesh',
+        'title'       => 'Food & Agriculture – ATMABISWAS (আত্মবিশ্বাস) Bangladesh',
         'description' => 'ATMABISWAS (আত্মবিশ্বাস) supports food security and sustainable agriculture in Bangladesh through farmer training, resources, and modern farming techniques.',
         'keywords'    => 'ATMABISWAS agriculture, আত্মবিশ্বাস কৃষি, food security Bangladesh, farming NGO, sustainable agriculture Bangladesh',
         'canonical'   => 'https://atmabiswas.org/Agricultural.php',

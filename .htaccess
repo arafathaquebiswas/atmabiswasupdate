@@ -82,6 +82,21 @@ RewriteRule ^photos/(.+)$ /Photos/$1 [L,R=301]
 RewriteRule ^loc\.html$ /loc.php [L,R=301]
 
 # ----------------------------------------
+# ✅ SITEMAP IS GENERATED, NOT STORED
+# sitemap.xml was a hand-written file: it listed the static pages and no press
+# article had ever appeared in it, and its newest lastmod went three months
+# stale while posts were being published. sitemap.php builds the same document
+# from the database instead, so a new post is listed as soon as Google refetches
+# it and every lastmod is real.
+#
+# The URL is unchanged, which is the point -- robots.txt declares it and Search
+# Console already knows it. The old file is deliberately left in place: if this
+# rewrite ever stops applying, Google gets a stale but valid sitemap rather than
+# a 404 for the one file it is told to fetch.
+# ----------------------------------------
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+# ----------------------------------------
 # ✅ CLEAN URL: /status → status.php
 # Internal rewrite (not a redirect) so the address bar stays /status.
 # ----------------------------------------
