@@ -65,6 +65,18 @@ function img_make_webp(string $absSource): ?string
         return null;
     }
 
+    // Same guard as img_build_variants: refuse a source too large to decode
+    // within the memory limit rather than dying halfway and returning an empty
+    // response, which reaches the visitor as a Cloudflare 520.
+    @ini_set('memory_limit', '512M');
+    @set_time_limit(120);
+    $limitBytes = img_memory_limit_bytes();
+    if ($limitBytes > 0 && ($info[0] * $info[1] * 4 * 2) > ($limitBytes / 2)) {
+        error_log(sprintf('img_make_webp: skipping %s (%dx%d too large for limit)',
+            basename($absSource), $info[0], $info[1]));
+        return null;
+    }
+
     switch ($info[2]) {
         case IMAGETYPE_JPEG: $im = @imagecreatefromjpeg($absSource); break;
         case IMAGETYPE_PNG:  $im = @imagecreatefrompng($absSource);  break;
@@ -227,38 +239,97 @@ function img_build_variants(string $absSource): array
         default: return [];
     }
 
-    $made = [];
-    foreach (IMG_WIDTHS as $w) {
-        // Never upscale, and never re-encode a width the original already is.
-        if ($w >= $srcW) {
-            continue;
+    // Widths smaller than the source, largest first. Nothing is ever upscaled.
+    $widths = array_values(array_filter(IMG_WIDTHS, fn($w) => $w < $srcW));
+    if (!$widths) {
+        return [];
+    }
+    rsort($widths);
+
+    // Everything that still needs making, so an upload that already has its
+    // variants does no decoding at all.
+    $todo = [];
+    foreach ($widths as $w) {
+        $webpPath = img_variant_path($absSource, $w, 'webp');
+        if (!is_file($webpPath) || filemtime($webpPath) < filemtime($absSource)) {
+            $todo[] = $w;
         }
+    }
+    if (!$todo) {
+        $made = [];
+        foreach ($widths as $w) {
+            $made[$w] = [
+                'webp'     => img_variant_path($absSource, $w, 'webp'),
+                'fallback' => is_file(img_variant_path($absSource, $w, $fallbackExt))
+                    ? img_variant_path($absSource, $w, $fallbackExt) : null,
+            ];
+        }
+        return $made;
+    }
+
+    // A 6000x4000 upload is about 92 MB as a GD truecolor image. Decoding it
+    // once per width -- which this did -- meant four of those in a single
+    // request, and the process died partway through: PHP returned nothing, and
+    // Cloudflare reported that as a 520 to anyone uploading a large photo.
+    //
+    // The source is decoded once now and each width is scaled from the previous,
+    // larger result rather than from the original, so after the first step the
+    // working image is already small. Peak memory is one source plus one scaled
+    // copy instead of eight, and the arithmetic is a fraction of the work.
+    @ini_set('memory_limit', '512M');
+    @set_time_limit(120);
+
+    // Refuse sources too large to decode within the limit rather than dying
+    // halfway. 4 bytes per pixel, doubled for the working copy, and only half
+    // the limit is spent so the rest of the request still has room.
+    $limitBytes = img_memory_limit_bytes();
+    if ($limitBytes > 0 && ($srcW * $srcH * 4 * 2) > ($limitBytes / 2)) {
+        error_log(sprintf(
+            'img_build_variants: skipping %s (%dx%d needs ~%dMB, limit %dMB)',
+            basename($absSource), $srcW, $srcH,
+            (int) ($srcW * $srcH * 4 * 2 / 1048576), (int) ($limitBytes / 1048576)
+        ));
+        return [];
+    }
+
+    $im = @$loader($absSource);
+    if (!$im) {
+        return [];
+    }
+    if ($info[2] === IMAGETYPE_PNG) {
+        imagepalettetotruecolor($im);
+        imagealphablending($im, false);
+        imagesavealpha($im, true);
+    }
+
+    $made    = [];
+    $current = $im;
+    $curW    = $srcW;
+    $curH    = $srcH;
+
+    foreach ($widths as $w) {
+        // One scale factor drives both axes, taken from the ORIGINAL dimensions,
+        // so repeated steps cannot let rounding drift the aspect ratio.
+        $h       = (int) round($srcH * ($w / $srcW));
+        $resized = imagescale($current, $w, $h);
+        if (!$resized) {
+            break;
+        }
+        if ($current !== $im) {
+            unset($current);            // release the previous intermediate
+        }
+        $current = $resized;
+        $curW = $w;
+        $curH = $h;
+
+        if (!in_array($w, $todo, true)) {
+            continue;                   // already on disk; still needed as a step
+        }
+
+        $entry    = [];
         $webpPath = img_variant_path($absSource, $w, 'webp');
         $fbPath   = img_variant_path($absSource, $w, $fallbackExt);
 
-        $fresh = is_file($webpPath) && filemtime($webpPath) >= filemtime($absSource);
-        if ($fresh) {
-            $made[$w] = ['webp' => $webpPath, 'fallback' => is_file($fbPath) ? $fbPath : null];
-            continue;
-        }
-
-        $im = @$loader($absSource);
-        if (!$im) {
-            continue;
-        }
-        if ($info[2] === IMAGETYPE_PNG) {
-            imagepalettetotruecolor($im);
-            imagealphablending($im, false);
-            imagesavealpha($im, true);
-        }
-        // One scale factor for both axes: the aspect ratio cannot drift.
-        $h       = (int) round($srcH * ($w / $srcW));
-        $resized = imagescale($im, $w, $h);
-        if (!$resized) {
-            continue;
-        }
-
-        $entry = [];
         $tmp = $webpPath . '.tmp';
         if (img_webp_supported() && @imagewebp($resized, $tmp, IMG_WEBP_QUALITY) && is_file($tmp)) {
             @rename($tmp, $webpPath);
@@ -266,7 +337,7 @@ function img_build_variants(string $absSource): array
         } else {
             @unlink($tmp);
         }
-        // A same-format fallback so browsers without WebP also get a small file.
+
         $tmp2 = $fbPath . '.tmp';
         $ok2  = $fallbackExt === 'jpg'
             ? @imagejpeg($resized, $tmp2, 82)
@@ -277,11 +348,30 @@ function img_build_variants(string $absSource): array
         } else {
             @unlink($tmp2);
         }
+
         if ($entry) {
             $made[$w] = $entry;
         }
     }
+
     return $made;
+}
+
+/** PHP's memory_limit in bytes; 0 when unlimited or unreadable. */
+function img_memory_limit_bytes(): int
+{
+    $raw = trim((string) ini_get('memory_limit'));
+    if ($raw === '' || $raw === '-1') {
+        return 0;
+    }
+    $unit = strtolower(substr($raw, -1));
+    $num  = (int) $raw;
+    return match ($unit) {
+        'g' => $num * 1024 * 1024 * 1024,
+        'm' => $num * 1024 * 1024,
+        'k' => $num * 1024,
+        default => $num,
+    };
 }
 
 /**
