@@ -68,8 +68,7 @@ function img_make_webp(string $absSource): ?string
     // Same guard as img_build_variants: refuse a source too large to decode
     // within the memory limit rather than dying halfway and returning an empty
     // response, which reaches the visitor as a Cloudflare 520.
-    @ini_set('memory_limit', '512M');
-    @set_time_limit(120);
+    img_raise_limits();
     $limitBytes = img_memory_limit_bytes();
     if ($limitBytes > 0 && ($info[0] * $info[1] * 4 * 2) > ($limitBytes / 2)) {
         error_log(sprintf('img_make_webp: skipping %s (%dx%d too large for limit)',
@@ -315,8 +314,7 @@ function img_build_variants(string $absSource): array
     // larger result rather than from the original, so after the first step the
     // working image is already small. Peak memory is one source plus one scaled
     // copy instead of eight, and the arithmetic is a fraction of the work.
-    @ini_set('memory_limit', '512M');
-    @set_time_limit(120);
+    img_raise_limits();
 
     // Refuse sources too large to decode within the limit rather than dying
     // halfway. 4 bytes per pixel, doubled for the working copy, and only half
@@ -394,6 +392,28 @@ function img_build_variants(string $absSource): array
     }
 
     return $made;
+}
+
+/**
+ * Raise the memory ceiling only where it is currently lower.
+ *
+ * This used to set 512M unconditionally, which on this host LOWERED it: the
+ * account runs with memory_limit 2048M and max_execution_time 0, so the
+ * "safety" call was cutting the available memory to a quarter and capping a
+ * runtime that had no cap. A guard that makes the situation worse on the
+ * machine it is guarding is not a guard.
+ *
+ * set_time_limit is left alone entirely: 0 means no limit, and anything this
+ * would set is a reduction.
+ */
+function img_raise_limits(): void
+{
+    $current = img_memory_limit_bytes();
+    $wanted  = 512 * 1024 * 1024;
+    // 0 means unlimited, which is already better than anything requested here.
+    if ($current !== 0 && $current < $wanted) {
+        @ini_set('memory_limit', '512M');
+    }
 }
 
 /** PHP's memory_limit in bytes; 0 when unlimited or unreadable. */
