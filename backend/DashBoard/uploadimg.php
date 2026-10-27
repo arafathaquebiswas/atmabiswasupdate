@@ -11,7 +11,9 @@ $connection = $db->connect();
 
 // Fetch all images for gallery + stats
 try {
-    $stmt       = $connection->query("SELECT * FROM img_upload ORDER BY img_path DESC");
+    // Newest first, so a fresh upload is at the top. img_path is a random
+    // filename and gave no useful order.
+    $stmt       = $connection->query("SELECT * FROM img_upload ORDER BY img_id DESC");
     $all_images = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     $all_images = [];

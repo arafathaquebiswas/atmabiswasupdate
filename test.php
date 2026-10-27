@@ -40,9 +40,15 @@ $title_expr = isset($img_cols['img_title'])       ? 'img_title'
             : (isset($img_cols['img_name'])       ? 'img_name' : "''");
 $desc_expr  = isset($img_cols['img_description']) ? 'img_description' : "''";
 $order_expr = $has_order_col                      ? 'display_order'   : '0';
+$newest     = isset($img_cols['img_id'])          ? 'img_id DESC'     : 'img_path ASC';
 
 $sel = "{$title_expr} AS img_title, {$desc_expr} AS img_description, img_path, {$order_expr} AS display_order";
-$ord = $has_order_col ? "display_order ASC, img_path ASC" : "img_path ASC";
+// Numbered images first, in the admin's order, then the rest newest first.
+// This was "display_order ASC, img_path ASC": unnumbered rows are 0, so every
+// image the admin gave a number sorted after all of them and fell past the
+// LIMIT -- numbering an image hid it. And img_path is a random hex filename,
+// so a fresh upload landed in a random slot and often missed the cut too.
+$ord = $has_order_col ? "(display_order = 0) ASC, display_order ASC, {$newest}" : $newest;
 
 if (!function_exists('check_latest_img_exists')) {
     function check_latest_img_exists($path) {
