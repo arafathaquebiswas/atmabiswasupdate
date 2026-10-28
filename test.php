@@ -4,6 +4,8 @@ require_once __DIR__ . '/storage.php';
 require_once 'backend/Database/db.php';
 
 $latest = [];
+// Cards visible before "See More": three rows of four on desktop.
+$ln_initial = 12;
 
 try {
     $db   = new Db();
@@ -63,7 +65,7 @@ try {
     $stmt = $conn->prepare(
         "SELECT {$sel} FROM img_upload
          WHERE img_type = 'latest_news'
-         ORDER BY {$ord} LIMIT 12"
+         ORDER BY {$ord}"
     );
     $stmt->execute();
     $latest = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -92,13 +94,13 @@ try {
 if (empty($latest)) return;
 ?>
 <section class="ln-section">
-    <div class="ln-grid">
+    <div class="ln-grid" id="lnGrid">
         <?php foreach ($latest as $i => $img):
             $descId  = 'lndesc-' . $i;
             $btnId   = 'lnbtn-'  . $i;
             $hasDesc = !empty(trim($img['img_description']));
         ?>
-        <div class="ln-card">
+        <div class="ln-card<?= $i >= $ln_initial ? ' ln-extra' : '' ?>">
             <div class="ln-card-img-wrap">
                 <img class="ln-card-img"
                      src="<?= htmlspecialchars((preg_match('~^https?://~i', $img['img_path']) ? '' : '/') . ltrim($img['img_path'], '/')) ?>"
@@ -121,6 +123,14 @@ if (empty($latest)) return;
         </div>
         <?php endforeach; ?>
     </div>
+    <?php if (count($latest) > $ln_initial): ?>
+    <div class="ln-more-wrap">
+        <button type="button" class="ln-more-btn" id="lnMoreBtn"
+                aria-controls="lnGrid" aria-expanded="false" onclick="lnToggleAll()">
+            <span class="ln-more-label" data-en="See More" data-bn="আরও দেখুন">See More</span> <i class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+    <?php endif; ?>
 </section>
 
 <script>
@@ -138,6 +148,24 @@ function lnToggle(descId, btnId) {
     label.textContent = lang === 'bn'
         ? label.getAttribute('data-bn')
         : label.getAttribute('data-en');
+}
+
+// See More / See Less: reveal every Latest card, or fold back to the first 12.
+function lnToggleAll() {
+    var grid  = document.getElementById('lnGrid');
+    var btn   = document.getElementById('lnMoreBtn');
+    var open  = grid.classList.toggle('ln-show-all');
+    var label = btn.querySelector('.ln-more-label');
+    var lang  = window.atmaLang ? window.atmaLang.get() : 'en';
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    label.setAttribute('data-en', open ? 'See Less' : 'See More');
+    label.setAttribute('data-bn', open ? 'কম দেখুন' : 'আরও দেখুন');
+    label.textContent = lang === 'bn'
+        ? label.getAttribute('data-bn')
+        : label.getAttribute('data-en');
+    // Folding removes everything below the twelfth card; bring the button
+    // back into view so the visitor is not left stranded at the footer.
+    if (!open) btn.scrollIntoView({ block: 'center' });
 }
 </script>
 
