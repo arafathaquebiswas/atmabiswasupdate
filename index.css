@@ -7,7 +7,7 @@
 body {
   background-color: #f4f7f6;
   overflow-x: hidden;
-  font-family: "Times New Roman", Times, serif;
+  font-family: SutonnyOMJ, "Times New Roman", Times, serif;
 }
 
 /* ── Number Counter Section ────────────────────────── */
@@ -149,7 +149,7 @@ body {
 
 .secbtn {
   border-radius: 24px;
-  font-family: "Arial", sans-serif;
+  font-family: SutonnyOMJ, "Arial", sans-serif;
   font-weight: 700;
   background-color: #0073e6;
   color: #ffffff;
@@ -233,7 +233,7 @@ body {
 .join-family {
   text-align: center;
   padding: 50px 20px;
-  font-family: Arial, sans-serif;
+  font-family: SutonnyOMJ, Arial, sans-serif;
 }
 
 .join-family h2 {
@@ -356,7 +356,7 @@ body {
     color: #1e3a5f;
     margin: 0 0 8px;
     line-height: 1.45;
-    font-family: "Times New Roman", Times, serif;
+    font-family: SutonnyOMJ, "Times New Roman", Times, serif;
 }
 .ln-desc-wrap {
     overflow: hidden;
@@ -369,7 +369,7 @@ body {
     color: #6b7280;
     line-height: 1.6;
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: SutonnyOMJ, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 .ln-read-more {
     display: inline-flex;
@@ -383,7 +383,7 @@ body {
     font-size: .8rem;
     font-weight: 700;
     cursor: pointer;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: SutonnyOMJ, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     transition: color .2s;
     align-self: flex-start;
 }

@@ -2,6 +2,22 @@
    ATMABISWAS — Desktop Navbar
    ═══════════════════════════════════════════════ */
 
+/* ── Bangla font (site-wide) ────────────────── */
+/* SutonnyOMJ is the Unicode edition of Bijoy's SutonnyMJ. SutonnyMJ itself is
+   an ANSI font that draws Bangla over Latin letter codes: it cannot render the
+   site's Unicode Bangla and would turn English words into Bangla glyphs.
+   unicode-range limits this face to Bangla code points, so the font stacks can
+   list SutonnyOMJ first and English text still falls through to its own font.
+   Declared here because Navbar.php loads this file on every public page. */
+@font-face {
+  font-family: SutonnyOMJ;
+  src: local("SutonnyOMJ"),
+       url("fonts/SutonnyOMJ.woff2") format("woff2"),
+       url("fonts/SutonnyOMJ.ttf") format("truetype");
+  unicode-range: U+0964-0965, U+0980-09FF, U+200C-200D, U+25CC;
+  font-display: swap;
+}
+
 /* ── Reset (scoped) ─────────────────────────── */
 .navbar *, .navbar *::before, .navbar *::after,
 .mobile-header *, .mobile-header *::before, .mobile-header *::after {
@@ -16,7 +32,7 @@
   z-index: 1000;
   background-color: #ffffff;
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.12);
-  font-family: "Times New Roman", Times, serif;
+  font-family: SutonnyOMJ, "Times New Roman", Times, serif;
 }
 
 /* ── Centered navbar container ──────────────── */
@@ -305,7 +321,7 @@
   left: 0;
   z-index: 999;
   min-height: 62px;
-  font-family: "Times New Roman", Times, serif;
+  font-family: SutonnyOMJ, "Times New Roman", Times, serif;
 }
 
 .mobile-header .logo img {

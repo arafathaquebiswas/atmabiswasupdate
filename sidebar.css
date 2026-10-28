@@ -1,7 +1,7 @@
 .sidenav {
   z-index: 100;
   overflow-y: auto;
-  font-family: "Times New Roman", Times, serif;
+  font-family: SutonnyOMJ, "Times New Roman", Times, serif;
   display: flex;
   flex-direction: column;
   background-color: #0d47a1;
@@ -52,7 +52,7 @@
 }
 
 .sidenav a {
-  font-family: "Times New Roman", Times, serif;
+  font-family: SutonnyOMJ, "Times New Roman", Times, serif;
   font-weight: 400;
   text-decoration: none;
   color: #ffffff; /* White text for all links */
@@ -79,7 +79,7 @@
 }
 
 .side-lang-toggle {
-  font-family: "Times New Roman", Times, serif;
+  font-family: SutonnyOMJ, "Times New Roman", Times, serif;
   color: #0d47a1;
   background-color: #ffffff;
   border: none;
@@ -125,7 +125,7 @@
 }
 
 .sidedropContent a {
-  font-family: "Times New Roman", Times, serif; /* Ensure same font */
+  font-family: SutonnyOMJ, "Times New Roman", Times, serif; /* Ensure same font */
   font-weight: 400; /* Ensure same font weight */
   color: #ffffff; /* White text for dropdown links */
   padding: 8px 20px 8px 40px; /* Indent dropdown items with slightly less vertical padding */

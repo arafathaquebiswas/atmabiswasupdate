@@ -19,7 +19,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: "Times New Roman", Times, serif;
+  font-family: SutonnyOMJ, "Times New Roman", Times, serif;
   background: var(--bg);
   color: var(--text);
   overflow-x: hidden;
