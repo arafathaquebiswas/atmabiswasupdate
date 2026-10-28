@@ -7,11 +7,13 @@
  * was saved for it.
  */
 
-/** Segments in page order; each card's 'img' is its built-in image. */
+/** Segments in page order, each with a permanent 'key' (cards added from the admin
+ *  panel are stored against it); each card's 'img' is its built-in image. */
 function events_cards(): array
 {
     return [
         [
+            'key'   => 'scholarship',
             'icon'  => 'fa-solid fa-graduation-cap',
             'title' => 'Scholarship Events',
             'cards' => [
@@ -30,6 +32,7 @@ function events_cards(): array
             ],
         ],
         [
+            'key'   => 'women-rights',
             'icon'  => 'fa-solid fa-venus',
             'title' => 'Women Rights Events',
             'cards' => [
@@ -45,6 +48,7 @@ function events_cards(): array
             ],
         ],
         [
+            'key'   => 'conference',
             'icon'  => 'fa-solid fa-users',
             'title' => 'Employee Conference',
             'cards' => [
@@ -60,6 +64,7 @@ function events_cards(): array
             ],
         ],
         [
+            'key'   => 'winter',
             'icon'  => 'fa-solid fa-snowflake',
             'title' => 'Winter Events',
             'cards' => [
@@ -75,6 +80,7 @@ function events_cards(): array
             ],
         ],
         [
+            'key'   => 'awareness',
             'icon'  => 'fa-solid fa-bullhorn',
             'title' => 'Awareness Events',
             'cards' => [
@@ -96,6 +102,7 @@ function events_cards(): array
             ],
         ],
         [
+            'key'   => 'other',
             'icon'  => 'fa-solid fa-calendar-check',
             'title' => 'Others Events',
             'cards' => [

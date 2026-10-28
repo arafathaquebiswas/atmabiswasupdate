@@ -18,6 +18,12 @@
  * Text, one row per card in the page's texts table:
  *   no row                 -> its built-in title and description
  *   row                    -> the saved title and description
+ *
+ * Added cards, one row per card in the page's extras table: an admin can add
+ * cards to a section, up to CARDS_PER_SEGMENT_MAX in all. An added card has
+ * no built-in anything -- its key is "<section key>-x<row id>", and its
+ * title, description and image live in the same two tables as every other
+ * card's, so editing them works the same way.
  */
 require_once __DIR__ . '/storage.php';
 require_once __DIR__ . '/image_optimize.php';
@@ -36,6 +42,9 @@ const CARD_IMG_MAX_BYTES = 5 * 1024 * 1024;
 const CARD_TITLE_MAX = 150;
 const CARD_DESC_MAX  = 1000;
 
+/** Most cards a section may hold, built-in and added together. */
+const CARDS_PER_SEGMENT_MAX = 8;
+
 /**
  * The pages whose cards can be managed, by id. Table names and upload
  * folders come only from here, never from a request.
@@ -50,6 +59,7 @@ function card_pages(): array
             'cards'  => 'social_cards',
             'images' => 'social_card_images',
             'texts'  => 'social_card_texts',
+            'extras' => 'social_card_extras',
             'folder' => 'social',
             'prefix' => 'SOCIAL',
         ],
@@ -60,6 +70,7 @@ function card_pages(): array
             'cards'  => 'events_cards',
             'images' => 'event_card_images',
             'texts'  => 'event_card_texts',
+            'extras' => 'event_card_extras',
             'folder' => 'events',
             'prefix' => 'EVENT',
         ],
@@ -80,6 +91,46 @@ function card_page(string $page): array
 function cards_segments(string $page): array
 {
     return (card_page($page)['cards'])();
+}
+
+/**
+ * Cards added from the admin panel as ['id', 'segment_key'] rows, oldest
+ * first. Never throws: without a database or the table there are none.
+ */
+function cards_extra_rows(string $page, ?PDO $pdo = null): array
+{
+    try {
+        $pdo = cards_pdo($pdo);
+        if (!$pdo) {
+            return [];
+        }
+        return $pdo->query("SELECT id, segment_key FROM `" . card_page($page)['extras'] . "` ORDER BY id")
+                   ->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+/**
+ * cards_segments() with each section's added cards after its built-in ones.
+ * An added card starts empty ('extra' => true); its text and image come from
+ * the overrides like any other card's.
+ */
+function cards_all_segments(string $page, ?PDO $pdo = null): array
+{
+    $segments = cards_segments($page);
+    $bySeg    = [];
+    foreach (cards_extra_rows($page, $pdo) as $row) {
+        $bySeg[$row['segment_key']][] = (int) $row['id'];
+    }
+    foreach ($segments as &$segment) {
+        foreach ($bySeg[$segment['key']] ?? [] as $id) {
+            $segment['cards'][] = ['key' => $segment['key'] . '-x' . $id, 'img' => null, 'alt' => '',
+                                   'title' => '', 'desc' => '', 'extra' => true];
+        }
+    }
+    unset($segment);
+    return $segments;
 }
 
 /** The largest upload that gets through: our cap or PHP's, whichever is lower. */
@@ -104,13 +155,13 @@ function cards_upload_limit_label(): string
     return rtrim(rtrim(number_format(cards_upload_limit() / 1048576, 1), '0'), '.') . ' MB';
 }
 
-/** Every card of the page by key, with its segment title -- the whitelist for admin actions. */
-function cards_index(string $page): array
+/** Every card of the page by key, added ones too, with its segment title -- the whitelist for admin actions. */
+function cards_index(string $page, ?PDO $pdo = null): array
 {
     $index = [];
-    foreach (cards_segments($page) as $segment) {
+    foreach (cards_all_segments($page, $pdo) as $segment) {
         foreach ($segment['cards'] as $card) {
-            $index[$card['key']] = $card + ['segment' => $segment['title']];
+            $index[$card['key']] = $card + ['segment' => $segment['title'], 'segment_key' => $segment['key']];
         }
     }
     return $index;
@@ -135,6 +186,42 @@ function cards_ensure_tables(PDO $pdo, string $page): void
             updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     );
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS `{$p['extras']}` (
+            id          INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            segment_key VARCHAR(64)  NOT NULL,
+            created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            KEY segment_key (segment_key)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+    );
+}
+
+/**
+ * Check an uploaded image: null when it is fine (with $ext set to the
+ * extension to save it with), otherwise the message to show the admin.
+ * The type comes from the file's contents, never its name or the browser.
+ */
+function cards_accept_upload(?array $file, ?string &$ext): ?string
+{
+    $ext   = null;
+    $error = $file['error'] ?? UPLOAD_ERR_NO_FILE;
+
+    if ($error === UPLOAD_ERR_NO_FILE) {
+        return 'Please choose an image first.';
+    }
+    if ($error === UPLOAD_ERR_INI_SIZE || $error === UPLOAD_ERR_FORM_SIZE
+        || ($error === UPLOAD_ERR_OK && $file['size'] > cards_upload_limit())) {
+        return 'The image is larger than ' . cards_upload_limit_label() . '. Please choose a smaller one.';
+    }
+    if ($error !== UPLOAD_ERR_OK || !is_uploaded_file($file['tmp_name'])) {
+        return "The upload failed (error code {$error}). Please try again.";
+    }
+    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+    if (!isset(CARD_IMG_TYPES[$mime]) || @getimagesize($file['tmp_name']) === false) {
+        return 'Only JPG, PNG or WebP images can be uploaded.';
+    }
+    $ext = CARD_IMG_TYPES[$mime];
+    return null;
 }
 
 /**
@@ -217,6 +304,10 @@ function cards_apply_texts(array $segments, array $texts): array
             if ($card['edited']) {
                 $card['title'] = $texts[$card['key']]['title'];
                 $card['desc']  = $texts[$card['key']]['desc'];
+            }
+            // Added cards have no alt text of their own; their title describes the picture.
+            if ($card['alt'] === '') {
+                $card['alt'] = $card['title'];
             }
         }
         unset($card);
@@ -306,7 +397,7 @@ function cards_delete_upload(PDO $pdo, string $page, ?string $path): void
  */
 function cards_render(string $page): void
 {
-    $segments  = cards_apply_texts(cards_segments($page), cards_text_overrides($page));
+    $segments  = cards_apply_texts(cards_all_segments($page), cards_text_overrides($page));
     $overrides = cards_image_overrides($page);
     $logoSrc   = htmlspecialchars(cards_logo_src());
 
@@ -318,6 +409,10 @@ function cards_render(string $page): void
             </div>
             <div class="card-grid">
                 <?php foreach ($segment['cards'] as $card):
+                    // An added card whose text was never saved has nothing to show.
+                    if (!empty($card['extra']) && $card['title'] === '') {
+                        continue;
+                    }
                     $image = cards_card_image($card, $overrides);
                     // Uploads get the narrower copies image_optimize.php makes, when they exist.
                     $set   = $image['source'] === 'uploaded' ? img_srcset($image['src']) : ['fallback' => ''];

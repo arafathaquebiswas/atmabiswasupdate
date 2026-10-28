@@ -36,7 +36,7 @@ try {
     $dbError = 'Could not reach the database, so cards cannot be changed right now. '
              . 'The cards below show their built-in images and text.';
 }
-$segments = cards_apply_texts(cards_segments($cardPage), $texts);
+$segments = cards_apply_texts(cards_all_segments($cardPage, $dbError ? null : $conn), $texts);
 
 $flash = $_SESSION['cards_flash'] ?? null;
 unset($_SESSION['cards_flash']);
@@ -116,6 +116,15 @@ $badges    = [
         .sc-text-form textarea { min-height:90px; resize:vertical; line-height:1.45; }
         .sc-text-form input:focus, .sc-text-form textarea:focus { outline:2px solid #93c5fd; border-color:#2563eb; }
         .sc-hint { font-size:.7rem; color:#94a3b8; margin:0; }
+        .sc-segment { scroll-margin-top:1.5rem; }
+        .sc-count { margin-left:auto; font-size:.75rem; font-weight:600; background:rgba(255,255,255,.18);
+                    padding:.2rem .6rem; border-radius:999px; white-space:nowrap; }
+        .sc-badge.added { background:#dbeafe; color:#1e40af; }
+        .sc-add { border:2px dashed #93c5fd; background:#f8fbff; }
+        .sc-add h3 { display:flex; align-items:center; gap:.45rem; color:#1d4ed8; font-size:.95rem; }
+        .sc-add .sc-text-form { padding:0; margin-top:.25rem; }
+        .sc-full { grid-column:1 / -1; margin:0; font-size:.8rem; color:#475569; background:#f1f5f9;
+                   border:1px solid #e2e8f0; border-radius:8px; padding:.6rem .85rem; }
         @media (max-width: 640px) { .sc-wrap { padding:0 1rem; } }
     </style>
 </head>
@@ -130,7 +139,8 @@ $badges    = [
                     <div>
                         <h1><i class="fas fa-images"></i> <?= htmlspecialchars($pageName) ?> Page Images</h1>
                         <p class="sc-sub">
-                            Choose the picture, title and description each card on the <?= htmlspecialchars($pageName) ?> page shows. Changes are
+                            Choose the picture, title and description each card on the <?= htmlspecialchars($pageName) ?> page shows,
+                            or add new cards to a section (up to <?= CARDS_PER_SEGMENT_MAX ?> per section). Changes are
                             live as soon as they are saved. A card with no image shows the ATMA BISWAS logo; removing an
                             image never removes the card, its title or its description. JPG, PNG or WebP, up to <?= cards_upload_limit_label() ?>.
                         </p>
@@ -147,17 +157,23 @@ $badges    = [
                     <div class="sc-msg error"><?= htmlspecialchars($dbError) ?></div>
                 <?php endif; ?>
                 <?php if (!$canRemove): ?>
-                    <div class="sc-msg info">You can upload and replace images and edit the text. Removing an image or restoring the original image or text needs a super admin.</div>
+                    <div class="sc-msg info">You can upload and replace images, edit the text and add new cards. Removing an image, restoring the original image or text, or deleting an added card needs a super admin.</div>
                 <?php endif; ?>
 
-                <?php foreach ($segments as $segment): ?>
-                <section class="sc-segment">
-                    <h2><i class="<?= htmlspecialchars($segment['icon']) ?>"></i> <?= htmlspecialchars($segment['title']) ?></h2>
+                <?php foreach ($segments as $segment):
+                    $cardCount = count($segment['cards']);
+                ?>
+                <section class="sc-segment" id="seg-<?= htmlspecialchars($segment['key']) ?>">
+                    <h2>
+                        <i class="<?= htmlspecialchars($segment['icon']) ?>"></i> <?= htmlspecialchars($segment['title']) ?>
+                        <span class="sc-count"><?= $cardCount ?> of <?= CARDS_PER_SEGMENT_MAX ?> cards</span>
+                    </h2>
                     <div class="sc-grid">
                         <?php foreach ($segment['cards'] as $card):
                             $image = cards_card_image($card, $overrides);
                             [$badgeText, $badgeClass] = $badges[$image['source']];
                             $hasPhoto = !$image['logo'];
+                            $isExtra  = !empty($card['extra']);
                         ?>
                         <div class="sc-card" id="card-<?= htmlspecialchars($card['key']) ?>">
                             <img class="sc-img<?= $image['logo'] ? ' is-logo' : '' ?>"
@@ -166,8 +182,11 @@ $badges    = [
                                  onerror="this.onerror=null;this.src='../../<?= htmlspecialchars(cards_logo_src()) ?>';this.classList.add('is-logo');">
                             <div class="sc-body">
                                 <div class="sc-badges">
+                                    <?php if ($isExtra): ?>
+                                    <span class="sc-badge added">Added card</span>
+                                    <?php endif; ?>
                                     <span class="sc-badge <?= $badgeClass ?>"><?= $badgeText ?></span>
-                                    <?php if ($card['edited']): ?>
+                                    <?php if ($card['edited'] && !$isExtra): ?>
                                     <span class="sc-badge ok">Edited text</span>
                                     <?php endif; ?>
                                 </div>
@@ -193,7 +212,7 @@ $badges    = [
                                                   maxlength="<?= CARD_DESC_MAX ?>"><?= htmlspecialchars($card['desc']) ?></textarea>
                                         <button type="submit" class="sc-btn sc-btn-primary"><i class="fas fa-save"></i> Save text</button>
                                     </form>
-                                    <?php if ($card['edited'] && $canRemove): ?>
+                                    <?php if ($card['edited'] && $canRemove && !$isExtra): ?>
                                     <form class="sc-text-form" method="POST" action="Actions/card_text.php"
                                           onsubmit="return confirm('Put back the original title and description for this card?');">
                                         <?= csrf_field() ?>
@@ -243,9 +262,49 @@ $badges    = [
                                     <?php endif; ?>
                                 </div>
                                 <?php endif; ?>
+
+                                <?php if ($isExtra && $canRemove && !$dbError): ?>
+                                <form method="POST" action="Actions/card_extra.php?page=<?= htmlspecialchars($cardPage) ?>"
+                                      onsubmit="return confirm('Delete this card? It disappears from the <?= htmlspecialchars($pageName) ?> page with its picture, title and description.');">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="card_key" value="<?= htmlspecialchars($card['key']) ?>">
+                                    <input type="hidden" name="page" value="<?= htmlspecialchars($cardPage) ?>">
+                                    <input type="hidden" name="action" value="delete">
+                                    <button type="submit" class="sc-btn sc-btn-danger" style="width:100%"><i class="fas fa-times-circle"></i> Delete card</button>
+                                </form>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <?php endforeach; ?>
+
+                        <?php if ($dbError): ?>
+                        <?php elseif ($cardCount < CARDS_PER_SEGMENT_MAX): ?>
+                        <div class="sc-card sc-add" id="add-<?= htmlspecialchars($segment['key']) ?>">
+                            <div class="sc-body">
+                                <h3><i class="fas fa-plus-circle"></i> Add new card</h3>
+                                <p class="sc-hint">Room for <?= CARDS_PER_SEGMENT_MAX - $cardCount ?> more in this section.</p>
+                                <form class="sc-form sc-text-form" method="POST" enctype="multipart/form-data"
+                                      action="Actions/card_extra.php?page=<?= htmlspecialchars($cardPage) ?>">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="page" value="<?= htmlspecialchars($cardPage) ?>">
+                                    <input type="hidden" name="segment" value="<?= htmlspecialchars($segment['key']) ?>">
+                                    <input type="hidden" name="action" value="add">
+                                    <label for="add-img-<?= htmlspecialchars($segment['key']) ?>">Picture</label>
+                                    <input type="file" id="add-img-<?= htmlspecialchars($segment['key']) ?>" name="image"
+                                           accept="image/jpeg,image/png,image/webp" required data-max="<?= cards_upload_limit() ?>">
+                                    <label for="add-title-<?= htmlspecialchars($segment['key']) ?>">Title</label>
+                                    <input type="text" id="add-title-<?= htmlspecialchars($segment['key']) ?>" name="title"
+                                           maxlength="<?= CARD_TITLE_MAX ?>" required>
+                                    <label for="add-desc-<?= htmlspecialchars($segment['key']) ?>">Description <span class="sc-hint">(optional)</span></label>
+                                    <textarea id="add-desc-<?= htmlspecialchars($segment['key']) ?>" name="description"
+                                              maxlength="<?= CARD_DESC_MAX ?>"></textarea>
+                                    <button type="submit" class="sc-btn sc-btn-primary"><i class="fas fa-plus"></i> Add card</button>
+                                </form>
+                            </div>
+                        </div>
+                        <?php else: ?>
+                        <p class="sc-full"><i class="fas fa-info-circle"></i> This section is full (<?= CARDS_PER_SEGMENT_MAX ?> of <?= CARDS_PER_SEGMENT_MAX ?> cards). To add another, delete a card that was added here.</p>
+                        <?php endif; ?>
                     </div>
                 </section>
                 <?php endforeach; ?>

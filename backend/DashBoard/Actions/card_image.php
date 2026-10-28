@@ -50,11 +50,17 @@ $cards  = $page ? cards_index($cardPage) : [];
 if (!isset($cards[$key]) || !in_array($action, ['upload', 'remove', 'restore'], true)) {
     card_image_back('error', 'Unknown card or action. Nothing was changed.');
 }
-$label = $cards[$key]['segment'] . ' — ' . $cards[$key]['title'];
+$isExtra = !empty($cards[$key]['extra']);
+// An added card's title is in the texts table, not in the built-in list.
+$title = $isExtra ? (cards_text_overrides($cardPage)[$key]['title'] ?? '') : $cards[$key]['title'];
+$label = $cards[$key]['segment'] . ' — ' . $title;
 $table = $page['images'];
 
 if ($action !== 'upload') {
     require_super_admin('remove a ' . $page['name'] . ' page image');
+}
+if ($action === 'restore' && $isExtra) {
+    card_image_back('error', 'This card was added from the admin panel, so it has no original image. Nothing was changed.', $key);
 }
 
 try {
@@ -70,27 +76,12 @@ try {
 }
 
 if ($action === 'upload') {
-    $file  = $_FILES['image'] ?? null;
-    $error = $file['error'] ?? UPLOAD_ERR_NO_FILE;
-
-    if ($error === UPLOAD_ERR_NO_FILE) {
-        card_image_back('error', 'Please choose an image first.', $key);
-    }
-    if ($error === UPLOAD_ERR_INI_SIZE || $error === UPLOAD_ERR_FORM_SIZE
-        || ($error === UPLOAD_ERR_OK && $file['size'] > cards_upload_limit())) {
-        card_image_back('error', 'The image is larger than ' . cards_upload_limit_label() . '. Please choose a smaller one.', $key);
-    }
-    if ($error !== UPLOAD_ERR_OK || !is_uploaded_file($file['tmp_name'])) {
-        card_image_back('error', "The upload failed (error code {$error}). The previous image is unchanged.", $key);
+    $file = $_FILES['image'] ?? null;
+    if (($problem = cards_accept_upload($file, $ext)) !== null) {
+        card_image_back('error', $problem, $key);
     }
 
-    // Type comes from the file's contents, never from its name or the browser.
-    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
-    if (!isset(CARD_IMG_TYPES[$mime]) || @getimagesize($file['tmp_name']) === false) {
-        card_image_back('error', 'Only JPG, PNG or WebP images can be uploaded.', $key);
-    }
-
-    $newPath = cards_upload_path($cardPage, CARD_IMG_TYPES[$mime]);
+    $newPath = cards_upload_path($cardPage, $ext);
     $newAbs  = dirname(__DIR__, 3) . '/' . $newPath;
 
     if (!img_store_uploaded($file['tmp_name'], $newAbs)) {

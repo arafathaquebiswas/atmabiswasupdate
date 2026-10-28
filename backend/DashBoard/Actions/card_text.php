@@ -45,6 +45,9 @@ $table = $page['texts'];
 
 if ($action === 'restore') {
     require_super_admin('restore a ' . $page['name'] . ' page card\'s original text');
+    if (!empty($card['extra'])) {
+        card_text_back('error', 'This card was added from the admin panel, so it has no original text. Nothing was changed.', $key);
+    }
 }
 
 if ($action === 'save') {

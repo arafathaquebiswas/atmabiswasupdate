@@ -7,7 +7,8 @@
  * was saved for it.
  */
 
-/** Segments in page order; each card's 'img' is its built-in image, null for the logo. */
+/** Segments in page order, each with a permanent 'key' (cards added from the admin
+ *  panel are stored against it); each card's 'img' is its built-in image, null for the logo. */
 function social_cards(): array
 {
     $logoCards = static function (string $prefix, int $count, string $title, string $alt): array {
@@ -20,6 +21,7 @@ function social_cards(): array
 
     return [
         [
+            'key'   => 'women',
             'icon'  => 'fa-solid fa-hand-holding-heart',
             'title' => 'Empowering Women',
             'cards' => [
@@ -35,6 +37,7 @@ function social_cards(): array
             ],
         ],
         [
+            'key'   => 'training',
             'icon'  => 'fa-solid fa-chalkboard-user',
             'title' => 'ATMABISWAS Training Center',
             'cards' => [
@@ -59,6 +62,7 @@ function social_cards(): array
             ],
         ],
         [
+            'key'   => 'daycare',
             'icon'  => 'fa-solid fa-baby',
             'title' => 'ATMABISWAS Daycare',
             'cards' => [
@@ -73,16 +77,19 @@ function social_cards(): array
             ],
         ],
         [
+            'key'   => 'pathshala',
             'icon'  => 'fa-solid fa-book-open',
             'title' => 'ATMABISWAS Pathshala',
             'cards' => $logoCards('pathshala', 3, 'ATMABISWAS Pathshala', 'ATMABISWAS Pathshala'),
         ],
         [
+            'key'   => 'care',
             'icon'  => 'fa-solid fa-heart-pulse',
             'title' => 'Compassionate Care & Support',
             'cards' => $logoCards('care', 5, 'Compassionate Care & Support', 'Compassionate Care'),
         ],
         [
+            'key'   => 'other',
             'icon'  => 'fa-solid fa-circle-plus',
             'title' => 'Other Program',
             'cards' => $logoCards('other', 5, 'Supporting Disabilities', 'Supporting Disabilities'),
