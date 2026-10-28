@@ -1,11 +1,12 @@
 <?php
 /**
- * Social page images: every card on social.php with the image it shows right
- * now, and controls to upload, replace, remove or restore that image.
+ * Social page images: every card on social.php with the image and text it
+ * shows right now, and controls to upload, replace, remove or restore that
+ * image and to edit or restore its title and description.
  *
- * Titles, descriptions and order are not edited here; they live in
- * social_cards.php. The changes themselves are made by
- * Actions/social_image.php, which redirects back with a message.
+ * The cards and their order live in social_cards.php. The changes themselves
+ * are made by Actions/social_image.php and Actions/social_text.php, which
+ * redirect back with a message.
  */
 require_once __DIR__ . '/../auth.php';
 require_once __DIR__ . '/csrf_helper.php';
@@ -15,15 +16,18 @@ require_login();
 
 $dbError   = '';
 $overrides = [];
+$texts     = [];
 try {
     $conn = (new Db())->connect();
     social_ensure_table($conn);
     $overrides = social_image_overrides($conn);
+    $texts     = social_text_overrides($conn);
 } catch (Throwable $e) {
     error_log('social_images: database unavailable: ' . $e->getMessage());
-    $dbError = 'Could not reach the database, so images cannot be changed right now. '
-             . 'The cards below show their built-in images.';
+    $dbError = 'Could not reach the database, so cards cannot be changed right now. '
+             . 'The cards below show their built-in images and text.';
 }
+$segments = social_apply_texts(social_cards(), $texts);
 
 $flash = $_SESSION['social_flash'] ?? null;
 unset($_SESSION['social_flash']);
@@ -90,6 +94,19 @@ $badges    = [
         .sc-row { display:flex; gap:.45rem; flex-wrap:wrap; }
         .sc-row form { flex:1; }
         .sc-row .sc-btn { width:100%; }
+        .sc-badges { display:flex; gap:.35rem; flex-wrap:wrap; }
+        .sc-edit { border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; }
+        .sc-edit summary { cursor:pointer; padding:.5rem .7rem; font-size:.8rem; font-weight:600; color:#1d4ed8; list-style:none; }
+        .sc-edit summary::-webkit-details-marker { display:none; }
+        .sc-edit summary i { margin-right:.35rem; }
+        .sc-edit[open] summary { border-bottom:1px solid #e2e8f0; }
+        .sc-text-form { display:flex; flex-direction:column; gap:.4rem; padding:.7rem; }
+        .sc-text-form label { font-size:.72rem; font-weight:600; color:#334155; }
+        .sc-text-form input[type=text], .sc-text-form textarea { width:100%; box-sizing:border-box; font:inherit; font-size:.82rem;
+                   padding:.45rem .55rem; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a; }
+        .sc-text-form textarea { min-height:90px; resize:vertical; line-height:1.45; }
+        .sc-text-form input:focus, .sc-text-form textarea:focus { outline:2px solid #93c5fd; border-color:#2563eb; }
+        .sc-hint { font-size:.7rem; color:#94a3b8; margin:0; }
         @media (max-width: 640px) { .sc-wrap { padding:0 1rem; } }
     </style>
 </head>
@@ -104,9 +121,9 @@ $badges    = [
                     <div>
                         <h1><i class="fas fa-images"></i> Social Page Images</h1>
                         <p class="sc-sub">
-                            Choose the picture each card on the Social page shows. A new image is live as soon as it
-                            is saved. A card with no image shows the ATMA BISWAS logo; removing an image never removes
-                            the card, its title or its description. JPG, PNG or WebP, up to <?= social_upload_limit_label() ?>.
+                            Choose the picture, title and description each card on the Social page shows. Changes are
+                            live as soon as they are saved. A card with no image shows the ATMA BISWAS logo; removing an
+                            image never removes the card, its title or its description. JPG, PNG or WebP, up to <?= social_upload_limit_label() ?>.
                         </p>
                     </div>
                     <a class="sc-view" href="../../social.php" target="_blank" rel="noopener">
@@ -121,10 +138,10 @@ $badges    = [
                     <div class="sc-msg error"><?= htmlspecialchars($dbError) ?></div>
                 <?php endif; ?>
                 <?php if (!$canRemove): ?>
-                    <div class="sc-msg info">You can upload and replace images. Removing an image or restoring the original needs a super admin.</div>
+                    <div class="sc-msg info">You can upload and replace images and edit the text. Removing an image or restoring the original image or text needs a super admin.</div>
                 <?php endif; ?>
 
-                <?php foreach (social_cards() as $segment): ?>
+                <?php foreach ($segments as $segment): ?>
                 <section class="sc-segment">
                     <h2><i class="<?= htmlspecialchars($segment['icon']) ?>"></i> <?= htmlspecialchars($segment['title']) ?></h2>
                     <div class="sc-grid">
@@ -139,12 +156,45 @@ $badges    = [
                                  alt="Current image: <?= htmlspecialchars($card['title']) ?>" loading="lazy"
                                  onerror="this.onerror=null;this.src='../../<?= htmlspecialchars(social_logo_src()) ?>';this.classList.add('is-logo');">
                             <div class="sc-body">
-                                <span class="sc-badge <?= $badgeClass ?>"><?= $badgeText ?></span>
+                                <div class="sc-badges">
+                                    <span class="sc-badge <?= $badgeClass ?>"><?= $badgeText ?></span>
+                                    <?php if ($card['edited']): ?>
+                                    <span class="sc-badge ok">Edited text</span>
+                                    <?php endif; ?>
+                                </div>
                                 <h3><?= htmlspecialchars($card['title']) ?></h3>
                                 <?php if ($card['desc'] !== ''): ?>
                                 <p class="sc-desc"><?= htmlspecialchars($card['desc']) ?></p>
                                 <?php endif; ?>
                                 <span class="sc-key"><?= htmlspecialchars($card['key']) ?></span>
+
+                                <?php if (!$dbError): ?>
+                                <details class="sc-edit">
+                                    <summary><i class="fas fa-pen"></i>Edit title &amp; description</summary>
+                                    <form class="sc-text-form" method="POST" action="Actions/social_text.php">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="card_key" value="<?= htmlspecialchars($card['key']) ?>">
+                                        <input type="hidden" name="action" value="save">
+                                        <label for="title-<?= htmlspecialchars($card['key']) ?>">Title</label>
+                                        <input type="text" id="title-<?= htmlspecialchars($card['key']) ?>" name="title"
+                                               value="<?= htmlspecialchars($card['title']) ?>" maxlength="<?= SOCIAL_TITLE_MAX ?>" required>
+                                        <label for="desc-<?= htmlspecialchars($card['key']) ?>">Description <span class="sc-hint">(optional)</span></label>
+                                        <textarea id="desc-<?= htmlspecialchars($card['key']) ?>" name="description"
+                                                  maxlength="<?= SOCIAL_DESC_MAX ?>"><?= htmlspecialchars($card['desc']) ?></textarea>
+                                        <button type="submit" class="sc-btn sc-btn-primary"><i class="fas fa-save"></i> Save text</button>
+                                    </form>
+                                    <?php if ($card['edited'] && $canRemove): ?>
+                                    <form class="sc-text-form" method="POST" action="Actions/social_text.php"
+                                          onsubmit="return confirm('Put back the original title and description for this card?');">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="card_key" value="<?= htmlspecialchars($card['key']) ?>">
+                                        <input type="hidden" name="action" value="restore">
+                                        <p class="sc-hint">Original: <?= htmlspecialchars($card['orig_title']) ?></p>
+                                        <button type="submit" class="sc-btn sc-btn-plain"><i class="fas fa-undo"></i> Restore original text</button>
+                                    </form>
+                                    <?php endif; ?>
+                                </details>
+                                <?php endif; ?>
 
                                 <form class="sc-form" method="POST" action="Actions/social_image.php" enctype="multipart/form-data">
                                     <?= csrf_field() ?>
@@ -207,6 +257,12 @@ $badges    = [
             var btn = form.querySelector('button');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading…';
+        });
+    });
+    document.querySelectorAll('.sc-text-form').forEach(function (form) {
+        form.addEventListener('submit', function () {
+            var btn = form.querySelector('button');
+            setTimeout(function () { btn.disabled = true; }, 0);
         });
     });
     </script>

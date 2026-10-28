@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/social_cards.php';
-$socialSegments  = social_cards();
-// Images saved from the admin panel; empty (built-in images) without a database.
+// Text and images saved from the admin panel; without a database every card
+// keeps its built-in text and image.
+$socialSegments  = social_apply_texts(social_cards(), social_text_overrides());
 $socialOverrides = social_image_overrides();
 ?>
 <!DOCTYPE html>

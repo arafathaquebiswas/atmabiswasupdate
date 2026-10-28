@@ -1,18 +1,22 @@
 <?php
 /**
- * Cards on the Social page (social.php) and the images an admin assigns them.
+ * Cards on the Social page (social.php) and what an admin changes on them.
  *
- * Titles, descriptions and order live here, in code, exactly as the page has
- * always shown them. Only each card's image is managed from the admin panel
- * (backend/DashBoard/social_images.php), and only that is stored in the
- * database: one row per card in social_card_images, keyed by the card's 'key'.
- * Keys are permanent -- renaming one orphans the image saved for it.
+ * The cards, their order and their built-in titles, descriptions and images
+ * live here, in code. From the admin panel (backend/DashBoard/social_images.php)
+ * an admin can change each card's image and its title and description; those
+ * changes are stored in the database keyed by the card's 'key'. Keys are
+ * permanent -- renaming one orphans whatever was saved for it.
  *
- * What a card shows:
+ * Image, one row per card in social_card_images:
  *   no row                 -> its built-in 'img' (the logo when it has none)
  *   row with a file path   -> that upload
  *   row with NULL / empty  -> the official logo (the admin removed the image)
  * and the official logo whenever the chosen file is missing on disk.
+ *
+ * Text, one row per card in social_card_texts:
+ *   no row                 -> its built-in title and description
+ *   row                    -> the saved title and description
  */
 require_once __DIR__ . '/storage.php';
 require_once __DIR__ . '/image_optimize.php';
@@ -24,6 +28,10 @@ const SOCIAL_LOGO = 'LOGO/NGO_logo_monogram.png';
 const SOCIAL_IMG_TYPES = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
 
 const SOCIAL_IMG_MAX_BYTES = 5 * 1024 * 1024;
+
+/** Longest card title and description an admin can save, in characters. */
+const SOCIAL_TITLE_MAX = 150;
+const SOCIAL_DESC_MAX  = 1000;
 
 /** The largest upload that gets through: our cap or PHP's, whichever is lower. */
 function social_upload_limit(): int
@@ -142,7 +150,7 @@ function social_card_index(): array
     return $index;
 }
 
-/** Create the table holding each card's image, where this install lacks it. */
+/** Create the tables holding each card's image and text, where this install lacks them. */
 function social_ensure_table(PDO $pdo): void
 {
     $pdo->exec(
@@ -152,6 +160,36 @@ function social_ensure_table(PDO $pdo): void
             updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     );
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS social_card_texts (
+            card_key    VARCHAR(64)  NOT NULL PRIMARY KEY,
+            title       VARCHAR(255) NOT NULL,
+            description TEXT         NOT NULL,
+            updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+    );
+}
+
+/**
+ * $pdo, or else the site's own connection -- tried once per request, so the
+ * public page makes one attempt however many lookups it does. Null without
+ * a database.
+ */
+function social_pdo(?PDO $pdo = null): ?PDO
+{
+    static $shared = false;
+    if ($pdo !== null) {
+        return $pdo;
+    }
+    if ($shared === false) {
+        try {
+            require_once __DIR__ . '/backend/Database/db.php';
+            $shared = (new Db())->connect() ?: null;
+        } catch (Throwable $e) {
+            $shared = null;
+        }
+    }
+    return $shared;
 }
 
 /**
@@ -164,10 +202,7 @@ function social_ensure_table(PDO $pdo): void
 function social_image_overrides(?PDO $pdo = null): array
 {
     try {
-        if ($pdo === null) {
-            require_once __DIR__ . '/backend/Database/db.php';
-            $pdo = (new Db())->connect();
-        }
+        $pdo = social_pdo($pdo);
         if (!$pdo) {
             return [];
         }
@@ -176,6 +211,51 @@ function social_image_overrides(?PDO $pdo = null): array
     } catch (Throwable $e) {
         return [];
     }
+}
+
+/**
+ * Saved text as card_key => ['title' => ..., 'desc' => ...].
+ *
+ * Never throws, for the same reason as social_image_overrides(): without a
+ * database or the table, every card keeps its built-in text.
+ */
+function social_text_overrides(?PDO $pdo = null): array
+{
+    try {
+        $pdo = social_pdo($pdo);
+        if (!$pdo) {
+            return [];
+        }
+        $texts = [];
+        foreach ($pdo->query("SELECT card_key, title, description FROM social_card_texts") as $row) {
+            $texts[$row['card_key']] = ['title' => (string) $row['title'], 'desc' => (string) $row['description']];
+        }
+        return $texts;
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+/**
+ * social_cards() with saved text applied. Each card also gets 'edited' (bool)
+ * and its built-in 'orig_title' / 'orig_desc', for the admin screen.
+ */
+function social_apply_texts(array $segments, array $texts): array
+{
+    foreach ($segments as &$segment) {
+        foreach ($segment['cards'] as &$card) {
+            $card['orig_title'] = $card['title'];
+            $card['orig_desc']  = $card['desc'];
+            $card['edited']     = isset($texts[$card['key']]);
+            if ($card['edited']) {
+                $card['title'] = $texts[$card['key']]['title'];
+                $card['desc']  = $texts[$card['key']]['desc'];
+            }
+        }
+        unset($card);
+    }
+    unset($segment);
+    return $segments;
 }
 
 /** The logo's URL, versioned by its mtime like the page always did. */
