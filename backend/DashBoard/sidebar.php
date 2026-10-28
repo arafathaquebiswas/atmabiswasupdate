@@ -10,15 +10,13 @@ $sidebarActive  = static fn(string $file): string => $file === $sidebarCurrent ?
         display: flex;
         align-items: center;
         gap: .6rem;
-        margin: 1.1rem .75rem .35rem;
-        padding: .6rem .85rem;
-        background: rgba(0, 32, 80, .35);
-        border-left: 4px solid #fbbf24;
-        border-radius: 6px;
+        margin: 1.5rem 1rem .5rem;
+        padding: 0 .25rem .55rem;
+        border-bottom: 2px solid #fff;
         color: #fff;
-        font-size: .78rem;
+        font-size: .82rem;
         font-weight: 800;
-        letter-spacing: 1.1px;
+        letter-spacing: 1.2px;
         text-transform: uppercase;
     }
     .admin-sidebar .nav-section i {
