@@ -11,8 +11,11 @@ if (!isset($_SESSION['username'])) {
 $db = new Db();
 
 $conn = $db->connect();
-function concatStrings(string $blog): string
+function concatStrings(?string $blog): string
 {
+    // Empty columns arrive as NULL; a plain "string" parameter turned that
+    // into a fatal error that took the whole page down.
+    $blog = (string) $blog;
     $display = "";
     $maximumLength = 80;
 
@@ -41,6 +44,13 @@ try {
     $imgStmt->execute();
 
     $images = $imgStmt->fetchAll(PDO::FETCH_ASSOC);
+    // Same normalisation as uploadimg.php: older installs name the title
+    // column img_name and may have no uploaded_on.
+    foreach ($images as &$row) {
+        $row['img_title']   = $row['img_title'] ?? $row['img_name'] ?? '';
+        $row['uploaded_on'] = $row['uploaded_on'] ?? '';
+    }
+    unset($row);
 } catch (PDOException $e) {
     echo $e;
 }
@@ -403,12 +413,12 @@ try {
                                                 <tr>
                                                     <td><?php echo htmlspecialchars($image['img_id']); ?></td>
                                                     <td><?php echo htmlspecialchars($image['img_title']); ?></td>
-                                                    <td><?php echo htmlspecialchars(concatStrings($image['img_description'])); ?></td>
+                                                    <td><?php echo htmlspecialchars(concatStrings($image['img_description'] ?? '')); ?></td>
                                                     <td><?php echo htmlspecialchars(concatStrings($image['img_path'])); ?></td>
                                                     <td><?php echo htmlspecialchars($image['uploaded_on']); ?></td>
                                                     <td>
                                                         <a onclick="return confirm('Are you sure you want to delete this image?');"
-                                                            href="../deleteimage.php?img_id=<?php echo $image['img_id']; ?>"
+                                                            href="../../deleteimage.php?img_id=<?php echo (int) $image['img_id']; ?>"
                                                             class="btn btn-danger btn-sm">
                                                             <i class="fas fa-trash"></i> Delete
                                                         </a>
