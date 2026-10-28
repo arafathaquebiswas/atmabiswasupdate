@@ -4,11 +4,13 @@
  * Visit this URL once, then you can delete this file.
  */
 session_start();
-if (!isset($_SESSION['username'])) {
+require_once __DIR__ . '/../auth.php';
+
+if (!is_logged_in()) {
     die('Unauthorized. Please log in to the dashboard first, then revisit this page.');
 }
 
-include 'db.php';
+include_once 'db.php';
 $db   = new Db();
 $conn = $db->connect();
 

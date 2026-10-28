@@ -2,11 +2,13 @@
 require_once __DIR__ . '/../../../image_optimize.php';
 require_once __DIR__ . '/../../../storage.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
-include '../../Database/db.php';
+include_once '../../Database/db.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['username'])) {
+require_once __DIR__ . '/../../auth.php';
+
+if (!is_logged_in()) {
     http_response_code(403);
     echo json_encode(['error' => 'Unauthorized']);
     exit();

@@ -1,4 +1,9 @@
 <?php
+// Retired duplicate of loging.php (nothing links here). Forwarded so there is
+// one login page carrying the rate limiting, CSRF check and Google sign-in.
+header('Location: loging.php');
+exit();
+
 include_once '../Database/db.php';
 require_once __DIR__ . '/../auth.php';
 session_start();

@@ -1,7 +1,9 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['username'])) {
+require_once __DIR__ . '/auth.php';
+
+if (!is_logged_in()) {
     header("Location: /backend/login/loging.php");
     exit();
 }
@@ -11,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit();
 }
 
-include "Database/db.php";
+include_once "Database/db.php";
 
 $database = new Db();
 $conn     = $database->connect();

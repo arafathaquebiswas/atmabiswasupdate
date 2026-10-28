@@ -5,12 +5,23 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/../Database/db.php';
 require_once __DIR__ . '/../auth.php';
+require_once __DIR__ . '/../google_auth.php';
+require_once __DIR__ . '/../DashBoard/csrf_helper.php';
 
 $usernameErr = "";
 $passErr     = "";
 $invalid     = "";
+// Empty until Google sign-in is configured; the button is hidden until then.
+$googleClientId = google_client_id();
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+// The login form must never be shown inside another site's frame (clickjacking).
+// Google's button opens a popup, so it needs no framing either.
+header('X-Frame-Options: DENY');
+header("Content-Security-Policy: frame-ancestors 'none'");
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && !csrf_verify()) {
+    $invalid = "Your session expired. Please try again.";
+} elseif ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Both are used exactly as typed: the query is parameterised, and the
     // stored hash was made from the raw password, so filtering either one
     // only ever turned a correct login into "Invalid Credentials".
@@ -35,10 +46,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 // session is given the real role rather than defaulting to admin.
                 auth_ensure_role_column($connection);
 
-                $user = auth_attempt_login($connection, $username, $password);
+                // Rate limited, and refused with one message whatever was wrong.
+                $user = auth_password_login($connection, $username, $password, $loginError);
 
                 if (!$user) {
-                    $invalid = "Invalid Credentials";
+                    $invalid = $loginError;
                 } else {
                     auth_login_admin($user);
                     header("Location: ../DashBoard/dashboard.php");
@@ -106,6 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         <!-- Form Section -->
         <form class="login-form" action="" method="POST" novalidate>
+            <?= csrf_field() ?>
             <!-- Email Field -->
             <div class="form-group">
                 <label for="username" class="form-label">Email Address</label>
@@ -168,6 +181,61 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <span>Sign In</span>
             </button>
         </form>
+
+        <?php if ($googleClientId !== ''): ?>
+        <!-- Sign in with Google: only approved Google accounts get in (see ../google_auth.php). -->
+        <div class="google-signin">
+            <div class="google-or"><span>or</span></div>
+            <div id="g_id_onload"
+                 data-client_id="<?= htmlspecialchars($googleClientId) ?>"
+                 data-callback="atmaGoogleSignIn"
+                 data-ux_mode="popup"
+                 data-auto_prompt="false"
+                 data-itp_support="true"></div>
+            <div class="g_id_signin" data-type="standard" data-theme="outline" data-size="large"
+                 data-text="signin_with" data-shape="rectangular" data-logo_alignment="left" data-width="320"></div>
+            <!-- Not .error-message: the page hides those 5 s after load, which would also hide this one for good. -->
+            <div class="google-error" id="googleError" role="alert" hidden>
+                <i class="fas fa-exclamation-triangle"></i>
+                <span></span>
+            </div>
+        </div>
+        <style>
+            .google-signin { margin-top: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
+            .google-or { width: 100%; display: flex; align-items: center; gap: .75rem; color: #fff; font-size: .85rem;
+                         font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+            .google-or::before, .google-or::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,.55); }
+            .google-error { width: 100%; box-sizing: border-box; display: flex; gap: .5rem; align-items: center;
+                            padding: .7rem .9rem; border-radius: 8px; font-size: .88rem;
+                            background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+            .google-error[hidden] { display: none; }
+        </style>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script>
+            // Google hands us a signed ID token; the server verifies it and decides.
+            function atmaGoogleSignIn(response) {
+                var box = document.getElementById('googleError');
+                var body = new FormData();
+                body.append('credential', response.credential);
+                body.append('csrf_token', <?= json_encode(csrf_token()) ?>);
+                box.hidden = true;
+                fetch('google.php', { method: 'POST', body: body, credentials: 'same-origin' })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                            return;
+                        }
+                        box.querySelector('span').textContent = data.error || 'Google sign-in could not be completed. Please try again.';
+                        box.hidden = false;
+                    })
+                    .catch(function () {
+                        box.querySelector('span').textContent = 'Google sign-in could not be completed. Please try again.';
+                        box.hidden = false;
+                    });
+            }
+        </script>
+        <?php endif; ?>
 
         <!-- Links Section -->
         <div class="login-links">

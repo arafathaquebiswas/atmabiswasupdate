@@ -23,6 +23,9 @@
 ob_start();
 
 if (session_status() === PHP_SESSION_NONE) {
+    // Refuse session ids the server never issued, so nobody can plant one
+    // in a visitor's browser and wait for them to log in (session fixation).
+    ini_set('session.use_strict_mode', '1');
     session_set_cookie_params([
         'lifetime' => 0,
         'path'     => '/',

@@ -1,8 +1,10 @@
 <?php
 session_start();
-include '../Database/db.php';
+include_once '../Database/db.php';
 
-if (isset($_SESSION['username'])) {
+require_once __DIR__ . '/../auth.php';
+
+if (is_logged_in()) {
     $database = new Db();
     $connection = $database->connect();
 
@@ -13,6 +15,7 @@ if (isset($_SESSION['username'])) {
     $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
     header("Location: ../login/loging.php");
+    exit();
 }
 
 

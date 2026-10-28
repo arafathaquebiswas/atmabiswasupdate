@@ -4,7 +4,9 @@ require_once __DIR__ . '/../storage.php';
 session_start();
 
 // Check if user is logged in
-if (!isset($_SESSION['username'])) {
+require_once __DIR__ . '/auth.php';
+
+if (!is_logged_in()) {
   http_response_code(401);
   echo json_encode([
     'status' => 'error',

@@ -6,7 +6,9 @@ require_once '../../Database/db.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['username'])) {
+require_once __DIR__ . '/../../auth.php';
+
+if (!is_logged_in()) {
     http_response_code(403);
     echo json_encode(['error' => 'Unauthorized']);
     exit();

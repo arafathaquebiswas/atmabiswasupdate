@@ -1,7 +1,9 @@
 <?php
-include '../Database/db.php';
+include_once '../Database/db.php';
 session_start();
-if (!isset($_SESSION['username'])) {
+require_once __DIR__ . '/../auth.php';
+
+if (!is_logged_in()) {
 
   header("Location: ../login/login.php");
   exit();

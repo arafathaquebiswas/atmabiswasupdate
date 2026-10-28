@@ -2,7 +2,9 @@
 require_once __DIR__ . '/image_optimize.php';
 require_once __DIR__ . '/storage.php';
 session_start();
-if (!isset($_SESSION['username'])) {
+require_once __DIR__ . '/backend/auth.php';
+
+if (!is_logged_in()) {
     header("Location: backend/login/loging.php");
     exit();
 }

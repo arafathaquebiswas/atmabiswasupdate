@@ -74,7 +74,7 @@ function auth_dashboard_url(): string
 /**
  * Store the authenticated admin in the session. Called by the login pages.
  */
-function auth_login_admin(array $admin): void
+function auth_login_admin(array $admin, string $method = 'password', ?array $google = null): void
 {
     auth_boot();
 
@@ -87,6 +87,139 @@ function auth_login_admin(array $admin): void
     $_SESSION['email']    = $admin['email'] ?? ($admin['username'] ?? '');
     // Retained under its original name: existing pages and Navbar.php read this.
     $_SESSION['username'] = $admin['fullname'] ?? ($admin['email'] ?? ($admin['username'] ?? ''));
+
+    // A Google session stays valid only while that exact Google account's
+    // access row is approved; see auth_session_still_valid().
+    if ($method === 'google' && $google !== null) {
+        $_SESSION['login_method']     = 'google';
+        $_SESSION['google_access_id'] = (int) $google['id'];
+        $_SESSION['google_sub']       = (string) $google['google_sub'];
+    } else {
+        $_SESSION['login_method'] = 'password';
+        unset($_SESSION['google_access_id'], $_SESSION['google_sub']);
+    }
+}
+
+/**
+ * Whether an admins row may sign in at all, by either method. Rows from before
+ * the status column carry no value and count as active; any other value
+ * ('inactive', 'suspended', ...) shuts the account out.
+ */
+function auth_admin_is_active(array $admin): bool
+{
+    $status = strtolower(trim((string) ($admin['status'] ?? '')));
+    return $status === '' || $status === 'active';
+}
+
+/** Shown for every refused password login, so it never says which part was wrong. */
+const AUTH_MSG_INVALID   = 'Incorrect email or password. Please try again.';
+const AUTH_MSG_THROTTLED = 'Too many sign-in attempts. Please wait 15 minutes and try again.';
+
+/** Failed sign-ins allowed per account and per network address within the window. */
+const AUTH_THROTTLE_WINDOW      = 900;
+const AUTH_THROTTLE_PER_ACCOUNT = 5;
+const AUTH_THROTTLE_PER_IP      = 30;
+
+/**
+ * Rate-limit buckets for a sign-in attempt. Keys are hashed, so the table
+ * holds neither email addresses nor IP addresses.
+ */
+function auth_throttle_buckets(string $method, string $account = ''): array
+{
+    $buckets = ['ip' => hash('sha256', $method . '|ip|' . ($_SERVER['REMOTE_ADDR'] ?? ''))];
+    $account = strtolower(trim($account));
+    if ($account !== '') {
+        $buckets['account'] = hash('sha256', $method . '|account|' . $account);
+    }
+    return $buckets;
+}
+
+function auth_throttle_ensure_table(PDO $conn): void
+{
+    $conn->exec(
+        "CREATE TABLE IF NOT EXISTS auth_login_failures (
+            id        BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            bucket    CHAR(64) NOT NULL,
+            failed_at DATETIME NOT NULL,
+            KEY bucket_time (bucket, failed_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+    );
+}
+
+/** Whether recent failures from this account or address mean the attempt must be refused unchecked. */
+function auth_login_throttled(PDO $conn, string $method, string $account = ''): bool
+{
+    try {
+        auth_throttle_ensure_table($conn);
+        $since = date('Y-m-d H:i:s', time() - AUTH_THROTTLE_WINDOW);
+        $st    = $conn->prepare("SELECT COUNT(*) FROM auth_login_failures WHERE bucket = ? AND failed_at > ?");
+        foreach (auth_throttle_buckets($method, $account) as $kind => $bucket) {
+            $st->execute([$bucket, $since]);
+            $limit = $kind === 'ip' ? AUTH_THROTTLE_PER_IP : AUTH_THROTTLE_PER_ACCOUNT;
+            if ((int) $st->fetchColumn() >= $limit) {
+                return true;
+            }
+        }
+    } catch (Throwable $e) {
+        // A broken limiter must not lock every admin out; the password check still applies.
+        error_log('auth_login_throttled: ' . $e->getMessage());
+    }
+    return false;
+}
+
+function auth_note_login_failure(PDO $conn, string $method, string $account = ''): void
+{
+    try {
+        auth_throttle_ensure_table($conn);
+        $now = date('Y-m-d H:i:s');
+        $st  = $conn->prepare("INSERT INTO auth_login_failures (bucket, failed_at) VALUES (?, ?)");
+        foreach (auth_throttle_buckets($method, $account) as $bucket) {
+            $st->execute([$bucket, $now]);
+        }
+        // Rows older than a day can no longer count; clear them now and then.
+        if (random_int(1, 50) === 1) {
+            $conn->prepare("DELETE FROM auth_login_failures WHERE failed_at < ?")
+                 ->execute([date('Y-m-d H:i:s', time() - 86400)]);
+        }
+    } catch (Throwable $e) {
+        error_log('auth_note_login_failure: ' . $e->getMessage());
+    }
+}
+
+/** After a successful sign-in the account starts afresh; the address keeps its count. */
+function auth_clear_login_failures(PDO $conn, string $method, string $account): void
+{
+    $buckets = auth_throttle_buckets($method, $account);
+    if (!isset($buckets['account'])) {
+        return;
+    }
+    try {
+        $conn->prepare("DELETE FROM auth_login_failures WHERE bucket = ?")->execute([$buckets['account']]);
+    } catch (Throwable $e) {
+        error_log('auth_clear_login_failures: ' . $e->getMessage());
+    }
+}
+
+/**
+ * The password sign-in every login form uses: rate limited, and refused with
+ * one generic message whatever was wrong. Returns the admin, or null with
+ * $error set to the message to show.
+ */
+function auth_password_login(PDO $conn, string $login, string $password, ?string &$error): ?array
+{
+    $error = null;
+    if (auth_login_throttled($conn, 'password', $login)) {
+        $error = AUTH_MSG_THROTTLED;
+        return null;
+    }
+    $admin = auth_attempt_login($conn, $login, $password);
+    if ($admin === null) {
+        auth_note_login_failure($conn, 'password', $login);
+        $error = AUTH_MSG_INVALID;
+        return null;
+    }
+    auth_clear_login_failures($conn, 'password', $login);
+    return $admin;
 }
 
 /**
@@ -131,6 +264,10 @@ function auth_attempt_login(PDO $conn, string $login, string $password): ?array
     $escaped = (string) filter_var($password, FILTER_SANITIZE_SPECIAL_CHARS);
 
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $admin) {
+        // The same rule as Google sign-in: a deactivated account cannot sign in.
+        if (!auth_admin_is_active($admin)) {
+            continue;
+        }
         $stored = (string) ($admin['pswd'] ?? '');
         if ($stored === '') {
             continue;
@@ -192,6 +329,10 @@ function current_admin(): ?array
         }
     }
 
+    if (!auth_session_still_valid()) {
+        return null;
+    }
+
     return [
         'id'       => (int) ($_SESSION['admin_id'] ?? 0),
         'fullname' => (string) $_SESSION['username'],
@@ -245,10 +386,73 @@ function auth_rehydrate_session(): bool
     }
 }
 
+/**
+ * Whether the signed-in admin may still use the site, checked against the
+ * database once per request: the account must still exist and be active, and
+ * a Google sign-in must still be approved and tied to the same Google account.
+ * Suspending, revoking or deactivating therefore takes effect on the next
+ * page, not when the session happens to expire. The session's role and name
+ * are refreshed at the same time, so a role change applies at once too.
+ *
+ * A database error refuses the request but keeps the session, so a brief
+ * outage does not sign everybody out; a definite "no" ends the session.
+ */
+function auth_session_still_valid(): bool
+{
+    static $verdicts = [];
+    $id  = (int) ($_SESSION['admin_id'] ?? 0);
+    $key = session_id() . '|' . $id;
+    if (isset($verdicts[$key])) {
+        return $verdicts[$key];
+    }
+
+    try {
+        $conn = (new Db())->connect();
+        $st   = $conn->prepare("SELECT * FROM admins WHERE adminId = ? LIMIT 1");
+        $st->execute([$id]);
+        $admin = $st->fetch(PDO::FETCH_ASSOC);
+        $valid = $admin !== false && auth_admin_is_active($admin);
+
+        if ($valid && ($_SESSION['login_method'] ?? '') === 'google') {
+            $st = $conn->prepare(
+                "SELECT COUNT(*) FROM admin_google_access
+                 WHERE id = ? AND admin_id = ? AND google_sub = ? AND status = 'approved'"
+            );
+            $st->execute([(int) ($_SESSION['google_access_id'] ?? 0), $id, (string) ($_SESSION['google_sub'] ?? '')]);
+            $valid = (int) $st->fetchColumn() === 1;
+        }
+    } catch (Throwable $e) {
+        error_log('auth_session_still_valid: ' . $e->getMessage());
+        return false;
+    }
+
+    if (!$valid) {
+        auth_destroy_session();
+        return $verdicts[$key] = false;
+    }
+
+    $_SESSION['role']     = auth_normalize_role($admin['role'] ?? ROLE_ADMIN);
+    $_SESSION['email']    = $admin['email'] ?? ($admin['username'] ?? '');
+    $_SESSION['username'] = $admin['fullname'] ?? ($admin['email'] ?? ($admin['username'] ?? ''));
+    return $verdicts[$key] = true;
+}
+
 function auth_destroy_session(): void
 {
     auth_boot();
     $_SESSION = [];
+    // Expire the cookie too, so the browser stops presenting the old id.
+    if (ini_get('session.use_cookies')) {
+        $p = session_get_cookie_params();
+        setcookie(session_name(), '', [
+            'expires'  => time() - 42000,
+            'path'     => $p['path'],
+            'domain'   => $p['domain'],
+            'secure'   => $p['secure'],
+            'httponly' => $p['httponly'],
+            'samesite' => $p['samesite'] ?: 'Lax',
+        ]);
+    }
     session_destroy();
 }
 

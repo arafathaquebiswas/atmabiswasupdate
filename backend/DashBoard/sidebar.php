@@ -107,6 +107,13 @@ $sidebarActive  = static fn(string $file): string => $file === $sidebarCurrent ?
             <i class="fas fa-code-branch"></i>
             <span>Branches</span>
         </a>
+        <?php if (function_exists('is_super_admin') && is_super_admin()): ?>
+        <div class="nav-section"><i class="fas fa-user-lock"></i>Access &amp; Security</div>
+        <a href="google_access.php" class="nav-item<?= $sidebarActive('google_access.php') ?>">
+            <i class="fab fa-google"></i>
+            <span>Google Sign-in Access</span>
+        </a>
+        <?php endif; ?>
     </nav>
 
     <div class="sidebar-footer">
