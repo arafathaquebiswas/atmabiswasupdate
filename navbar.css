@@ -28,6 +28,13 @@
   font-display: swap;
 }
 
+/* Buttons and form fields do not inherit the page font by default, so their
+   English showed in the system font and their Bangla skipped AtmaBangla.
+   :where() has zero specificity: any control the site styles keeps its font. */
+:where(button, input, select, textarea) {
+  font-family: inherit;
+}
+
 /* ── Reset (scoped) ─────────────────────────── */
 .navbar *, .navbar *::before, .navbar *::after,
 .mobile-header *, .mobile-header *::before, .mobile-header *::after {

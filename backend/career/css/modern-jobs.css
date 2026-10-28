@@ -38,7 +38,7 @@
 
 body {
   background-color: var(--gray-50);
-  font-family: AtmaBangla, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: AtmaBangla, "Times New Roman", Times, serif;
   line-height: 1.6;
   color: var(--gray-700);
 }
