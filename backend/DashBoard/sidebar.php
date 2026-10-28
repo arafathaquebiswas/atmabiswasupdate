@@ -25,13 +25,60 @@ $sidebarActive  = static fn(string $file): string => $file === $sidebarCurrent ?
         font-size: .9rem;
         color: #fbbf24;
     }
+
+    /* Phones: the sidebar slides in from a menu button in a top bar. The page
+       stylesheets hide .sidebar-container below 768px, which used to leave
+       admins on a phone with no menu at all; it is shown again here (zero
+       width -- the sidebar itself is fixed and off-screen until opened). */
+    .admin-mobile-bar, .admin-sidebar-close, .admin-sidebar-overlay { display: none; }
+    @media screen and (max-width: 768px) {
+        .sidebar-container { display: block !important; width: 0 !important; }
+        body { padding-top: 56px; }
+        .admin-mobile-bar {
+            display: flex; align-items: center; gap: .75rem;
+            position: fixed; top: 0; left: 0; right: 0; height: 56px; padding: 0 1rem; z-index: 1000;
+            color: #fff; background: linear-gradient(135deg, #1e3a5f 0%, #0073e6 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .15);
+        }
+        .admin-mobile-bar button {
+            flex-shrink: 0; width: 42px; height: 42px; border: 0; border-radius: 8px; cursor: pointer;
+            background: rgba(255, 255, 255, .15); color: #fff; font-size: 1.2rem;
+        }
+        .admin-mobile-bar .bar-title { font-weight: 700; font-size: 1.05rem; }
+        .admin-mobile-bar .bar-page {
+            margin-left: auto; font-size: .8rem; opacity: .9;
+            max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .admin-sidebar-overlay {
+            display: block; position: fixed; inset: 0; z-index: 1001; background: rgba(0, 0, 0, .5);
+            opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s;
+        }
+        .admin-sidebar-overlay.active { opacity: 1; visibility: visible; }
+        .admin-sidebar { z-index: 1002; transform: translateX(-100%); transition: transform .3s ease; }
+        .admin-sidebar.mobile-open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0, 0, 0, .3); }
+        .admin-sidebar-close {
+            display: inline-flex; align-items: center; justify-content: center;
+            position: absolute; top: 1rem; right: 1rem; width: 38px; height: 38px;
+            border: 0; border-radius: 8px; cursor: pointer;
+            background: rgba(255, 255, 255, .15); color: #fff; font-size: 1.1rem;
+        }
+    }
 </style>
-<div class="admin-sidebar">
+<div class="admin-mobile-bar">
+    <button type="button" aria-label="Open menu" aria-controls="adminSidebar" aria-expanded="false">
+        <i class="fas fa-bars"></i>
+    </button>
+    <span class="bar-title">DashPanel</span>
+    <span class="bar-page"></span>
+</div>
+<div class="admin-sidebar-overlay"></div>
+<div class="admin-sidebar" id="adminSidebar">
     <div class="sidebar-header">
         <div class="sidebar-logo">
             <i class="fas fa-shapes"></i>
             <h1>DashPanel</h1>
         </div>
+        <button type="button" class="admin-sidebar-close" aria-label="Close menu"><i class="fas fa-times"></i></button>
     </div>
 
     <nav class="sidebar-nav">
@@ -132,3 +179,36 @@ $sidebarActive  = static fn(string $file): string => $file === $sidebarCurrent ?
         </div>
     </div>
 </div>
+<script>
+    // Phone menu: open from the top bar; close with the X, a tap outside, or Escape.
+    (function () {
+        var sidebar = document.getElementById('adminSidebar');
+        var overlay = document.querySelector('.admin-sidebar-overlay');
+        var openBtn = document.querySelector('.admin-mobile-bar button');
+        var closeBtn = sidebar ? sidebar.querySelector('.admin-sidebar-close') : null;
+        if (!sidebar || !overlay || !openBtn || !closeBtn) return;
+
+        function setOpen(open) {
+            sidebar.classList.toggle('mobile-open', open);
+            overlay.classList.toggle('active', open);
+            openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            document.body.style.overflow = open ? 'hidden' : '';
+            (open ? closeBtn : openBtn).focus();
+        }
+        openBtn.addEventListener('click', function () { setOpen(true); });
+        closeBtn.addEventListener('click', function () { setOpen(false); });
+        overlay.addEventListener('click', function () { setOpen(false); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && sidebar.classList.contains('mobile-open')) setOpen(false);
+        });
+        // Turning a tablet to landscape (desktop layout) must not leave the page locked.
+        var wide = window.matchMedia('(min-width: 769px)');
+        (wide.addEventListener ? wide.addEventListener.bind(wide, 'change') : wide.addListener.bind(wide))(function (m) {
+            if (m.matches && sidebar.classList.contains('mobile-open')) setOpen(false);
+        });
+
+        // The top bar names the page you are on.
+        var active = sidebar.querySelector('.nav-item.active span');
+        if (active) document.querySelector('.admin-mobile-bar .bar-page').textContent = active.textContent;
+    })();
+</script>

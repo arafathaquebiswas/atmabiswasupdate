@@ -181,8 +181,13 @@
   .mobile-header {
     display: flex;
   }
+  /* The fixed mobile header (62px, drawn above this panel) used to cover the
+     panel's top, hiding the logo and close button. Start the panel below it. */
   .sidenav {
     display: flex;
+    top: 62px;
+    height: calc(100% - 62px);
+    border-top-right-radius: 0;
   }
   body {
     padding-top: 62px;
