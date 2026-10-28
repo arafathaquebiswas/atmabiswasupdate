@@ -661,6 +661,14 @@ img { max-width: 100%; height: auto; }
   max-height: unset;
 }
 
+/* Social cards without a photo show the official logo: fit it whole rather
+   than cropping the round monogram to the 180px band. */
+.segment .card > img.card-img-logo {
+  object-fit: contain;
+  padding: 1.25rem;
+  background: #fff;
+}
+
 .segment .card-content {
   padding: 1rem;
   text-align: left;
