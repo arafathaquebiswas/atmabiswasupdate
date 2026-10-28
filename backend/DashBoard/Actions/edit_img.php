@@ -30,6 +30,23 @@ if (!$old_path || !$img_title || !in_array($img_type, ['img_slider', 'latest_new
     exit();
 }
 
+// A Latest News card shows the title as its headline and the description under
+// it, so both are required there; the slider keeps its old rules. Checked
+// before any replacement file is stored, so a rejected edit leaves no orphan.
+if ($img_type === 'latest_news' && $img_description === '') {
+    http_response_code(400);
+    echo json_encode(['error' => 'Latest News needs a Description as well as a Title.']);
+    exit();
+}
+
+// Only Latest News cards show a Facebook link; the slider has none.
+$fb_link = $img_type === 'latest_news' ? img_upload_fb_link($_POST['fb_link'] ?? '') : null;
+if ($fb_link === false) {
+    http_response_code(400);
+    echo json_encode(['error' => 'The Facebook link must be a facebook.com address, e.g. https://www.facebook.com/...']);
+    exit();
+}
+
 $new_path = $old_path;
 
 // Optional image replacement
@@ -108,13 +125,15 @@ try {
     // Update only the columns this install has, for the same reason the insert
     // does: installs carrying img_name instead of img_title otherwise raise
     // "Unknown column" and the edit silently fails.
+    img_upload_ensure_columns($conn);
     $payload = img_upload_payload(
         $conn,
         $img_title,
         $img_description,
         $new_path,
         $img_type,
-        $display_order
+        $display_order,
+        $fb_link
     );
     $assignments = [];
     foreach (array_keys($payload) as $column) {

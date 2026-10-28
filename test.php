@@ -44,7 +44,9 @@ $desc_expr  = isset($img_cols['img_description']) ? 'img_description' : "''";
 $order_expr = $has_order_col                      ? 'display_order'   : '0';
 $newest     = isset($img_cols['img_id'])          ? 'img_id DESC'     : 'img_path ASC';
 
-$sel = "{$title_expr} AS img_title, {$desc_expr} AS img_description, img_path, {$order_expr} AS display_order";
+$fb_expr    = isset($img_cols['fb_link'])         ? 'fb_link'         : "''";
+
+$sel = "{$title_expr} AS img_title, {$desc_expr} AS img_description, img_path, {$order_expr} AS display_order, {$fb_expr} AS fb_link";
 // Numbered images first, in the admin's order, then the rest newest first.
 // This was "display_order ASC, img_path ASC": unnumbered rows are 0, so every
 // image the admin gave a number sorted after all of them and fell past the
@@ -99,6 +101,9 @@ if (empty($latest)) return;
             $descId  = 'lndesc-' . $i;
             $btnId   = 'lnbtn-'  . $i;
             $hasDesc = !empty(trim($img['img_description']));
+            // Validated when saved; re-checked so only an http(s) URL reaches the href.
+            $fbLink  = trim((string) $img['fb_link']);
+            if (!preg_match('~^https?://~i', $fbLink)) $fbLink = '';
         ?>
         <div class="ln-card<?= $i >= $ln_initial ? ' ln-extra' : '' ?>">
             <div class="ln-card-img-wrap">
@@ -118,6 +123,11 @@ if (empty($latest)) return;
                         onclick="lnToggle('<?= $descId ?>','<?= $btnId ?>')">
                     <span class="ln-read-more-label" data-en="Read More" data-bn="আরও পড়ুন">Read More</span> <i class="fas fa-chevron-down"></i>
                 </button>
+                <?php endif; ?>
+                <?php if ($fbLink !== ''): ?>
+                <a class="ln-fb-link" href="<?= htmlspecialchars($fbLink) ?>" target="_blank" rel="noopener noreferrer">
+                    <i class="fab fa-facebook"></i> <span data-en="View on Facebook" data-bn="ফেসবুকে দেখুন">View on Facebook</span>
+                </a>
                 <?php endif; ?>
             </div>
         </div>

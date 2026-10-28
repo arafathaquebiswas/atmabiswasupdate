@@ -166,6 +166,50 @@ function img_upload_columns(PDO $pdo): array
 }
 
 /**
+ * Add the columns the Latest News form writes, where this install lacks them.
+ *
+ * Installs created from hostinger_import.sql carry img_name but no
+ * img_description, so a description typed into the form was silently dropped by
+ * img_upload_payload(). Latest News now requires a description, so the column
+ * has to exist. fb_link holds the optional Facebook post for the same story.
+ */
+function img_upload_ensure_columns(PDO $pdo): void
+{
+    $cols = img_upload_columns($pdo);
+    if (!isset($cols['img_description'])) {
+        $pdo->exec("ALTER TABLE img_upload ADD COLUMN img_description TEXT NULL");
+    }
+    if (!isset($cols['fb_link'])) {
+        $pdo->exec("ALTER TABLE img_upload ADD COLUMN fb_link VARCHAR(500) NULL");
+    }
+}
+
+/**
+ * Validate the optional Facebook link of a Latest News post.
+ *
+ * Returns null for an empty field, the trimmed URL for an http(s) link on a
+ * Facebook domain, and false otherwise. The host check keeps a mistyped or
+ * unrelated address off the public card; the scheme check keeps javascript:
+ * URLs out of the href.
+ */
+function img_upload_fb_link(string $raw): string|false|null
+{
+    $url = trim($raw);
+    if ($url === '') {
+        return null;
+    }
+    if (strlen($url) > 500 || preg_match('/\s/', $url)) {
+        return false;
+    }
+    $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+    $host   = strtolower((string) parse_url($url, PHP_URL_HOST));
+    if (!in_array($scheme, ['http', 'https'], true)) {
+        return false;
+    }
+    return preg_match('/(^|\.)(facebook\.com|fb\.com|fb\.watch)$/', $host) ? $url : false;
+}
+
+/**
  * Column => value map for an img_upload write, restricted to columns that exist.
  *
  * img_name is NOT NULL on the installs that carry it and has no default, so the
@@ -178,7 +222,8 @@ function img_upload_payload(
     string $description,
     string $path,
     string $type,
-    int $order
+    int $order,
+    ?string $fbLink = null
 ): array {
     $cols = img_upload_columns($pdo);
     $data = ['img_path' => $path];
@@ -188,18 +233,20 @@ function img_upload_payload(
     if (isset($cols['img_name']))        $data['img_name']        = $title;
     if (isset($cols['img_type']))        $data['img_type']        = $type;
     if (isset($cols['display_order']))   $data['display_order']   = $order;
+    if (isset($cols['fb_link']))         $data['fb_link']         = $fbLink;
 
     return $data;
 }
 
-/** Bind a payload built by img_upload_payload(), typing display_order as int. */
+/** Bind a payload built by img_upload_payload(): display_order as int, null as NULL. */
 function img_upload_bind(PDOStatement $stmt, array $payload): void
 {
     foreach ($payload as $column => $value) {
         $stmt->bindValue(
             ':' . $column,
             $value,
-            $column === 'display_order' ? PDO::PARAM_INT : PDO::PARAM_STR
+            $value === null ? PDO::PARAM_NULL
+                : ($column === 'display_order' ? PDO::PARAM_INT : PDO::PARAM_STR)
         );
     }
 }

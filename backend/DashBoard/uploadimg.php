@@ -15,6 +15,15 @@ try {
     // filename and gave no useful order.
     $stmt       = $connection->query("SELECT * FROM img_upload ORDER BY img_id DESC");
     $all_images = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Installs from hostinger_import.sql name the title column img_name and may
+    // lack img_description / fb_link. Without this the gallery showed no titles
+    // and the Edit form opened with an empty Title on those installs.
+    foreach ($all_images as &$row) {
+        $row['img_title']       = $row['img_title'] ?? $row['img_name'] ?? '';
+        $row['img_description'] = $row['img_description'] ?? '';
+        $row['fb_link']         = $row['fb_link'] ?? '';
+    }
+    unset($row);
 } catch (Exception $e) {
     $all_images = [];
 }
@@ -450,19 +459,28 @@ $total_count = count($all_images);
                             <div class="form-group">
                                 <label for="img_title" class="form-label">
                                     <i class="fas fa-heading"></i>
-                                    Image Title
+                                    Title <span style="font-weight:400;color:#9ca3af;">(required — short headline, shown in bold)</span>
                                 </label>
                                 <input type="text" id="img_title" name="img_title" class="form-input"
-                                    placeholder="Enter image title..." required />
+                                    placeholder="Short headline of the news..." required />
                             </div>
 
                             <div class="form-group">
                                 <label for="img_description" class="form-label">
                                     <i class="fas fa-align-left"></i>
-                                    Description <span style="font-weight:400;color:#9ca3af;">(optional)</span>
+                                    Description <span id="descHint" style="font-weight:400;color:#9ca3af;">(required — full details, shown under the title)</span>
                                 </label>
                                 <textarea id="img_description" name="img_description" class="form-textarea"
-                                    rows="3" placeholder="Enter image description..."></textarea>
+                                    rows="4" placeholder="Full details of the news..." required></textarea>
+                            </div>
+
+                            <div class="form-group" id="fbGroup">
+                                <label for="fb_link" class="form-label">
+                                    <i class="fab fa-facebook"></i>
+                                    Facebook Post Link <span style="font-weight:400;color:#9ca3af;">(optional)</span>
+                                </label>
+                                <input type="url" id="fb_link" name="fb_link" class="form-input" maxlength="500"
+                                    placeholder="https://www.facebook.com/...">
                             </div>
 
                             <div class="form-group">
@@ -520,6 +538,7 @@ $total_count = count($all_images);
                              data-path="<?= htmlspecialchars($img['img_path']) ?>"
                              data-title="<?= htmlspecialchars($img['img_title']) ?>"
                              data-desc="<?= htmlspecialchars($img['img_description'] ?? '') ?>"
+                             data-fb="<?= htmlspecialchars($img['fb_link']) ?>"
                              data-imgtype="<?= htmlspecialchars($img['img_type']) ?>"
                              data-order="<?= $cardOrder ?>">
                             <div class="gallery-card-img-wrap">
@@ -585,18 +604,28 @@ $total_count = count($all_images);
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fas fa-heading"></i> Title
+                        <span style="font-weight:400;color:#9ca3af;">(required — short headline, shown in bold)</span>
                     </label>
                     <input type="text" name="img_title" id="editTitle" class="form-input"
-                           placeholder="Image title" required>
+                           placeholder="Short headline of the news" required>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fas fa-align-left"></i>
-                        Description <span style="font-weight:400;color:#9ca3af;">(optional)</span>
+                        Description <span id="editDescHint" style="font-weight:400;color:#9ca3af;">(optional)</span>
                     </label>
                     <textarea name="img_description" id="editDesc" class="form-textarea"
-                              rows="3" placeholder="Image description..."></textarea>
+                              rows="4" placeholder="Full details of the news"></textarea>
+                </div>
+
+                <div class="form-group" id="editFbGroup">
+                    <label class="form-label" for="editFb">
+                        <i class="fab fa-facebook"></i>
+                        Facebook Post Link <span style="font-weight:400;color:#9ca3af;">(optional)</span>
+                    </label>
+                    <input type="url" name="fb_link" id="editFb" class="form-input" maxlength="500"
+                           placeholder="https://www.facebook.com/...">
                 </div>
 
                 <div class="form-group">
@@ -681,6 +710,50 @@ $total_count = count($all_images);
         }
     });
 
+    // ── Latest News fields ──────────────────────────
+    // A Latest News card shows the title as its headline and the description
+    // under it, so both are required there; the slider shows neither, so its
+    // description stays optional and the Facebook link is hidden.
+    function bindLatestFields(typeId, descId, hintId, fbGroupId) {
+        const type = document.getElementById(typeId);
+        const desc = document.getElementById(descId);
+        const hint = document.getElementById(hintId);
+        const fb   = document.getElementById(fbGroupId);
+        function sync() {
+            const latest = type.value === 'latest_news';
+            desc.required    = latest;
+            hint.textContent = latest ? '(required — full details, shown under the title)' : '(optional)';
+            fb.style.display = latest ? '' : 'none';
+            // A hidden field must not block the form with an error nobody can see.
+            if (!latest) fb.querySelector('input').setCustomValidity('');
+        }
+        type.addEventListener('change', sync);
+        sync();
+        return sync;
+    }
+    bindLatestFields('imagetype', 'img_description', 'descHint', 'fbGroup');
+    const syncEditFields = bindLatestFields('editImgType', 'editDesc', 'editDescHint', 'editFbGroup');
+
+    // Same rule as img_upload_fb_link() on the server: Facebook addresses only.
+    function checkFbLink(input) {
+        const v = input.value.trim();
+        let ok = true;
+        if (v !== '') {
+            try {
+                const u = new URL(v);
+                ok = /^https?:$/.test(u.protocol)
+                  && /(^|\.)(facebook\.com|fb\.com|fb\.watch)$/i.test(u.hostname);
+            } catch (e) {
+                ok = false;
+            }
+        }
+        input.setCustomValidity(ok ? '' : 'Please enter a Facebook link, e.g. https://www.facebook.com/...');
+    }
+    ['fb_link', 'editFb'].forEach(function (id) {
+        const input = document.getElementById(id);
+        input.addEventListener('input', function () { checkFbLink(input); });
+    });
+
     // ── Upload submit spinner ───────────────────────
     document.getElementById('uploadForm').addEventListener('submit', function () {
         const btn = document.getElementById('submitBtn');
@@ -744,6 +817,7 @@ $total_count = count($all_images);
         const desc    = card.dataset.desc    || '';
         const imgtype = card.dataset.imgtype || 'img_slider';
         const order   = card.dataset.order   || '0';
+        const fb      = card.dataset.fb      || '';
 
         document.getElementById('modalCurrentImg').src = '../../' + path;
         document.getElementById('editOldPath').value   = path;
@@ -751,6 +825,10 @@ $total_count = count($all_images);
         document.getElementById('editDesc').value      = desc;
         document.getElementById('editImgType').value   = imgtype;
         document.getElementById('editOrder').value     = order;
+        document.getElementById('editFb').value        = fb;
+        // Setting .value fires no change event, so re-apply the type rules.
+        syncEditFields();
+        checkFbLink(document.getElementById('editFb'));
 
         // Reset replace zone
         clearReplace();
@@ -822,6 +900,8 @@ $total_count = count($all_images);
                     card.dataset.imgtype = newType;
                     card.dataset.type    = newType;
                     card.dataset.order   = newOrder;
+                    card.dataset.fb      = newType === 'latest_news'
+                        ? document.getElementById('editFb').value.trim() : '';
 
                     // Update image src
                     const cardImg = card.querySelector('.gallery-card-img');
@@ -837,8 +917,14 @@ $total_count = count($all_images);
                     // Update title + desc text
                     const titleEl = card.querySelector('.gallery-card-title');
                     if (titleEl) titleEl.textContent = newTitle;
-                    const descEl  = card.querySelector('.gallery-card-desc');
-                    if (descEl)  descEl.textContent  = newDesc;
+                    let descEl = card.querySelector('.gallery-card-desc');
+                    // Cards saved without a description have no element yet.
+                    if (!descEl && newDesc && titleEl) {
+                        descEl = document.createElement('p');
+                        descEl.className = 'gallery-card-desc';
+                        titleEl.after(descEl);
+                    }
+                    if (descEl) descEl.textContent = newDesc;
 
                     // Update delete button's data-path
                     const delBtn = card.querySelector('.btn-delete');

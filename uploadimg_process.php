@@ -81,6 +81,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $img_description = trim($_POST["img_description"] ?? "");
         $img_type        = $_POST["imagetype"] ?? "latest_news";
         $display_order   = (int)($_POST["display_order"] ?? 0);
+        // Only Latest News cards show a Facebook link; the slider has none.
+        $fb_link         = $img_type === 'latest_news'
+            ? img_upload_fb_link($_POST["fb_link"] ?? "")
+            : null;
+
+        // A Latest News card shows the title as its headline and the
+        // description under it, so both are required there. Checked before
+        // processFile() so a rejected upload leaves no orphan file behind.
+        if ($img_type === 'latest_news' && ($img_title === '' || $img_description === '')) {
+            header("Location: backend/DashBoard/error.php?type=upload&msg="
+                . rawurlencode("Latest News needs both a Title and a Description."));
+            exit();
+        }
+        if ($fb_link === false) {
+            header("Location: backend/DashBoard/error.php?type=upload&msg="
+                . rawurlencode("The Facebook link must be a facebook.com address, e.g. https://www.facebook.com/..."));
+            exit();
+        }
 
         // Display Order must be unique among slider images. latest_news has no
         // ordering system, so it is exempt. Nothing else is renumbered to make
@@ -117,13 +135,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // img_description made every upload fail on installs whose table carries
         // img_name instead: the PDOException was caught below and shown as a bare
         // "File upload failed." with no indication that the schema was the cause.
+        img_upload_ensure_columns($connection);
         $payload = img_upload_payload(
             $connection,
             $img_title,
             $img_description,
             $image_path,
             $img_type,
-            $display_order
+            $display_order,
+            $fb_link
         );
         $columns = array_keys($payload);
         $sql     = "INSERT INTO img_upload (" . implode(', ', $columns) . ")

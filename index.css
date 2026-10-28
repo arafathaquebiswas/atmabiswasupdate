@@ -390,6 +390,19 @@ body {
 .ln-read-more:hover { color: #005bb5; }
 .ln-read-more i { font-size: .7rem; transition: transform .25s; }
 .ln-read-more.expanded i { transform: rotate(180deg); }
+.ln-fb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    margin-top: 10px;
+    align-self: flex-start;
+    color: #1877f2;
+    font-size: .8rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+.ln-fb-link:hover { text-decoration: underline; }
+.ln-fb-link i { font-size: .95rem; }
 /* Cards past the first 12 stay hidden until "See More" adds .ln-show-all. */
 .ln-grid:not(.ln-show-all) .ln-extra { display: none; }
 .ln-more-wrap {
