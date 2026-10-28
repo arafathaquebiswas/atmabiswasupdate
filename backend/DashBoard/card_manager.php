@@ -1,36 +1,45 @@
 <?php
 /**
- * Social page images: every card on social.php with the image and text it
- * shows right now, and controls to upload, replace, remove or restore that
- * image and to edit or restore its title and description.
+ * Page images: every card on a public card page (Social, Events) with the
+ * image and text it shows right now, and controls to upload, replace, remove
+ * or restore that image and to edit or restore its title and description.
  *
- * The cards and their order live in social_cards.php. The changes themselves
- * are made by Actions/social_image.php and Actions/social_text.php, which
- * redirect back with a message.
+ * Opened through social_images.php or events_images.php, which set $cardPage.
+ * The cards and their order live in social_cards.php / events_cards.php. The
+ * changes themselves are made by Actions/card_image.php and
+ * Actions/card_text.php, which redirect back with a message.
  */
 require_once __DIR__ . '/../auth.php';
 require_once __DIR__ . '/csrf_helper.php';
-require_once __DIR__ . '/../../social_cards.php';
+require_once __DIR__ . '/../../page_cards.php';
 
 require_login();
+
+// Opened directly rather than through a page's own screen.
+if (!isset($cardPage) || !isset(card_pages()[$cardPage])) {
+    header('Location: social_images.php');
+    exit();
+}
+$page     = card_page($cardPage);
+$pageName = $page['name'];
 
 $dbError   = '';
 $overrides = [];
 $texts     = [];
 try {
     $conn = (new Db())->connect();
-    social_ensure_table($conn);
-    $overrides = social_image_overrides($conn);
-    $texts     = social_text_overrides($conn);
+    cards_ensure_tables($conn, $cardPage);
+    $overrides = cards_image_overrides($cardPage, $conn);
+    $texts     = cards_text_overrides($cardPage, $conn);
 } catch (Throwable $e) {
-    error_log('social_images: database unavailable: ' . $e->getMessage());
+    error_log('card_manager: database unavailable: ' . $e->getMessage());
     $dbError = 'Could not reach the database, so cards cannot be changed right now. '
              . 'The cards below show their built-in images and text.';
 }
-$segments = social_apply_texts(social_cards(), $texts);
+$segments = cards_apply_texts(cards_segments($cardPage), $texts);
 
-$flash = $_SESSION['social_flash'] ?? null;
-unset($_SESSION['social_flash']);
+$flash = $_SESSION['cards_flash'] ?? null;
+unset($_SESSION['cards_flash']);
 
 $canRemove = is_super_admin();
 $badges    = [
@@ -46,7 +55,7 @@ $badges    = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Page Images - ATMABISWAS</title>
+    <title><?= htmlspecialchars($pageName) ?> Page Images - ATMABISWAS</title>
     <link rel="stylesheet" href="css/uploadfile.css">
     <link rel="stylesheet" href="css/admin-sidebar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -119,15 +128,15 @@ $badges    = [
             <div class="sc-wrap">
                 <div class="sc-head">
                     <div>
-                        <h1><i class="fas fa-images"></i> Social Page Images</h1>
+                        <h1><i class="fas fa-images"></i> <?= htmlspecialchars($pageName) ?> Page Images</h1>
                         <p class="sc-sub">
-                            Choose the picture, title and description each card on the Social page shows. Changes are
+                            Choose the picture, title and description each card on the <?= htmlspecialchars($pageName) ?> page shows. Changes are
                             live as soon as they are saved. A card with no image shows the ATMA BISWAS logo; removing an
-                            image never removes the card, its title or its description. JPG, PNG or WebP, up to <?= social_upload_limit_label() ?>.
+                            image never removes the card, its title or its description. JPG, PNG or WebP, up to <?= cards_upload_limit_label() ?>.
                         </p>
                     </div>
-                    <a class="sc-view" href="../../social.php" target="_blank" rel="noopener">
-                        <i class="fas fa-external-link-alt"></i> View Social page
+                    <a class="sc-view" href="../../<?= htmlspecialchars($page['public']) ?>" target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt"></i> View <?= htmlspecialchars($pageName) ?> page
                     </a>
                 </div>
 
@@ -146,7 +155,7 @@ $badges    = [
                     <h2><i class="<?= htmlspecialchars($segment['icon']) ?>"></i> <?= htmlspecialchars($segment['title']) ?></h2>
                     <div class="sc-grid">
                         <?php foreach ($segment['cards'] as $card):
-                            $image = social_card_image($card, $overrides);
+                            $image = cards_card_image($card, $overrides);
                             [$badgeText, $badgeClass] = $badges[$image['source']];
                             $hasPhoto = !$image['logo'];
                         ?>
@@ -154,7 +163,7 @@ $badges    = [
                             <img class="sc-img<?= $image['logo'] ? ' is-logo' : '' ?>"
                                  src="../../<?= htmlspecialchars($image['src']) ?>"
                                  alt="Current image: <?= htmlspecialchars($card['title']) ?>" loading="lazy"
-                                 onerror="this.onerror=null;this.src='../../<?= htmlspecialchars(social_logo_src()) ?>';this.classList.add('is-logo');">
+                                 onerror="this.onerror=null;this.src='../../<?= htmlspecialchars(cards_logo_src()) ?>';this.classList.add('is-logo');">
                             <div class="sc-body">
                                 <div class="sc-badges">
                                     <span class="sc-badge <?= $badgeClass ?>"><?= $badgeText ?></span>
@@ -171,23 +180,25 @@ $badges    = [
                                 <?php if (!$dbError): ?>
                                 <details class="sc-edit">
                                     <summary><i class="fas fa-pen"></i>Edit title &amp; description</summary>
-                                    <form class="sc-text-form" method="POST" action="Actions/social_text.php">
+                                    <form class="sc-text-form" method="POST" action="Actions/card_text.php">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="card_key" value="<?= htmlspecialchars($card['key']) ?>">
+                                        <input type="hidden" name="page" value="<?= htmlspecialchars($cardPage) ?>">
                                         <input type="hidden" name="action" value="save">
                                         <label for="title-<?= htmlspecialchars($card['key']) ?>">Title</label>
                                         <input type="text" id="title-<?= htmlspecialchars($card['key']) ?>" name="title"
-                                               value="<?= htmlspecialchars($card['title']) ?>" maxlength="<?= SOCIAL_TITLE_MAX ?>" required>
+                                               value="<?= htmlspecialchars($card['title']) ?>" maxlength="<?= CARD_TITLE_MAX ?>" required>
                                         <label for="desc-<?= htmlspecialchars($card['key']) ?>">Description <span class="sc-hint">(optional)</span></label>
                                         <textarea id="desc-<?= htmlspecialchars($card['key']) ?>" name="description"
-                                                  maxlength="<?= SOCIAL_DESC_MAX ?>"><?= htmlspecialchars($card['desc']) ?></textarea>
+                                                  maxlength="<?= CARD_DESC_MAX ?>"><?= htmlspecialchars($card['desc']) ?></textarea>
                                         <button type="submit" class="sc-btn sc-btn-primary"><i class="fas fa-save"></i> Save text</button>
                                     </form>
                                     <?php if ($card['edited'] && $canRemove): ?>
-                                    <form class="sc-text-form" method="POST" action="Actions/social_text.php"
+                                    <form class="sc-text-form" method="POST" action="Actions/card_text.php"
                                           onsubmit="return confirm('Put back the original title and description for this card?');">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="card_key" value="<?= htmlspecialchars($card['key']) ?>">
+                                        <input type="hidden" name="page" value="<?= htmlspecialchars($cardPage) ?>">
                                         <input type="hidden" name="action" value="restore">
                                         <p class="sc-hint">Original: <?= htmlspecialchars($card['orig_title']) ?></p>
                                         <button type="submit" class="sc-btn sc-btn-plain"><i class="fas fa-undo"></i> Restore original text</button>
@@ -196,12 +207,13 @@ $badges    = [
                                 </details>
                                 <?php endif; ?>
 
-                                <form class="sc-form" method="POST" action="Actions/social_image.php" enctype="multipart/form-data">
+                                <form class="sc-form" method="POST" action="Actions/card_image.php?page=<?= htmlspecialchars($cardPage) ?>" enctype="multipart/form-data">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="card_key" value="<?= htmlspecialchars($card['key']) ?>">
+                                    <input type="hidden" name="page" value="<?= htmlspecialchars($cardPage) ?>">
                                     <input type="hidden" name="action" value="upload">
                                     <input type="file" name="image" accept="image/jpeg,image/png,image/webp" required
-                                           data-max="<?= social_upload_limit() ?>" <?= $dbError ? 'disabled' : '' ?>>
+                                           data-max="<?= cards_upload_limit() ?>" <?= $dbError ? 'disabled' : '' ?>>
                                     <button type="submit" class="sc-btn sc-btn-primary" <?= $dbError ? 'disabled' : '' ?>>
                                         <i class="fas fa-upload"></i> <?= $hasPhoto ? 'Replace image' : 'Upload image' ?>
                                     </button>
@@ -210,19 +222,21 @@ $badges    = [
                                 <?php if ($canRemove && !$dbError && ($hasPhoto || ($card['img'] && $image['source'] !== 'original'))): ?>
                                 <div class="sc-row">
                                     <?php if ($hasPhoto): ?>
-                                    <form method="POST" action="Actions/social_image.php"
+                                    <form method="POST" action="Actions/card_image.php?page=<?= htmlspecialchars($cardPage) ?>"
                                           onsubmit="return confirm('Remove this image? The card stays and shows the ATMA BISWAS logo.');">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="card_key" value="<?= htmlspecialchars($card['key']) ?>">
+                                        <input type="hidden" name="page" value="<?= htmlspecialchars($cardPage) ?>">
                                         <input type="hidden" name="action" value="remove">
                                         <button type="submit" class="sc-btn sc-btn-danger"><i class="fas fa-trash-alt"></i> Remove</button>
                                     </form>
                                     <?php endif; ?>
                                     <?php if ($card['img'] && $image['source'] !== 'original'): ?>
-                                    <form method="POST" action="Actions/social_image.php"
+                                    <form method="POST" action="Actions/card_image.php?page=<?= htmlspecialchars($cardPage) ?>"
                                           onsubmit="return confirm('Put back the original image for this card?');">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="card_key" value="<?= htmlspecialchars($card['key']) ?>">
+                                        <input type="hidden" name="page" value="<?= htmlspecialchars($cardPage) ?>">
                                         <input type="hidden" name="action" value="restore">
                                         <button type="submit" class="sc-btn sc-btn-plain"><i class="fas fa-undo"></i> Restore original</button>
                                     </form>
@@ -246,7 +260,7 @@ $badges    = [
             var file = input.files[0];
             var max  = parseInt(input.dataset.max, 10);
             input.setCustomValidity(file && file.size > max
-                ? 'This image is larger than <?= social_upload_limit_label() ?>. Please choose a smaller one.'
+                ? 'This image is larger than <?= cards_upload_limit_label() ?>. Please choose a smaller one.'
                 : '');
             input.reportValidity();
         });

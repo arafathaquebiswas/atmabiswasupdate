@@ -65,6 +65,10 @@
             <i class="fas fa-images"></i>
             <span>Social Page Images</span>
         </a>
+        <a href="events_images.php" class="nav-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Events Page Images</span>
+        </a>
         <div style="padding:0.5rem 1.5rem;font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;opacity:0.6;margin-top:0.5rem;">
             Contact Management
         </div>
