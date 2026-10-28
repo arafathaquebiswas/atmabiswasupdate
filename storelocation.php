@@ -15,7 +15,7 @@
     <?php include 'seo.php'; ?>
     <style>
         body {
-            font-family: SutonnyOMJ, "Times New Roman", Times, serif;
+            font-family: AtmaBangla, "Times New Roman", Times, serif;
             margin: 0;
             padding: 0;
             background-color: #f9f9f9;

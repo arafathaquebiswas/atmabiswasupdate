@@ -9,7 +9,7 @@
   align-items: center;
   flex-direction: column;
   text-align: center;
-  font-family: SutonnyOMJ, "Times New Roman", Times, serif;
+  font-family: AtmaBangla, "Times New Roman", Times, serif;
   padding: 60px 20px 60px;
 }
 
@@ -222,7 +222,7 @@
   font-size: 0.95rem;
   font-weight: 600;
   transition: all 0.3s ease;
-  font-family: SutonnyOMJ, "Times New Roman", Times, serif;
+  font-family: AtmaBangla, "Times New Roman", Times, serif;
   min-width: 110px;
 }
 
@@ -237,7 +237,7 @@
   font-size: 0.95rem;
   font-weight: 600;
   transition: all 0.3s ease;
-  font-family: SutonnyOMJ, "Times New Roman", Times, serif;
+  font-family: AtmaBangla, "Times New Roman", Times, serif;
   min-width: 110px;
 }
 
