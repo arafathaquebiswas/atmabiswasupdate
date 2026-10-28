@@ -83,9 +83,82 @@ function auth_login_admin(array $admin): void
 
     $_SESSION['admin_id'] = (int) $admin['adminId'];
     $_SESSION['role']     = auth_normalize_role($admin['role'] ?? ROLE_ADMIN);
-    $_SESSION['email']    = $admin['email'] ?? '';
+    // Legacy rows keep the address in `username` and leave email/fullname empty.
+    $_SESSION['email']    = $admin['email'] ?? ($admin['username'] ?? '');
     // Retained under its original name: existing pages and Navbar.php read this.
-    $_SESSION['username'] = $admin['fullname'] ?? ($admin['email'] ?? '');
+    $_SESSION['username'] = $admin['fullname'] ?? ($admin['email'] ?? ($admin['username'] ?? ''));
+}
+
+/**
+ * The admin a login form identifies, if the password is right; otherwise null.
+ *
+ * Every login page goes through here so they cannot disagree. Three kinds of
+ * correct login used to be refused as "Invalid Credentials":
+ *  - accounts from the retired newadmin.php page, which kept the address in
+ *    `username` rather than `email`, and stored the password in plain text;
+ *  - passwords with & ' " < >, because the login checked an HTML-escaped copy
+ *    while signup and Change Credentials hash the password as typed.
+ * The address is matched ignoring case and stray spaces. A password in an old
+ * format is accepted once and replaced at once with a hash of the password as
+ * typed, so the old formats disappear as people log in.
+ */
+function auth_attempt_login(PDO $conn, string $login, string $password): ?array
+{
+    $login = trim($login);
+    if ($login === '' || $password === '') {
+        return null;
+    }
+
+    $cols  = admin_table_columns($conn);
+    $where = [];
+    $args  = [];
+    if (isset($cols['email'])) {
+        $where[]       = 'LOWER(TRIM(email)) = LOWER(:email)';
+        $args['email'] = $login;
+    }
+    if (isset($cols['username'])) {
+        $where[]          = 'LOWER(TRIM(username)) = LOWER(:username)';
+        $args['username'] = $login;
+    }
+    if (!$where) {
+        return null;
+    }
+
+    $stmt = $conn->prepare('SELECT * FROM admins WHERE ' . implode(' OR ', $where));
+    $stmt->execute($args);
+
+    // What the old login actually compared: the password run through this filter.
+    $escaped = (string) filter_var($password, FILTER_SANITIZE_SPECIAL_CHARS);
+
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $admin) {
+        $stored = (string) ($admin['pswd'] ?? '');
+        if ($stored === '') {
+            continue;
+        }
+        $isHash = password_get_info($stored)['algoName'] !== 'unknown';
+
+        if ($isHash && password_verify($password, $stored)) {
+            $upgrade = password_needs_rehash($stored, PASSWORD_DEFAULT);
+        } elseif ($isHash && $escaped !== $password && password_verify($escaped, $stored)) {
+            $upgrade = true;
+        } elseif (!$isHash && (hash_equals($stored, $password) || hash_equals($stored, $escaped))) {
+            $upgrade = true;
+        } else {
+            continue;
+        }
+
+        if ($upgrade) {
+            try {
+                $conn->prepare('UPDATE admins SET pswd = ? WHERE adminId = ?')
+                     ->execute([password_hash($password, PASSWORD_DEFAULT), $admin['adminId']]);
+            } catch (Throwable $e) {
+                // The login itself is still valid; only the upgrade waits for next time.
+                error_log('auth_attempt_login: password upgrade failed: ' . $e->getMessage());
+            }
+        }
+        return $admin;
+    }
+    return null;
 }
 
 /**

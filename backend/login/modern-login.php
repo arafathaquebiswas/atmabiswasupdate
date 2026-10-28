@@ -11,28 +11,24 @@ $passErr = "";
 $invalid = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_EMAIL);
-    $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
+    // Used exactly as typed; see auth_attempt_login() in auth.php.
+    $username = trim((string) ($_POST["username"] ?? ''));
+    $password = (string) ($_POST["password"] ?? '');
 
-    if (empty($username)) {
+    if ($username === '') {
         $usernameErr = "Email is required";
     }
 
-    if (empty($password)) {
+    if ($password === '') {
         $passErr = "Password is required";
     }
 
-    if ($username && $password) {
+    if ($username !== '' && $password !== '') {
         auth_ensure_role_column($connection);
 
-        $sql = "SELECT * FROM admins WHERE email = :username";
-        $stmt = $connection->prepare($sql);
-        $stmt->bindParam(":username", $username);
-        $stmt->execute();
+        $user = auth_attempt_login($connection, $username, $password);
 
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$user || !password_verify($password, $user['pswd'])) {
+        if (!$user) {
             $invalid = "Invalid email or password";
         } else {
             auth_login_admin($user);

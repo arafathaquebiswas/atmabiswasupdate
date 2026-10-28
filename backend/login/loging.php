@@ -11,18 +11,21 @@ $passErr     = "";
 $invalid     = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_EMAIL);
-    $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
+    // Both are used exactly as typed: the query is parameterised, and the
+    // stored hash was made from the raw password, so filtering either one
+    // only ever turned a correct login into "Invalid Credentials".
+    $username = trim((string) ($_POST["username"] ?? ''));
+    $password = (string) ($_POST["password"] ?? '');
 
-    if (empty($username)) {
+    if ($username === '') {
         $usernameErr = "Email is Required";
     }
 
-    if (empty($password)) {
+    if ($password === '') {
         $passErr = "Password is Required";
     }
 
-    if ($username && $password) {
+    if ($username !== '' && $password !== '') {
         try {
             $database   = new Db();
             $connection = $database->connect();
@@ -32,14 +35,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 // session is given the real role rather than defaulting to admin.
                 auth_ensure_role_column($connection);
 
-                $sql  = "SELECT * FROM admins WHERE email = :username";
-                $stmt = $connection->prepare($sql);
-                $stmt->bindParam(":username", $username);
-                $stmt->execute();
+                $user = auth_attempt_login($connection, $username, $password);
 
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if (!$user || !password_verify($password, $user['pswd'])) {
+                if (!$user) {
                     $invalid = "Invalid Credentials";
                 } else {
                     auth_login_admin($user);

@@ -1,12 +1,13 @@
 <?php
-session_start();
+require_once __DIR__ . '/../auth.php';
 
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login/loging.php");
-    exit();
-}
+require_login();
 
-include '../Database/db.php';
+// Every lookup here uses the logged-in admin's id. Matching on fullname, as
+// this page used to, took whichever row came first when two admins shared a
+// name -- checking and changing the wrong account -- and found nobody when the
+// account had no full name, so its password could not be changed at all.
+$adminId = (int) (current_admin()['id'] ?? 0);
 
 $db = new Db();
 $conn = $db->connect();
@@ -17,8 +18,8 @@ $messageType = '';
 // Get current user info for display
 $currentEmail = '';
 try {
-    $stmt = $conn->prepare("SELECT email FROM admins WHERE fullname = ?");
-    $stmt->execute([$_SESSION['username']]);
+    $stmt = $conn->prepare("SELECT email FROM admins WHERE adminId = ?");
+    $stmt->execute([$adminId]);
     $userInfo = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($userInfo) {
         $currentEmail = $userInfo['email'];
@@ -32,8 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $currentPassword = $_POST['current_password'] ?? '';
     $newPassword = $_POST['new_password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
-    $newUsername = $_POST['new_username'] ?? '';
-    $newEmail = $_POST['new_email'] ?? '';
+    $newUsername = trim($_POST['new_username'] ?? '');
+    // A stray space saved here made the account impossible to log in to.
+    $newEmail = trim($_POST['new_email'] ?? '');
 
     // Validation
     if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
@@ -51,8 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             // Verify current password - using existing admins table structure
-            $stmt = $conn->prepare("SELECT adminId, pswd, fullname, email FROM admins WHERE fullname = ?");
-            $stmt->execute([$_SESSION['username']]);
+            $stmt = $conn->prepare("SELECT adminId, pswd, fullname, email FROM admins WHERE adminId = ?");
+            $stmt->execute([$adminId]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$user || !password_verify($currentPassword, $user['pswd'])) {
@@ -61,10 +63,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 // Check if new username already exists (if username is being changed)
                 if (!empty($newUsername) && $newUsername !== $_SESSION['username']) {
-                    $stmt = $conn->prepare("SELECT adminId FROM admins WHERE fullname = ? AND fullname != ?");
-                    $stmt->execute([$newUsername, $_SESSION['username']]);
+                    $stmt = $conn->prepare("SELECT adminId FROM admins WHERE fullname = ? AND adminId != ?");
+                    $stmt->execute([$newUsername, $adminId]);
                     if ($stmt->fetch()) {
                         $message = 'Username already exists.';
+                        $messageType = 'error';
+                    }
+                }
+                // Two accounts on one address would leave the login guessing which is meant.
+                if ($messageType !== 'error' && !empty($newEmail)) {
+                    $stmt = $conn->prepare("SELECT adminId FROM admins WHERE LOWER(TRIM(email)) = LOWER(?) AND adminId != ?");
+                    $stmt->execute([$newEmail, $adminId]);
+                    if ($stmt->fetch()) {
+                        $message = 'That email address is already used by another admin.';
                         $messageType = 'error';
                     }
                 }
@@ -78,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt = $conn->prepare("UPDATE admins SET fullname = ?, pswd = ?, email = ? WHERE adminId = ?");
                     if ($stmt->execute([$finalUsername, $hashedPassword, $finalEmail, $user['adminId']])) {
                         $_SESSION['username'] = $finalUsername;
+                        $_SESSION['email']    = $finalEmail;
                         $message = 'Credentials updated successfully!';
                         $messageType = 'success';
                     } else {
