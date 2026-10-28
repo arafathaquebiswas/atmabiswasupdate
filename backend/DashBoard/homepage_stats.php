@@ -65,9 +65,13 @@ $stats = $conn ? site_stats_all($conn) : SITE_STAT_DEFAULTS;
     <link rel="icon" type="image/png" href="../images/logo/logo.png">
     <style>
         .stats-wrap { max-width: 760px; margin: 1.5rem auto 3rem; padding: 0 2rem; }
-        .stats-card { background:#fff; border:1px solid #e2e8f0; border-radius:14px;
-                      padding:1.75rem; box-shadow:0 4px 16px rgba(15,23,42,.05); }
-        .stats-card h2 { margin:0 0 .35rem; font-size:1.15rem; color:#0f172a; }
+        .stats-card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden;
+                      box-shadow:0 4px 16px rgba(15,23,42,.05); }
+        /* Same blue header band as the Social and Events screens. */
+        .stats-card h2 { margin:0; padding:.85rem 1.25rem; font-size:1.05rem; color:#fff;
+                         background:linear-gradient(135deg,#1e3a5f 0%,#0073e6 100%);
+                         display:flex; gap:.6rem; align-items:center; }
+        .stats-body { padding:1.5rem 1.75rem 1.75rem; }
         .stats-sub { color:#64748b; font-size:.85rem; margin:0 0 1.5rem; line-height:1.55; }
         .stat-row { margin-bottom:1.25rem; }
         .stat-row label { display:block; font-weight:600; font-size:.9rem; color:#1e293b; margin-bottom:.4rem; }
@@ -75,9 +79,9 @@ $stats = $conn ? site_stats_all($conn) : SITE_STAT_DEFAULTS;
                           border-radius:8px; font-size:1rem; font-family:inherit; color:#0f172a; }
         .stat-row input:focus { outline:none; border-color:#2563eb; }
         .stat-hint { font-size:.75rem; color:#94a3b8; margin-top:.35rem; }
-        .stats-save { background:#0f766e; color:#fff; border:none; padding:.75rem 1.6rem;
+        .stats-save { background:#2563eb; color:#fff; border:none; padding:.75rem 1.6rem;
                       border-radius:8px; font-weight:600; font-size:.92rem; cursor:pointer; font-family:inherit; }
-        .stats-save:hover { background:#115e59; }
+        .stats-save:hover { background:#1d4ed8; }
         .stats-msg { padding:.8rem 1rem; border-radius:8px; margin-bottom:1.25rem; font-size:.88rem; }
         .stats-msg.success { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
         .stats-msg.error   { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
@@ -97,7 +101,8 @@ $stats = $conn ? site_stats_all($conn) : SITE_STAT_DEFAULTS;
                 <?php endif; ?>
 
                 <div class="stats-card">
-                    <h2>Homepage Statistics</h2>
+                    <h2><i class="fas fa-chart-line"></i> Homepage Statistics</h2>
+                    <div class="stats-body">
                     <p class="stats-sub">
                         These two numbers appear in the counter row on the homepage. Save here and the
                         homepage shows the new figure on its next load &mdash; nothing else needs doing.
@@ -129,6 +134,7 @@ $stats = $conn ? site_stats_all($conn) : SITE_STAT_DEFAULTS;
                         branch updates the homepage on its own, and Years of Foundation is calculated from the
                         founding year (1991) and increases itself every January. An editable copy of either
                         could drift out of step with the real figure.
+                    </div>
                     </div>
                 </div>
             </div>
