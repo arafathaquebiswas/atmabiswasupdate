@@ -36,23 +36,28 @@
     <div class="Numbercontainer">
         <div class="numbers">
             <div class="number-card">
-                <div class="number-icon"><i class="fas fa-users"></i></div>
-                <h2 id="number1">0</h2>
-                <p data-en="Employees" data-bn="কর্মী">Employees</p>
-            </div>
-            <div class="number-card">
                 <div class="number-icon"><i class="fas fa-hands-helping"></i></div>
-                <h2 id="number2">0</h2>
+                <h2 id="stat-clients">0</h2>
                 <p data-en="Served Clients" data-bn="সেবাগ্রহীতা">Served Clients</p>
             </div>
             <div class="number-card">
+                <div class="number-icon"><i class="fas fa-users"></i></div>
+                <h2 id="stat-employees">0</h2>
+                <p data-en="Employees" data-bn="কর্মী">Employees</p>
+            </div>
+            <div class="number-card">
                 <div class="number-icon"><i class="fas fa-code-branch"></i></div>
-                <h2 id="number3">0</h2>
+                <h2 id="stat-branches">0</h2>
                 <p data-en="Branches" data-bn="শাখা">Branches</p>
             </div>
             <div class="number-card">
+                <div class="number-icon"><i class="fas fa-building"></i></div>
+                <h2 id="stat-offices">0</h2>
+                <p data-en="Regional Offices" data-bn="আঞ্চলিক অফিস">Regional Offices</p>
+            </div>
+            <div class="number-card">
                 <div class="number-icon"><i class="fas fa-calendar-check"></i></div>
-                <h2 id="number4">0</h2>
+                <h2 id="stat-years">0</h2>
                 <p data-en="Years of Foundation" data-bn="প্রতিষ্ঠার বছর">Years of Foundation</p>
             </div>
         </div>

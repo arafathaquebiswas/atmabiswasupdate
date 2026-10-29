@@ -129,11 +129,12 @@ $stats = $conn ? site_stats_all($conn) : SITE_STAT_DEFAULTS;
                     </form>
 
                     <div class="stats-note">
-                        <strong>Branches</strong> and <strong>Years of Foundation</strong> are not editable here
-                        by design. Branches is counted live from the Branch section, so adding or removing a
-                        branch updates the homepage on its own, and Years of Foundation is calculated from the
-                        founding year (1991) and increases itself every January. An editable copy of either
-                        could drift out of step with the real figure.
+                        <strong>Branches</strong>, <strong>Regional Offices</strong> and <strong>Years of Foundation</strong>
+                        are not editable here by design. Branches and Regional Offices are counted live from the
+                        Branch and Regional Offices sections (active ones only), so adding, removing or
+                        deactivating one updates the homepage on its own, and Years of Foundation is calculated
+                        from the founding year (1991) and increases itself every January. An editable copy of
+                        any of them could drift out of step with the real figure.
                     </div>
                     </div>
                 </div>
