@@ -391,19 +391,68 @@ body {
 .ln-read-more:hover { color: #005bb5; }
 .ln-read-more i { font-size: .7rem; transition: transform .25s; }
 .ln-read-more.expanded i { transform: rotate(180deg); }
-.ln-fb-link {
+/* Facebook / Press links over the picture. Hidden until the card is hovered
+   or a link inside it has keyboard focus; on touch screens, which have no
+   hover, they stay visible as a strip along the bottom of the picture. */
+.ln-card-links {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    gap: 10px;
+    padding: 12px;
+    background: linear-gradient(to top, rgba(15,30,50,.82), rgba(15,30,50,.38));
+    opacity: 0;
+    transition: opacity .25s ease;
+}
+.ln-card:hover .ln-card-links,
+.ln-card:focus-within .ln-card-links { opacity: 1; }
+.ln-link {
     display: inline-flex;
     align-items: center;
-    gap: .35rem;
-    margin-top: 10px;
-    align-self: flex-start;
-    color: #1877f2;
-    font-size: .8rem;
+    gap: .4rem;
+    min-height: 40px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: #fff;
+    font-size: .88rem;
     font-weight: 700;
+    font-family: AtmaBangla, "Times New Roman", Times, serif;
     text-decoration: none;
+    box-shadow: 0 4px 14px rgba(0,0,0,.22);
+    transform: translateY(8px);
+    transition: transform .25s ease, background .2s, color .2s;
 }
-.ln-fb-link:hover { text-decoration: underline; }
-.ln-fb-link i { font-size: .95rem; }
+.ln-card:hover .ln-link,
+.ln-card:focus-within .ln-link { transform: none; }
+.ln-link-fb    { color: #1877f2; }
+.ln-link-press { color: #1e3a5f; }
+.ln-link-fb:hover    { background: #1877f2; color: #fff; }
+.ln-link-press:hover { background: #1e3a5f; color: #fff; }
+.ln-link:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+/* Read by screen readers only: which story the link belongs to. */
+.ln-sr {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+@media (hover: none) {
+    .ln-card-links {
+        inset: auto 0 0 0;
+        align-content: flex-end;
+        padding: 30px 10px 12px;
+        background: linear-gradient(to top, rgba(15,30,50,.8), rgba(15,30,50,0));
+        opacity: 1;
+    }
+    .ln-link { transform: none; }
+}
 /* Cards past the first 12 stay hidden until "See More" adds .ln-show-all. */
 .ln-grid:not(.ln-show-all) .ln-extra { display: none; }
 .ln-more-wrap {
@@ -434,12 +483,16 @@ body {
     .ln-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
     .ln-card-img-wrap { height: 150px; }
     .ln-section { padding: 8px 12px 48px; }
+    /* Two cards per row leaves ~170px: smaller pills so both fit side by side. */
+    .ln-card-links { gap: 6px; padding-left: 6px; padding-right: 6px; }
+    .ln-link { min-height: 36px; padding: 6px 11px; font-size: .78rem; gap: .3rem; }
 }
 @media (max-width: 420px) {
     .ln-grid { grid-template-columns: 1fr; }
+    .ln-link { min-height: 40px; padding: 8px 16px; font-size: .88rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .ln-card, .ln-card-img, .ln-more-btn { transition: none; }
+    .ln-card, .ln-card-img, .ln-more-btn, .ln-card-links, .ln-link { transition: none; }
 }
 
 /* ── Gap between partners section and footer ─── */

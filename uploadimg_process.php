@@ -10,6 +10,7 @@ if (!is_logged_in()) {
 }
 
 include_once 'backend/Database/db.php';
+require_once __DIR__ . '/backend/DashBoard/csrf_helper.php';
 
 $uploadDir    = media_dir("images");
 $allowedTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
@@ -51,6 +52,11 @@ function processFile($imageFile, $allowedTypes, $imageSize, $uploadDir)
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    if (!csrf_verify()) {
+        header("Location: backend/DashBoard/error.php?type=upload&msg="
+            . rawurlencode("Your session token has expired. Please reload the upload page and try again."));
+        exit();
+    }
     try {
         $db         = new Db();
         $connection = $db->connect();
@@ -98,7 +104,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
         if ($fb_link === false) {
             header("Location: backend/DashBoard/error.php?type=upload&msg="
-                . rawurlencode("The Facebook link must be a facebook.com address, e.g. https://www.facebook.com/..."));
+                . rawurlencode("The Facebook link must be the address of a Facebook post, e.g. https://www.facebook.com/atmabiswas/posts/..."));
+            exit();
+        }
+        // The full article on the Press page, if one exists yet; it can also be added later from Edit.
+        $press_link = $img_type === 'latest_news'
+            ? img_upload_press_link($connection, $_POST["press_link"] ?? "")
+            : null;
+        if ($press_link === false) {
+            header("Location: backend/DashBoard/error.php?type=upload&msg="
+                . rawurlencode("The Press link must point to an existing Press article on this website, e.g. https://atmabiswas.org/press.php?id=12 — or pick one from the list."));
             exit();
         }
 
@@ -145,7 +160,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $image_path,
             $img_type,
             $display_order,
-            $fb_link
+            $fb_link,
+            $press_link
         );
         $columns = array_keys($payload);
         $sql     = "INSERT INTO img_upload (" . implode(', ', $columns) . ")

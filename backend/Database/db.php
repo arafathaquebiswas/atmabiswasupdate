@@ -171,7 +171,9 @@ function img_upload_columns(PDO $pdo): array
  * Installs created from hostinger_import.sql carry img_name but no
  * img_description, so a description typed into the form was silently dropped by
  * img_upload_payload(). Latest News now requires a description, so the column
- * has to exist. fb_link holds the optional Facebook post for the same story.
+ * has to exist. fb_link holds the optional Facebook post for the same story,
+ * press_link the optional full article on the Press page.
+ * (Database/migrations/add_press_link_to_img_upload.sql adds the same column.)
  */
 function img_upload_ensure_columns(PDO $pdo): void
 {
@@ -182,6 +184,9 @@ function img_upload_ensure_columns(PDO $pdo): void
     if (!isset($cols['fb_link'])) {
         $pdo->exec("ALTER TABLE img_upload ADD COLUMN fb_link VARCHAR(500) NULL");
     }
+    if (!isset($cols['press_link'])) {
+        $pdo->exec("ALTER TABLE img_upload ADD COLUMN press_link VARCHAR(500) NULL");
+    }
 }
 
 /**
@@ -190,7 +195,8 @@ function img_upload_ensure_columns(PDO $pdo): void
  * Returns null for an empty field, the trimmed URL for an http(s) link on a
  * Facebook domain, and false otherwise. The host check keeps a mistyped or
  * unrelated address off the public card; the scheme check keeps javascript:
- * URLs out of the href.
+ * URLs out of the href. A bare https://www.facebook.com/ is refused as well:
+ * the card's button promises that story's post, not Facebook's front page.
  */
 function img_upload_fb_link(string $raw): string|false|null
 {
@@ -203,10 +209,62 @@ function img_upload_fb_link(string $raw): string|false|null
     }
     $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
     $host   = strtolower((string) parse_url($url, PHP_URL_HOST));
+    $path   = (string) parse_url($url, PHP_URL_PATH);
+    $query  = (string) parse_url($url, PHP_URL_QUERY);
     if (!in_array($scheme, ['http', 'https'], true)) {
         return false;
     }
+    if (trim($path, '/') === '' && $query === '') {
+        return false;
+    }
     return preg_match('/(^|\.)(facebook\.com|fb\.com|fb\.watch)$/', $host) ? $url : false;
+}
+
+/**
+ * Validate the optional Press article link of a Latest News post.
+ *
+ * Accepts a link to one article on this site's Press page in any form an admin
+ * is likely to paste -- "press.php?id=12", "/press.php?id=12" or the full
+ * https://atmabiswas.org/press.php?id=12 -- and returns it normalised to
+ * "press.php?id=12", the form test.php renders. Returns null for an empty field
+ * and false for anything else: another site, another page, a javascript: URL,
+ * or an id with no article behind it.
+ */
+function img_upload_press_link(PDO $pdo, string $raw): string|false|null
+{
+    $url = trim($raw);
+    if ($url === '') {
+        return null;
+    }
+    if (strlen($url) > 500 || preg_match('/\s/', $url)) {
+        return false;
+    }
+    $parts = parse_url($url);
+    if ($parts === false) {
+        return false;
+    }
+    if (isset($parts['scheme']) || isset($parts['host'])) {
+        $scheme = strtolower($parts['scheme'] ?? '');
+        $host   = strtolower($parts['host'] ?? '');
+        // This site's own host too, so a link copied from a local or staging copy works.
+        $own    = ['atmabiswas.org', 'www.atmabiswas.org',
+                   strtolower((string) parse_url('//' . ($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST))];
+        if (!in_array($scheme, ['http', 'https'], true) || !in_array($host, $own, true)) {
+            return false;
+        }
+    }
+    if (!preg_match('~^/?press\.php$~', $parts['path'] ?? '')) {
+        return false;
+    }
+    parse_str($parts['query'] ?? '', $query);
+    $id = $query['id'] ?? '';
+    if (!is_string($id) || !preg_match('/^[1-9][0-9]{0,9}$/', $id)) {
+        return false;
+    }
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM blogs WHERE blog_id = ?");
+    $stmt->execute([(int) $id]);
+    return (int) $stmt->fetchColumn() === 1 ? 'press.php?id=' . (int) $id : false;
 }
 
 /**
@@ -223,7 +281,8 @@ function img_upload_payload(
     string $path,
     string $type,
     int $order,
-    ?string $fbLink = null
+    ?string $fbLink = null,
+    ?string $pressLink = null
 ): array {
     $cols = img_upload_columns($pdo);
     $data = ['img_path' => $path];
@@ -234,6 +293,7 @@ function img_upload_payload(
     if (isset($cols['img_type']))        $data['img_type']        = $type;
     if (isset($cols['display_order']))   $data['display_order']   = $order;
     if (isset($cols['fb_link']))         $data['fb_link']         = $fbLink;
+    if (isset($cols['press_link']))      $data['press_link']      = $pressLink;
 
     return $data;
 }

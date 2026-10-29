@@ -7,6 +7,7 @@ include_once '../../Database/db.php';
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../auth.php';
+require_once __DIR__ . '/../csrf_helper.php';
 
 if (!is_logged_in()) {
     http_response_code(403);
@@ -17,6 +18,12 @@ if (!is_logged_in()) {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
+    exit();
+}
+
+if (!csrf_verify()) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Your session token has expired. Please reload the page and try again.']);
     exit();
 }
 
@@ -45,11 +52,32 @@ if ($img_type === 'latest_news' && $img_description === '') {
 $fb_link = $img_type === 'latest_news' ? img_upload_fb_link($_POST['fb_link'] ?? '') : null;
 if ($fb_link === false) {
     http_response_code(400);
-    echo json_encode(['error' => 'The Facebook link must be a facebook.com address, e.g. https://www.facebook.com/...']);
+    echo json_encode(['error' => 'The Facebook link must be the address of a Facebook post, e.g. https://www.facebook.com/atmabiswas/posts/...']);
+    exit();
+}
+
+try {
+    $db   = new Db();
+    $conn = $db->connect();
+
+    // The Press article is checked against the blogs table, so this needs the
+    // connection; still before any replacement file is stored.
+    $press_link = $img_type === 'latest_news' ? img_upload_press_link($conn, $_POST['press_link'] ?? '') : null;
+} catch (PDOException $e) {
+    error_log('edit_img error: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Database error']);
+    exit();
+}
+if ($press_link === false) {
+    http_response_code(400);
+    echo json_encode(['error' => 'The Press link must point to an existing Press article on this website, e.g. https://atmabiswas.org/press.php?id=12 — or pick one from the list.']);
     exit();
 }
 
 $new_path = $old_path;
+$new_file = null;   // stored replacement, removed again if the database write fails
+$old_file = null;   // replaced original, removed only once the database points elsewhere
 
 // Optional image replacement
 $hasNewFile = !empty($_FILES['image_file']['name'])
@@ -90,20 +118,21 @@ if ($hasNewFile) {
         echo json_encode(['error' => 'Failed to save new image']);
         exit();
     }
+    $new_file = $target;
 
-    // Delete old physical file — validate path stays in uploads/images/
+    // The old physical file goes only after the UPDATE succeeds. Deleting it
+    // here first left the row pointing at a missing image whenever the write
+    // failed, and test.php hides a card whose image is gone.
+    // Validate the path stays in the images upload directory.
     $oldFull = realpath($rootDir . DIRECTORY_SEPARATOR . $old_path);
     if ($oldFull && strpos($oldFull, $uploadDir) === 0 && file_exists($oldFull)) {
-        unlink($oldFull);
+        $old_file = $oldFull;
     }
 
     $new_path = media_dir('images') . $filename;
 }
 
 try {
-    $db   = new Db();
-    $conn = $db->connect();
-
     // Display Order must stay unique among slider images; latest_news is exempt.
     // The row being edited is excluded so re-saving it unchanged is allowed.
     $imgCols = img_upload_columns($conn);
@@ -116,6 +145,7 @@ try {
         $dupe->execute([':order' => $display_order, ':self' => $old_path]);
 
         if ((int) $dupe->fetchColumn() > 0) {
+            if ($new_file !== null) @unlink($new_file);
             http_response_code(409);
             echo json_encode([
                 'error' => "Display Order {$display_order} is already in use. Please choose another number."
@@ -135,7 +165,8 @@ try {
         $new_path,
         $img_type,
         $display_order,
-        $fb_link
+        $fb_link,
+        $press_link
     );
     $assignments = [];
     foreach (array_keys($payload) as $column) {
@@ -151,13 +182,29 @@ try {
     $stmt->execute();
 
     if ($stmt->rowCount() === 0) {
-        echo json_encode(['error' => 'Record not found or no changes made']);
-        exit();
+        // MySQL counts only rows whose values changed, so saving a card
+        // unchanged also reports 0. Only a missing row is an error.
+        $exists = $conn->prepare("SELECT COUNT(*) FROM img_upload WHERE img_path = ?");
+        $exists->execute([$new_path]);
+        if ((int) $exists->fetchColumn() === 0) {
+            if ($new_file !== null) @unlink($new_file);
+            echo json_encode(['error' => 'Record not found. Reload the page and try again.']);
+            exit();
+        }
     }
 
-    echo json_encode(['success' => true, 'new_path' => $new_path, 'display_order' => $display_order]);
+    if ($old_file !== null) @unlink($old_file);
+
+    echo json_encode([
+        'success'       => true,
+        'new_path'      => $new_path,
+        'display_order' => $display_order,
+        'fb_link'       => $fb_link ?? '',
+        'press_link'    => $press_link ?? '',
+    ]);
 } catch (PDOException $e) {
     error_log('edit_img error: ' . $e->getMessage());
+    if ($new_file !== null) @unlink($new_file);
     http_response_code(500);
     echo json_encode(['error' => 'Database error']);
 }

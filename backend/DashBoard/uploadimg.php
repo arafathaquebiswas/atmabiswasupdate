@@ -7,6 +7,7 @@ if (!is_logged_in()) {
     header("Location: ../login/loging.php");
     exit();
 }
+require_once 'csrf_helper.php';
 
 $db         = new Db();
 $connection = $db->connect();
@@ -24,10 +25,40 @@ try {
         $row['img_title']       = $row['img_title'] ?? $row['img_name'] ?? '';
         $row['img_description'] = $row['img_description'] ?? '';
         $row['fb_link']         = $row['fb_link'] ?? '';
+        $row['press_link']      = $row['press_link'] ?? '';
     }
     unset($row);
 } catch (Exception $e) {
     $all_images = [];
+}
+
+// Press articles for the "Press Article Link" picker, newest first. Drafts are
+// listed too (marked), so a card can be linked before its article goes live;
+// the homepage only shows the Press button once the article is published.
+$press_articles = [];
+try {
+    $blogCols = array_flip($connection->query("SHOW COLUMNS FROM blogs")->fetchAll(PDO::FETCH_COLUMN));
+    $statusSel = isset($blogCols['status']) ? "COALESCE(status, 'published')" : "'published'";
+    $press_articles = $connection->query(
+        "SELECT blog_id, blog_title, upload_date, {$statusSel} AS status
+           FROM blogs ORDER BY upload_date DESC, blog_id DESC"
+    )->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    // The picker stays empty; a Press URL can still be pasted by hand.
+    error_log('uploadimg: Press article list failed: ' . $e->getMessage());
+}
+
+/** One <option> per Press article, value in the form the server stores. */
+function press_article_options(array $articles): string
+{
+    $html = '';
+    foreach ($articles as $a) {
+        $title = mb_strimwidth((string) $a['blog_title'], 0, 90, '…', 'UTF-8');
+        $date  = !empty($a['upload_date']) ? date('M j, Y', strtotime($a['upload_date'])) : '';
+        $label = $title . ($date !== '' ? ' — ' . $date : '') . ($a['status'] === 'draft' ? ' · Draft' : '');
+        $html .= '<option value="press.php?id=' . (int) $a['blog_id'] . '">' . htmlspecialchars($label) . '</option>';
+    }
+    return $html;
 }
 
 $slider_count = 0;
@@ -355,6 +386,20 @@ $total_count = count($all_images);
         .toast.success { background: #10b981; color: #fff; }
         .toast.error   { background: #dc2626; color: #fff; }
 
+        /* ── Facebook / Press link fields and markers ── */
+        .press-pick { margin-bottom: .5rem; }
+        .gallery-card-links { display: flex; gap: .35rem; flex-wrap: wrap; margin: 0 0 10px; }
+        .gallery-card-links:not(:has(.link-chip:not([hidden]))) { display: none; }
+        .link-chip {
+            display: inline-flex; align-items: center; gap: .25rem;
+            font-size: .68rem; font-weight: 700;
+            padding: .15rem .5rem; border-radius: 999px;
+        }
+        .link-chip[hidden] { display: none; }
+        .link-chip i { font-size: .6rem; }
+        .link-chip-fb    { background: #e7f0fe; color: #1877f2; }
+        .link-chip-press { background: #e8eef6; color: #1e3a5f; }
+
         @media (max-width: 768px) {
             .stats-bar { padding: 0 1rem; }
             .gallery-section { padding: 0 1rem; }
@@ -419,6 +464,7 @@ $total_count = count($all_images);
                 <div class="upload-container">
 
                     <form action="../../uploadimg_process.php" method="POST" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+                        <?= csrf_field() ?>
                         <div class="form-header">
                             <h2 class="form-title">
                                 <i class="fas fa-cloud-upload-alt"></i>
@@ -485,6 +531,19 @@ $total_count = count($all_images);
                                     placeholder="https://www.facebook.com/...">
                             </div>
 
+                            <div class="form-group" id="pressGroup">
+                                <label for="press_link" class="form-label">
+                                    <i class="fas fa-newspaper"></i>
+                                    Press Article Link <span style="font-weight:400;color:#9ca3af;">(optional — can be added later from Edit)</span>
+                                </label>
+                                <select class="form-select press-pick" data-target="press_link" aria-label="Choose a Press article">
+                                    <option value="">— Choose a Press article —</option>
+                                    <?= press_article_options($press_articles) ?>
+                                </select>
+                                <input type="text" inputmode="url" id="press_link" name="press_link" class="form-input press-link-input" maxlength="500"
+                                    placeholder="…or paste its link, e.g. https://atmabiswas.org/press.php?id=12">
+                            </div>
+
                             <div class="form-group">
                                 <label for="display_order" class="form-label">
                                     <i class="fas fa-sort-numeric-down"></i>
@@ -541,6 +600,7 @@ $total_count = count($all_images);
                              data-title="<?= htmlspecialchars($img['img_title']) ?>"
                              data-desc="<?= htmlspecialchars($img['img_description'] ?? '') ?>"
                              data-fb="<?= htmlspecialchars($img['fb_link']) ?>"
+                             data-press="<?= htmlspecialchars($img['press_link']) ?>"
                              data-imgtype="<?= htmlspecialchars($img['img_type']) ?>"
                              data-order="<?= $cardOrder ?>">
                             <div class="gallery-card-img-wrap">
@@ -560,6 +620,11 @@ $total_count = count($all_images);
                                 <?php if (!empty(trim($img['img_description']))): ?>
                                 <p class="gallery-card-desc"><?= htmlspecialchars($img['img_description']) ?></p>
                                 <?php endif; ?>
+                                <?php // Which links this card carries, so a missing one is visible at a glance. ?>
+                                <div class="gallery-card-links">
+                                    <span class="link-chip link-chip-fb"<?= $img['fb_link'] === '' ? ' hidden' : '' ?>><i class="fas fa-check"></i> Facebook</span>
+                                    <span class="link-chip link-chip-press"<?= $img['press_link'] === '' ? ' hidden' : '' ?>><i class="fas fa-check"></i> Press</span>
+                                </div>
                                 <div class="btn-actions">
                                     <button class="btn-edit"
                                             onclick="openEditModal(this.closest('.gallery-card'))">
@@ -591,6 +656,7 @@ $total_count = count($all_images);
             </div>
 
             <form class="modal-body" id="editForm" enctype="multipart/form-data">
+                <?= csrf_field() ?>
                 <img src="" alt="Current image" class="modal-current-img" id="modalCurrentImg">
 
                 <div class="form-group">
@@ -628,6 +694,19 @@ $total_count = count($all_images);
                     </label>
                     <input type="url" name="fb_link" id="editFb" class="form-input" maxlength="500"
                            placeholder="https://www.facebook.com/...">
+                </div>
+
+                <div class="form-group" id="editPressGroup">
+                    <label class="form-label" for="editPress">
+                        <i class="fas fa-newspaper"></i>
+                        Press Article Link <span style="font-weight:400;color:#9ca3af;">(optional — clear it to remove)</span>
+                    </label>
+                    <select class="form-select press-pick" data-target="editPress" aria-label="Choose a Press article">
+                        <option value="">— Choose a Press article —</option>
+                        <?= press_article_options($press_articles) ?>
+                    </select>
+                    <input type="text" inputmode="url" name="press_link" id="editPress" class="form-input press-link-input" maxlength="500"
+                           placeholder="…or paste its link, e.g. https://atmabiswas.org/press.php?id=12">
                 </div>
 
                 <div class="form-group">
@@ -715,28 +794,31 @@ $total_count = count($all_images);
     // ── Latest News fields ──────────────────────────
     // A Latest News card shows the title as its headline and the description
     // under it, so both are required there; the slider shows neither, so its
-    // description stays optional and the Facebook link is hidden.
-    function bindLatestFields(typeId, descId, hintId, fbGroupId) {
-        const type = document.getElementById(typeId);
-        const desc = document.getElementById(descId);
-        const hint = document.getElementById(hintId);
-        const fb   = document.getElementById(fbGroupId);
+    // description stays optional and the Facebook and Press links are hidden.
+    function bindLatestFields(typeId, descId, hintId, fbGroupId, pressGroupId) {
+        const type   = document.getElementById(typeId);
+        const desc   = document.getElementById(descId);
+        const hint   = document.getElementById(hintId);
+        const groups = [document.getElementById(fbGroupId), document.getElementById(pressGroupId)];
         function sync() {
             const latest = type.value === 'latest_news';
             desc.required    = latest;
             hint.textContent = latest ? '(required — full details, shown under the title)' : '(optional)';
-            fb.style.display = latest ? '' : 'none';
-            // A hidden field must not block the form with an error nobody can see.
-            if (!latest) fb.querySelector('input').setCustomValidity('');
+            groups.forEach(function (g) {
+                g.style.display = latest ? '' : 'none';
+                // A hidden field must not block the form with an error nobody can see.
+                if (!latest) g.querySelector('input').setCustomValidity('');
+            });
         }
         type.addEventListener('change', sync);
         sync();
         return sync;
     }
-    bindLatestFields('imagetype', 'img_description', 'descHint', 'fbGroup');
-    const syncEditFields = bindLatestFields('editImgType', 'editDesc', 'editDescHint', 'editFbGroup');
+    bindLatestFields('imagetype', 'img_description', 'descHint', 'fbGroup', 'pressGroup');
+    const syncEditFields = bindLatestFields('editImgType', 'editDesc', 'editDescHint', 'editFbGroup', 'editPressGroup');
 
-    // Same rule as img_upload_fb_link() on the server: Facebook addresses only.
+    // Same rule as img_upload_fb_link() on the server: a post on a Facebook
+    // domain, not Facebook's bare front page.
     function checkFbLink(input) {
         const v = input.value.trim();
         let ok = true;
@@ -744,17 +826,59 @@ $total_count = count($all_images);
             try {
                 const u = new URL(v);
                 ok = /^https?:$/.test(u.protocol)
-                  && /(^|\.)(facebook\.com|fb\.com|fb\.watch)$/i.test(u.hostname);
+                  && /(^|\.)(facebook\.com|fb\.com|fb\.watch)$/i.test(u.hostname)
+                  && (u.pathname.replace(/\//g, '') !== '' || u.search !== '');
             } catch (e) {
                 ok = false;
             }
         }
-        input.setCustomValidity(ok ? '' : 'Please enter a Facebook link, e.g. https://www.facebook.com/...');
+        input.setCustomValidity(ok ? '' : 'Please enter the link of the Facebook post, e.g. https://www.facebook.com/atmabiswas/posts/...');
     }
     ['fb_link', 'editFb'].forEach(function (id) {
         const input = document.getElementById(id);
         input.addEventListener('input', function () { checkFbLink(input); });
     });
+
+    // Same rule as img_upload_press_link() on the server: one article on this
+    // site's Press page. Returns the stored form "press.php?id=N", '' when
+    // empty, or null when the text is not such a link.
+    function normalisePressLink(v) {
+        v = v.trim();
+        if (v === '') return '';
+        let u;
+        try { u = new URL(v, location.origin + '/'); } catch (e) { return null; }
+        const ownHost = ['atmabiswas.org', 'www.atmabiswas.org', location.hostname].includes(u.hostname);
+        const id = u.searchParams.get('id') || '';
+        if (!/^https?:$/.test(u.protocol) || !ownHost || u.pathname !== '/press.php' || !/^[1-9][0-9]{0,9}$/.test(id)) {
+            return null;
+        }
+        return 'press.php?id=' + id;
+    }
+    function checkPressLink(input) {
+        const norm = normalisePressLink(input.value);
+        const pick = input.parentElement.querySelector('.press-pick');
+        // An id missing from the list is only flagged when the list loaded at all.
+        const known = norm === '' || pick.options.length <= 1
+            || Array.prototype.some.call(pick.options, function (o) { return o.value === norm; });
+        input.setCustomValidity(norm === null
+            ? 'Please enter a Press article link from this website, e.g. https://atmabiswas.org/press.php?id=12'
+            : (known ? '' : 'No Press article has that link. Pick one from the list.'));
+        pick.value = norm && known ? norm : '';
+    }
+    document.querySelectorAll('.press-pick').forEach(function (pick) {
+        const input = document.getElementById(pick.dataset.target);
+        pick.addEventListener('change', function () {
+            input.value = pick.value;
+            checkPressLink(input);
+        });
+        input.addEventListener('input', function () { checkPressLink(input); });
+    });
+
+    // Show which links a gallery card carries.
+    function syncLinkChips(card) {
+        card.querySelector('.link-chip-fb').hidden    = !card.dataset.fb;
+        card.querySelector('.link-chip-press').hidden = !card.dataset.press;
+    }
 
     // ── Upload submit spinner ───────────────────────
     document.getElementById('uploadForm').addEventListener('submit', function () {
@@ -820,6 +944,7 @@ $total_count = count($all_images);
         const imgtype = card.dataset.imgtype || 'img_slider';
         const order   = card.dataset.order   || '0';
         const fb      = card.dataset.fb      || '';
+        const press   = card.dataset.press   || '';
 
         document.getElementById('modalCurrentImg').src = '../../' + path;
         document.getElementById('editOldPath').value   = path;
@@ -828,9 +953,11 @@ $total_count = count($all_images);
         document.getElementById('editImgType').value   = imgtype;
         document.getElementById('editOrder').value     = order;
         document.getElementById('editFb').value        = fb;
+        document.getElementById('editPress').value     = press;
         // Setting .value fires no change event, so re-apply the type rules.
         syncEditFields();
         checkFbLink(document.getElementById('editFb'));
+        checkPressLink(document.getElementById('editPress'));
 
         // Reset replace zone
         clearReplace();
@@ -902,8 +1029,10 @@ $total_count = count($all_images);
                     card.dataset.imgtype = newType;
                     card.dataset.type    = newType;
                     card.dataset.order   = newOrder;
-                    card.dataset.fb      = newType === 'latest_news'
-                        ? document.getElementById('editFb').value.trim() : '';
+                    // The server's normalised values, exactly what was stored.
+                    card.dataset.fb      = data.fb_link    || '';
+                    card.dataset.press   = data.press_link || '';
+                    syncLinkChips(card);
 
                     // Update image src
                     const cardImg = card.querySelector('.gallery-card-img');

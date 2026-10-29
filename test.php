@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/storage.php';
+require_once __DIR__ . '/brand_icons.php';
 // Latest News image grid — included by index.php
 require_once 'backend/Database/db.php';
 
@@ -45,8 +46,9 @@ $order_expr = $has_order_col                      ? 'display_order'   : '0';
 $newest     = isset($img_cols['img_id'])          ? 'img_id DESC'     : 'img_path ASC';
 
 $fb_expr    = isset($img_cols['fb_link'])         ? 'fb_link'         : "''";
+$press_expr = isset($img_cols['press_link'])      ? 'press_link'      : "''";
 
-$sel = "{$title_expr} AS img_title, {$desc_expr} AS img_description, img_path, {$order_expr} AS display_order, {$fb_expr} AS fb_link";
+$sel = "{$title_expr} AS img_title, {$desc_expr} AS img_description, img_path, {$order_expr} AS display_order, {$fb_expr} AS fb_link, {$press_expr} AS press_link";
 // Numbered images first, in the admin's order, then the rest newest first.
 // This was "display_order ASC, img_path ASC": unnumbered rows are 0, so every
 // image the admin gave a number sorted after all of them and fell past the
@@ -94,6 +96,32 @@ try {
 }
 
 if (empty($latest)) return;
+
+// A card's Press button appears only while its article is published: press.php
+// shows nothing for a draft or a deleted article, so the button would lead to
+// the newsroom front page instead of the story. One query covers every card.
+$ln_live_press = [];
+$ln_press_ids  = [];
+foreach ($latest as $img) {
+    if (preg_match('/^press\.php\?id=([1-9][0-9]{0,9})$/', (string) $img['press_link'], $m)) {
+        $ln_press_ids[(int) $m[1]] = true;
+    }
+}
+if ($ln_press_ids) {
+    try {
+        $ids = array_keys($ln_press_ids);
+        $chk = $conn->prepare(
+            "SELECT blog_id FROM blogs
+              WHERE blog_id IN (" . implode(',', array_fill(0, count($ids), '?')) . ")
+                AND (status = 'published' OR status IS NULL)"
+        );
+        $chk->execute($ids);
+        $ln_live_press = array_flip(array_map('intval', $chk->fetchAll(PDO::FETCH_COLUMN)));
+    } catch (Exception $e) {
+        // Unverifiable links stay hidden rather than risk a dead button.
+        error_log('Latest Press link check failed: ' . $e->getMessage());
+    }
+}
 ?>
 <section class="ln-section">
     <div class="ln-grid" id="lnGrid">
@@ -104,6 +132,13 @@ if (empty($latest)) return;
             // Validated when saved; re-checked so only an http(s) URL reaches the href.
             $fbLink  = trim((string) $img['fb_link']);
             if (!preg_match('~^https?://~i', $fbLink)) $fbLink = '';
+            // Stored as "press.php?id=N"; shown only while that article is published.
+            $pressHref = '';
+            if (preg_match('/^press\.php\?id=([1-9][0-9]{0,9})$/', (string) $img['press_link'], $m)
+                && isset($ln_live_press[(int) $m[1]])) {
+                $pressHref = 'press.php?id=' . (int) $m[1];
+            }
+            $titleSr = htmlspecialchars($img['img_title']);
         ?>
         <div class="ln-card<?= $i >= $ln_initial ? ' ln-extra' : '' ?>">
             <div class="ln-card-img-wrap">
@@ -112,6 +147,25 @@ if (empty($latest)) return;
                      alt="<?= htmlspecialchars($img['img_title']) ?>"
                      loading="lazy">
                 <div class="ln-card-accent"></div>
+                <?php if ($fbLink !== '' || $pressHref !== ''): ?>
+                <?php // Over the picture: revealed on hover or keyboard focus,
+                      // always visible where there is no hover (phones, tablets). ?>
+                <div class="ln-card-links">
+                    <?php if ($fbLink !== ''): ?>
+                    <a class="ln-link ln-link-fb" href="<?= htmlspecialchars($fbLink) ?>"
+                       target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
+                        <?= brand_icon('facebook-f') ?>
+                        <span data-en="Facebook" data-bn="ফেসবুক">Facebook</span><span class="ln-sr">: <?= $titleSr ?> (opens in a new tab)</span>
+                    </a>
+                    <?php endif; ?>
+                    <?php if ($pressHref !== ''): ?>
+                    <a class="ln-link ln-link-press" href="<?= htmlspecialchars($pressHref) ?>" onclick="event.stopPropagation()">
+                        <i class="fas fa-newspaper" aria-hidden="true"></i>
+                        <span data-en="Press" data-bn="প্রেস">Press</span><span class="ln-sr">: <?= $titleSr ?></span>
+                    </a>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
             </div>
             <div class="ln-card-body">
                 <h3 class="ln-card-title"><?= htmlspecialchars($img['img_title']) ?></h3>
@@ -123,11 +177,6 @@ if (empty($latest)) return;
                         onclick="lnToggle('<?= $descId ?>','<?= $btnId ?>')">
                     <span class="ln-read-more-label" data-en="Read More" data-bn="আরও পড়ুন">Read More</span> <i class="fas fa-chevron-down"></i>
                 </button>
-                <?php endif; ?>
-                <?php if ($fbLink !== ''): ?>
-                <a class="ln-fb-link" href="<?= htmlspecialchars($fbLink) ?>" target="_blank" rel="noopener noreferrer">
-                    <i class="fab fa-facebook"></i> <span data-en="View on Facebook" data-bn="ফেসবুকে দেখুন">View on Facebook</span>
-                </a>
                 <?php endif; ?>
             </div>
         </div>
