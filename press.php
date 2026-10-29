@@ -76,7 +76,7 @@ if (isset($_GET['id']) && $conn) {
     // Legacy ?article=N (0-based index) → permanent redirect to stable ?id=
     $idx      = max(0, (int)$_GET['article']);
     $id_stmt  = $conn->prepare(
-        "SELECT blog_id FROM blogs WHERE (status='published' OR status IS NULL) ORDER BY upload_date DESC"
+        "SELECT blog_id FROM blogs WHERE (status='published' OR status IS NULL) ORDER BY upload_date DESC, blog_id DESC"
     );
     $id_stmt->execute();
     $all_ids = $id_stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -132,8 +132,11 @@ if (!$current_article && $conn) {
         $total       = (int)$count_stmt->fetchColumn();
         $total_pages = (int)ceil($total / $per_page);
 
+        // blog_id breaks ties: posts saved in the same second otherwise come back
+        // in arbitrary order, and LIMIT/OFFSET could show one on two pages and
+        // the other on none.
         $list_stmt = $conn->prepare(
-            "SELECT * FROM blogs {$wsql} ORDER BY upload_date DESC LIMIT {$per_page} OFFSET {$offset}"
+            "SELECT * FROM blogs {$wsql} ORDER BY upload_date DESC, blog_id DESC LIMIT {$per_page} OFFSET {$offset}"
         );
         $list_stmt->execute($params);
         $posts = $list_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -143,7 +146,7 @@ if (!$current_article && $conn) {
             try {
                 $feat_stmt = $conn->prepare(
                     "SELECT * FROM blogs WHERE featured = 1 AND (status='published' OR status IS NULL)
-                     ORDER BY upload_date DESC LIMIT 1"
+                     ORDER BY upload_date DESC, blog_id DESC LIMIT 1"
                 );
                 $feat_stmt->execute();
                 $featured = $feat_stmt->fetch(PDO::FETCH_ASSOC) ?: null;
@@ -190,10 +193,10 @@ if ($current_article && $conn) {
     try {
         $cat     = $current_article['category'] ?? '';
         $rel_sql = "SELECT * FROM blogs WHERE blog_id != ? AND (status='published' OR status IS NULL)
-                    ORDER BY " . ($cat ? "CASE WHEN category = '{$cat}' THEN 0 ELSE 1 END, " : '')
-                    . "upload_date DESC LIMIT 3";
+                    ORDER BY " . ($cat ? "CASE WHEN category = ? THEN 0 ELSE 1 END, " : '')
+                    . "upload_date DESC, blog_id DESC LIMIT 3";
         $rel_stmt = $conn->prepare($rel_sql);
-        $rel_stmt->execute([$current_article['blog_id']]);
+        $rel_stmt->execute($cat ? [$current_article['blog_id'], $cat] : [$current_article['blog_id']]);
         $related = $rel_stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {}
 }

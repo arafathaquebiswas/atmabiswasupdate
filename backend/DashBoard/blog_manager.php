@@ -106,7 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ajax']) && $pdo) {
                 echo json_encode(['ok' => false]);
         }
     } catch (PDOException $e) {
-        echo json_encode(['ok' => false, 'msg' => $e->getMessage()]);
+        error_log('Press manager ' . $_POST['ajax'] . ' toggle for #' . $aid . ' failed: ' . $e->getMessage());
+        echo json_encode(['ok' => false, 'msg' => 'The database could not save this change. Please try again.']);
     }
     exit;
 }
@@ -716,12 +717,14 @@ document.querySelectorAll('[data-action="status"]').forEach(btn => {
         fetch('blog_manager.php', { method:'POST', body: fd })
             .then(r => r.json())
             .then(data => {
-                if (!data.ok) return;
+                // A refusal (e.g. a non-super-admin) used to be swallowed here,
+                // so clicking "Draft" looked like it did nothing at all.
+                if (!data.ok) { alert(data.error || data.msg || 'The status could not be changed.'); return; }
                 const isPub = data.val === 'published';
                 this.className = 'st-pill ' + (isPub ? 'st-pub' : 'st-dft');
                 this.querySelector('.st-text').textContent = isPub ? 'Published' : 'Draft';
             })
-            .catch(() => {});
+            .catch(() => { alert('The status could not be changed. Check your connection and try again.'); });
     });
 });
 
@@ -739,9 +742,10 @@ document.querySelectorAll('.feat-cb').forEach(cb => {
             .then(data => {
                 if (!data.ok) {
                     el.checked = !el.checked; // revert on failure
+                    alert(data.error || data.msg || 'The featured setting could not be changed.');
                 }
             })
-            .catch(() => { el.checked = !el.checked; });
+            .catch(() => { el.checked = !el.checked; alert('The featured setting could not be changed. Check your connection and try again.'); });
     });
 });
 </script>

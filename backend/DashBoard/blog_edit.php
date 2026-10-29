@@ -46,27 +46,33 @@ $error   = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if (!csrf_verify()) {
-            throw new Exception('Invalid or expired session token. Please reload the page and try again.');
+            throw new InvalidArgumentException('Invalid or expired session token. Please reload the page and try again.');
         }
 
         $title   = trim($_POST['blog_title']    ?? '');
         $content = sanitize_blog_html($_POST['blog_content']    ?? '');
         $summary = sanitize_blog_html($_POST['summary_content'] ?? '');
 
-        if (empty($title))   throw new Exception('Title is required.');
-        if (empty($content)) throw new Exception('Content is required.');
-        if (empty($summary)) throw new Exception('Summary is required.');
+        $problem = press_validate_text($title, $summary, $content);
+        if ($problem === null) {
+            [$urls, $problem] = press_read_urls($_POST, $post);
+        }
+        if ($problem !== null) throw new InvalidArgumentException($problem);
 
         /* Build UPDATE dynamically — only set columns that exist */
         $sets   = ['blog_title=?', 'blog_content=?', 'summary=?'];
         $values = [$title, $content, $summary];
 
+        /* Files to delete once the UPDATE has succeeded. Deleting them first
+           left the row pointing at a missing image whenever the UPDATE failed. */
+        $replaced_file = null;
+        $new_file      = null;
+
         /* ── Thumbnail management ──────────────────────────────── */
         if (isset($has['cover_img'])) {
             if (!empty($_POST['remove_thumbnail'])) {
                 if (!empty($post['cover_img'])) {
-                    $old_file = __DIR__ . '/../../' . ltrim($post['cover_img'], '/');
-                    if (file_exists($old_file)) @unlink($old_file);
+                    $replaced_file = __DIR__ . '/../../' . ltrim($post['cover_img'], '/');
                 }
                 $sets[]   = 'cover_img=?';
                 $values[] = null;
@@ -82,45 +88,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // never taken from the attacker-supplied filename.
                 $allowedThumbTypes = ['image/jpeg' => 'jpg', 'image/jpg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
                 if (!array_key_exists($mime, $allowedThumbTypes)) {
-                    throw new Exception('Thumbnail must be a JPG, PNG, or WebP image.');
+                    throw new InvalidArgumentException('Thumbnail must be a JPG, PNG, or WebP image.');
                 }
                 if ($thumb_file['size'] > 3 * 1024 * 1024) {
-                    throw new Exception('Thumbnail must be under 3MB.');
+                    throw new InvalidArgumentException('Thumbnail must be under 3MB.');
                 }
                 $uploadDir = media_path('blog_imgs');
                 if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
                 $ext      = $allowedThumbTypes[$mime];
                 $filename = 'PRESS_' . bin2hex(random_bytes(16)) . '.' . $ext;
                 if (!img_store_uploaded($thumb_file['tmp_name'], $uploadDir . $filename)) {
-                    throw new Exception('Failed to save thumbnail. Check upload directory permissions.');
+                    throw new RuntimeException('move_uploaded_file failed for ' . $uploadDir . $filename);
                 }
+                $new_file = $uploadDir . $filename;
                 if (!empty($post['cover_img'])) {
-                    $old_file = __DIR__ . '/../../' . ltrim($post['cover_img'], '/');
-                    if (file_exists($old_file)) @unlink($old_file);
+                    $replaced_file = __DIR__ . '/../../' . ltrim($post['cover_img'], '/');
                 }
                 $sets[]   = 'cover_img=?';
                 $values[] = media_dir('blog_imgs') . $filename;
+            } elseif (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] !== UPLOAD_ERR_NO_FILE) {
+                // A chosen file that never arrived must not look like "no change".
+                throw new InvalidArgumentException('The new thumbnail could not be uploaded (it may be larger than the server accepts). Nothing was changed.');
             }
         }
 
         if (isset($has['status'])) {
             $currentStatus   = $post['status'] ?? 'published';
-            $submittedStatus = $_POST['status'] ?? 'published';
+            $submittedStatus = $_POST['status'] ?? $currentStatus;
             // Switching a post to draft unpublishes it, so a plain admin keeps
-            // whatever status the post already had.
-            if ($submittedStatus !== $currentStatus && !is_super_admin()) {
+            // whatever status the post already had. Anything other than the two
+            // real statuses keeps the current one too.
+            if (($submittedStatus !== $currentStatus && !is_super_admin())
+                || !in_array($submittedStatus, ['published', 'draft'], true)) {
                 $submittedStatus = $currentStatus;
             }
             $sets[]   = 'status=?';
             $values[] = $submittedStatus;
         }
         if (isset($has['category'])) {
+            $submittedCategory = $_POST['category'] ?? '';
             $sets[]   = 'category=?';
-            $values[] = $_POST['category'] ?? 'news';
+            $values[] = in_array($submittedCategory, ['news', 'media', 'announcement', 'press'], true)
+                ? $submittedCategory
+                : ($post['category'] ?? 'news');
         }
         if (isset($has['source_link'])) {
             $sets[]   = 'source_link=?';
-            $values[] = trim($_POST['source_link'] ?? '');
+            $values[] = $urls['source_link'];
         }
         if (isset($has['tags'])) {
             $sets[]   = 'tags=?';
@@ -130,33 +144,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sets[]   = 'featured=?';
             $values[] = isset($_POST['featured']) ? 1 : 0;
         }
-        if (isset($has['seo_title'])) {
-            $sets[]   = 'seo_title=?';
-            $values[] = trim($_POST['seo_title'] ?? '');
-        }
-        if (isset($has['seo_description'])) {
-            $sets[]   = 'seo_description=?';
-            $values[] = trim($_POST['seo_description'] ?? '');
-        }
-        if (isset($has['focus_keyword'])) {
-            $sets[]   = 'focus_keyword=?';
-            $values[] = trim($_POST['focus_keyword'] ?? '');
-        }
-        if (isset($has['canonical_url'])) {
-            $sets[]   = 'canonical_url=?';
-            $values[] = trim($_POST['canonical_url'] ?? '');
-        }
+        /* The SEO fields (SEO title, meta description, focus keyword, canonical
+           URL) are no longer in the editor and are deliberately not written
+           here, so values stored on older posts are kept as they are. */
         /* Links to the Facebook and Instagram posts about this press item. Both
            are optional: press.php falls back to the Facebook share dialog when
            facebook_url is blank, and hides the Instagram button entirely when
            instagram_url is, since Instagram has nothing to share to. */
         if (isset($has['facebook_url'])) {
             $sets[]   = 'facebook_url=?';
-            $values[] = trim($_POST['facebook_url'] ?? '');
+            $values[] = $urls['facebook_url'];
         }
         if (isset($has['instagram_url'])) {
             $sets[]   = 'instagram_url=?';
-            $values[] = trim($_POST['instagram_url'] ?? '');
+            $values[] = $urls['instagram_url'];
         }
         if (isset($has['reading_time'])) {
             $sets[]   = 'reading_time=?';
@@ -168,15 +169,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "UPDATE blogs SET " . implode(', ', $sets) . " WHERE blog_id=?";
         $pdo->prepare($sql)->execute($values);
 
-        $success = 'Press post updated successfully.';
+        if ($replaced_file !== null && is_file($replaced_file)) @unlink($replaced_file);
+        $new_file = null;
 
         /* Refresh */
         $stmt = $pdo->prepare("SELECT * FROM blogs WHERE blog_id = ?");
         $stmt->execute([$blog_id]);
         $post = $stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (Exception $e) {
+
+        $success = (($post['status'] ?? 'published') === 'draft')
+            ? 'Changes saved. This post is a draft, so it is not on the public Press page.'
+            : 'Changes saved. This post is published and visible on the Press page.';
+    } catch (InvalidArgumentException $e) {
         $error = $e->getMessage();
+        // Show what the admin typed, not the stored row, so a rejected save loses nothing.
+        if (isset($title)) {
+            $post = array_merge($post,
+                ['blog_title' => $title, 'summary' => $summary, 'blog_content' => $content,
+                 'featured' => isset($_POST['featured']) ? 1 : 0],
+                array_intersect_key($_POST, array_flip(['category', 'tags', 'source_link', 'facebook_url', 'instagram_url'])));
+        }
+    } catch (Throwable $e) {
+        // Technical detail goes to the server log only.
+        error_log('Press edit #' . $blog_id . ' failed: ' . get_class($e) . ': ' . $e->getMessage());
+        $error = 'The post could not be saved, so nothing was changed. Please try again; if it keeps failing, contact the site administrator.';
     }
+    if (!empty($new_file) && is_file($new_file)) @unlink($new_file);   // upload of a failed save
 }
 
 $cat_options = [
@@ -382,10 +400,10 @@ body { background:#f5f7fa; font-family:system-ui,-apple-system,'Segoe UI',sans-s
             </div>
             <?php endif; ?>
 
-            <!-- YouTube / Source link -->
+            <!-- YouTube URL -->
             <?php if (isset($has['source_link'])): ?>
             <div class="panel">
-                <div class="panel-title">YouTube / Source Link</div>
+                <div class="panel-title">YouTube URL</div>
                 <input type="url" class="form-control form-control-sm" name="source_link"
                        placeholder="https://youtube.com/watch?v=…"
                        value="<?= htmlspecialchars($post['source_link'] ?? '') ?>">
@@ -404,43 +422,12 @@ body { background:#f5f7fa; font-family:system-ui,-apple-system,'Segoe UI',sans-s
             </div>
             <?php endif; ?>
 
-            <!-- SEO -->
-            <?php if (isset($has['seo_title'])): ?>
+            <!-- Social links -->
+            <?php if (isset($has['facebook_url']) || isset($has['instagram_url'])): ?>
             <div class="panel">
-                <div class="panel-title">SEO</div>
-                <div class="mb-2">
-                    <label class="form-label">SEO Title</label>
-                    <input type="text" class="form-control form-control-sm" name="seo_title"
-                           maxlength="60" id="seoTitle"
-                           value="<?= htmlspecialchars($post['seo_title'] ?? '') ?>"
-                           oninput="document.getElementById('seoTitleCnt').textContent=this.value.length+'/60'">
-                    <div class="char-counter"><span id="seoTitleCnt"><?= strlen($post['seo_title'] ?? '') ?>/60</span></div>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label">Meta Description</label>
-                    <textarea class="form-control form-control-sm" name="seo_description"
-                              maxlength="160" rows="3" id="seoDesc"
-                              oninput="document.getElementById('seoDescCnt').textContent=this.value.length+'/160'"><?= htmlspecialchars($post['seo_description'] ?? '') ?></textarea>
-                    <div class="char-counter"><span id="seoDescCnt"><?= strlen($post['seo_description'] ?? '') ?>/160</span></div>
-                </div>
-                <?php if (isset($has['focus_keyword'])): ?>
-                <div class="mb-2">
-                    <label class="form-label">Focus Keyword</label>
-                    <input type="text" class="form-control form-control-sm" name="focus_keyword"
-                           value="<?= htmlspecialchars($post['focus_keyword'] ?? '') ?>"
-                           placeholder="e.g. rural microfinance Bangladesh">
-                </div>
-                <?php endif; ?>
-                <?php if (isset($has['canonical_url'])): ?>
-                <div>
-                    <label class="form-label">Canonical URL</label>
-                    <input type="url" class="form-control form-control-sm" name="canonical_url"
-                           value="<?= htmlspecialchars($post['canonical_url'] ?? '') ?>"
-                           placeholder="https://atmabiswas.org/press.php?id=…">
-                </div>
-                <?php endif; ?>
+                <div class="panel-title">Social Links</div>
                 <?php if (isset($has['facebook_url'])): ?>
-                <div>
+                <div class="mb-2">
                     <label class="form-label">Facebook URL</label>
                     <input type="url" class="form-control form-control-sm" name="facebook_url"
                            value="<?= htmlspecialchars($post['facebook_url'] ?? '') ?>"

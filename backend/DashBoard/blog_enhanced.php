@@ -292,7 +292,7 @@ $cat_options = [
                         <div class="panel">
                             <div class="panel-title"><i class="fas fa-file-alt"></i> Press Summary <span class="text-danger">*</span></div>
                             <textarea id="summaryEditor" name="summary_content_raw"></textarea>
-                            <div class="char-counter" id="summaryWordCount">Words: 0</div>
+                            <div class="char-counter" id="summaryWordCount">Words: 0 · 0/1,000 characters</div>
                         </div>
 
                         <div class="panel">
@@ -304,7 +304,10 @@ $cat_options = [
                         <!-- Hidden inputs actually submitted -->
                         <input type="hidden" id="sanitizedContent" name="blog_content">
                         <input type="hidden" id="sanitizedSummary" name="summary_content">
-                        <input type="hidden" id="postStatusAction" name="post_status_action" value="published">
+                        <!-- Set from the button actually clicked; never defaults to publishing. -->
+                        <input type="hidden" id="postStatusAction" name="post_status_action" value="">
+                        <!-- One per editor load: lets the server recognise a retry of this same post. -->
+                        <input type="hidden" name="submission_token" value="<?= bin2hex(random_bytes(16)) ?>">
 
                     </div>
 
@@ -345,7 +348,7 @@ $cat_options = [
                         </div>
 
                         <div class="panel">
-                            <div class="panel-title"><?= brand_icon('youtube') ?> YouTube / Source Link</div>
+                            <div class="panel-title"><?= brand_icon('youtube') ?> YouTube URL</div>
                             <input type="url" class="form-control" name="source_link" placeholder="https://youtube.com/watch?v=…">
                             <div class="char-counter" style="text-align:left;">Optional — embeds above content.</div>
                         </div>
@@ -357,34 +360,13 @@ $cat_options = [
                         </div>
 
                         <div class="panel">
-                            <div class="panel-title"><i class="fas fa-search-plus"></i> SEO</div>
+                            <div class="panel-title"><i class="fas fa-share-alt"></i> Social Links</div>
 
-                            <label class="form-label">URL Slug</label>
-                            <input type="text" class="form-control mb-3" id="postSlug" name="slug" placeholder="auto-generated-from-title">
-
-                            <label class="form-label">SEO Title <span id="seoTitleCnt" class="text-muted" style="font-weight:400;">0/60</span></label>
-                            <input type="text" class="form-control mb-3" id="seoTitle" name="seo_title" maxlength="60" placeholder="Leave blank = press title">
-
-                            <label class="form-label">Meta Description <span id="seoDescCnt" class="text-muted" style="font-weight:400;">0/160</span></label>
-                            <textarea class="form-control mb-3" id="seoDesc" name="seo_description" rows="3" maxlength="160" placeholder="Short summary for search results"></textarea>
-
-                            <label class="form-label">Focus Keyword</label>
-                            <input type="text" class="form-control mb-3" name="focus_keyword" placeholder="e.g. rural microfinance Bangladesh">
-
-                            <label class="form-label">SEO Keywords</label>
-                            <input type="text" class="form-control mb-3" name="seo_keywords" placeholder="keyword1, keyword2">
-
-                            <label class="form-label">Canonical URL</label>
-                            <input type="url" class="form-control mb-3" name="canonical_url" placeholder="https://atmabiswas.org/press.php?id=… (optional)">
-
-                            <label class="form-label">Facebook URL</label>
+                            <label class="form-label"><?= brand_icon('facebook-f') ?> Facebook URL</label>
                             <input type="url" class="form-control mb-3" name="facebook_url" placeholder="https://www.facebook.com/… (optional)">
 
-                            <label class="form-label">Instagram URL</label>
-                            <input type="url" class="form-control mb-3" name="instagram_url" placeholder="https://www.instagram.com/p/… (optional)">
-
-                            <label class="form-label">Social Share Image URL</label>
-                            <input type="url" class="form-control" name="social_image" placeholder="https://… (optional, falls back to thumbnail)">
+                            <label class="form-label"><?= brand_icon('instagram') ?> Instagram URL</label>
+                            <input type="url" class="form-control" name="instagram_url" placeholder="https://www.instagram.com/p/… (optional)">
                         </div>
 
                     </div>
@@ -572,37 +554,29 @@ $cat_options = [
             document.getElementById('previewTitle').textContent = this.value || 'Press Title';
         });
 
-        document.getElementById('blogForm').addEventListener('submit', handleFormSubmit);
+        const form = document.getElementById('blogForm');
+        form.addEventListener('submit', handleFormSubmit);
         document.getElementById('thumbnailInput').addEventListener('change', function () {});
 
-        // Auto-generate slug from title
-        const titleEl = document.getElementById('blogTitle');
-        const slugEl  = document.getElementById('postSlug');
-        titleEl.addEventListener('input', function () {
-            if (slugEl.dataset.manual) return;
-            slugEl.value = this.value.toLowerCase()
-                .replace(/[^a-z0-9\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .replace(/^-|-$/g, '');
+        // Enter in a one-line field (Title, Tags, a URL) must not submit the
+        // form. Implicit submission presses the form's FIRST submit button,
+        // which is "Save Draft" -- so typing tags and hitting Enter silently
+        // saved the post as a draft that never appeared on the Press page.
+        form.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') {
+                e.preventDefault();
+            }
         });
-        slugEl.addEventListener('input', function () { this.dataset.manual = this.value ? '1' : ''; });
 
-        // SEO counters
-        const seoTitle = document.getElementById('seoTitle');
-        const seoDesc  = document.getElementById('seoDesc');
-        seoTitle.addEventListener('input', function () { updateCounter(this, 'seoTitleCnt', 60); });
-        seoDesc.addEventListener('input',  function () { updateCounter(this, 'seoDescCnt', 160); });
+        // Record which button was clicked, for browsers without SubmitEvent.submitter.
+        form.querySelectorAll('button[name="post_status_action"]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.getElementById('postStatusAction').value = this.value;
+            });
+        });
 
         setInterval(autoSave, 30000);
         setTimeout(loadAutoSave, 1000);
-    }
-
-    function updateCounter(el, counterId, max) {
-        const counter = document.getElementById(counterId);
-        const len = el.value.length;
-        counter.textContent = len + '/' + max;
-        counter.classList.toggle('warn', len > max * .9);
     }
 
     // ── Word count / reading time ───────────────────────────────────
@@ -613,11 +587,15 @@ $cat_options = [
         const words = text ? text.split(/\s+/).length : 0;
 
         if (type === 'summary') {
-            document.getElementById('summaryWordCount').textContent = 'Words: ' + words;
+            const chars = text.length;
+            const counter = document.getElementById('summaryWordCount');
+            counter.textContent = 'Words: ' + words + ' · ' + chars.toLocaleString() + '/1,000 characters';
+            counter.classList.toggle('warn', chars > SUMMARY_MAX_CHARS);
         } else {
             const minutes = Math.max(1, Math.ceil(words / 200));
-            document.getElementById('contentWordCount').textContent = 'Words: ' + words;
-            document.getElementById('readingTime').textContent = minutes + ' min read';
+            // Rewrite the whole line: setting textContent on the parent used to
+            // delete the #readingTime span and then throw trying to fill it.
+            document.getElementById('contentWordCount').textContent = 'Words: ' + words + ' · ' + minutes + ' min read';
         }
 
         if (document.getElementById('preview-tab').style.display !== 'none') updatePreview();
@@ -676,16 +654,30 @@ $cat_options = [
     }
 
     // ── Submit ────────────────────────────────────────────────────────
+    const SUMMARY_MAX_CHARS = 1000;   // same rule as press_validate_text() on the server
+    let isSubmitting = false;         // blocks a second request while one is in flight
+    let isSaved      = false;         // set once the server confirms the post
+
     async function handleFormSubmit(e) {
         e.preventDefault();
+        if (isSubmitting || isSaved) return;
+
+        // Only an explicit click on Publish or Save Draft decides the status.
+        const action = (e.submitter && e.submitter.value) || document.getElementById('postStatusAction').value;
+        if (action !== 'published' && action !== 'draft') return;
 
         const title   = document.getElementById('blogTitle').value.trim();
         const summary = tinymce.get('summaryEditor').getContent();
         const content = tinymce.get('contentEditor').getContent();
         const thumbInput = document.getElementById('thumbnailInput');
+        const summaryChars = tinymce.get('summaryEditor').getContent({ format: 'text' }).trim().length;
 
         if (!title) { showNotification('Please enter a press title.', 'error'); return; }
         if (!summary || summary === '<p></p>') { showNotification('Please write a press summary.', 'error'); return; }
+        if (summaryChars > SUMMARY_MAX_CHARS) {
+            showNotification('Press summary is too long (' + summaryChars + ' characters; the limit is 1,000). Shorten it and try again.', 'error');
+            return;
+        }
         if (!content || content === '<p></p>') { showNotification('Please write the press content.', 'error'); return; }
 
         if (!thumbInput.files || !thumbInput.files[0]) {
@@ -695,30 +687,54 @@ $cat_options = [
             return;
         }
 
+        isSubmitting = true;
+        setActionButtonsDisabled(true);
         showLoading(true);
 
         document.getElementById('sanitizedContent').value = sanitizeHTML(content);
         document.getElementById('sanitizedSummary').value  = sanitizeHTML(summary);
 
         const formData = new FormData(e.target);
-        if (e.submitter && e.submitter.name) formData.set(e.submitter.name, e.submitter.value);
+        formData.set('post_status_action', action);
 
         try {
-            const response = await fetch(e.target.action, { method: 'POST', body: formData, credentials: 'same-origin' });
-            const result = await response.json();
-
-            if (result.status === 'success') {
-                localStorage.removeItem('blogAutoSave');
-                showNotification('Press post saved! Redirecting…', 'success');
-                setTimeout(() => { window.location.href = 'blog_manager.php'; }, 1500);
-            } else {
-                throw new Error(result.message || 'Unknown error occurred');
+            let response;
+            try {
+                response = await fetch(e.target.action, { method: 'POST', body: formData, credentials: 'same-origin' });
+            } catch (networkError) {
+                throw new Error('Could not reach the server. Check your connection and click the same button again — the post will not be duplicated.');
             }
+
+            // A PHP fatal error or a proxy error page is HTML, not JSON. Say so
+            // instead of surfacing a JSON parse error.
+            const raw = await response.text();
+            let result;
+            try {
+                result = JSON.parse(raw);
+            } catch (parseError) {
+                throw new Error('The server returned an unexpected response (HTTP ' + response.status + '). ' +
+                    'Check Press Manager before trying again — clicking the same button again will not create a duplicate.');
+            }
+
+            if (result.status !== 'success') {
+                throw new Error(result.message || 'The post could not be saved (HTTP ' + response.status + ').');
+            }
+
+            isSaved = true;
+            localStorage.removeItem('blogAutoSave');
+            showNotification(result.message + ' Redirecting…', result.post_status === 'draft' ? 'warning' : 'success');
+            setTimeout(() => { window.location.href = 'blog_manager.php'; }, 1800);
         } catch (error) {
-            showNotification('Error saving post: ' + error.message, 'error');
+            showNotification('Not saved: ' + error.message, 'error');
         } finally {
+            isSubmitting = false;
+            if (!isSaved) setActionButtonsDisabled(false);
             showLoading(false);
         }
+    }
+
+    function setActionButtonsDisabled(disabled) {
+        document.querySelectorAll('#blogForm button[name="post_status_action"]').forEach(b => { b.disabled = disabled; });
     }
 
     // ── Auto-save ────────────────────────────────────────────────────
@@ -764,6 +780,9 @@ $cat_options = [
     }
 
     window.addEventListener('beforeunload', function (e) {
+        // After a confirmed save the redirect must not ask "Leave site?" --
+        // staying and clicking Publish again is how duplicates used to happen.
+        if (isSaved) return;
         const title = document.getElementById('blogTitle').value.trim();
         if (title) { e.preventDefault(); e.returnValue = ''; }
     });
